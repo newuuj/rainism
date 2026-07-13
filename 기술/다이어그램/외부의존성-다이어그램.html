@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>rainism 외부 의존성 지도</title>
+<style>
+  body { font-family: -apple-system, "Apple SD Gothic Neo", sans-serif; max-width: 1000px; margin: 0 auto; padding: 32px 20px 80px; color: #182231; background: #f6f8fc; line-height: 1.6; }
+  h1 { font-size: 27px; letter-spacing: -.02em; }
+  h1 .rain { color: #4a86c5; }
+  .note { color: #7a8698; font-size: 14px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin: 16px 0; font-size: 13px; }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .legend i { width: 14px; height: 14px; border-radius: 4px; }
+  .card { background: #fff; border: 1px solid #dbe1ec; border-radius: 14px; padding: 20px; margin-top: 8px; box-shadow: 0 8px 24px rgba(24,34,49,.06); overflow-x: auto; }
+  .mermaid { display: flex; justify-content: center; min-width: 640px; }
+</style>
+</head>
+<body>
+  <h1><span class="rain">rainism</span> 외부 의존성 지도</h1>
+  <p class="note">더블클릭하면 브라우저에서 그림으로 열립니다. 색 = 장애 시 영향 범위.</p>
+  <div class="legend">
+    <span><i style="background:#fbe4e2;border:1px solid #c0503f"></i> 🔴 전면 마비</span>
+    <span><i style="background:#fbeeda;border:1px solid #b07a1e"></i> 🟠 코어 저하</span>
+    <span><i style="background:#fcf6da;border:1px solid #a89328"></i> 🟡 부분·폴백</span>
+    <span><i style="background:#eef2f9;border:1px solid #7a8698"></i> ⚪ 오프라인·내부</span>
+  </div>
+
+  <div class="card"><pre class="mermaid">
+flowchart TB
+  U(("사용자<br/>PWA"))
+
+  subgraph LIVE["🔴 라이브 크리티컬 (매 추천마다)"]
+    V["Vercel<br/>앱 + 서버함수"]
+    SB["Supabase<br/>DB·pgvector·Auth·Storage"]
+    DNS["도메인 / DNS"]
+  end
+  subgraph DEGRADE["🟠 코어 저하"]
+    CDN["이미지 CDN"]
+    KMA["기상청 API<br/>(캐시로 완화)"]
+  end
+  subgraph PARTIAL["🟡 부분·폴백"]
+    FC["FashionCLIP<br/>임베딩"]
+    LLM["비전 LLM<br/>메타 태깅"]
+    LOGIN["소셜 로그인"]
+  end
+  subgraph OFFLINE["⚪ 오프라인 배치 (유저 오기 전)"]
+    ADMIN["라이브러리 적재<br/>= LLM + FashionCLIP 여기서만"]
+  end
+
+  U --> DNS --> V
+  V --> SB
+  V -->|"캐시 우선"| KMA
+  V -->|"참고사진 업로드 시만"| FC
+  U --> CDN
+  U --> LOGIN --> SB
+  ADMIN --> LLM
+  ADMIN --> FC
+  ADMIN --> SB
+
+  classDef red fill:#fbe4e2,stroke:#c0503f,color:#3a1512
+  classDef org fill:#fbeeda,stroke:#b07a1e,color:#3a2a0e
+  classDef yel fill:#fcf6da,stroke:#a89328,color:#3a340e
+  classDef gry fill:#eef2f9,stroke:#7a8698,color:#22303f
+  class V,SB,DNS red
+  class CDN,KMA org
+  class FC,LLM,LOGIN yel
+  class ADMIN gry
+  </pre></div>
+
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+  </script>
+</body>
+</html>

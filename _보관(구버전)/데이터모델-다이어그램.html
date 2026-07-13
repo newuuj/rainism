@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>rainism 데이터 모델 (ERD)</title>
+<style>
+  body { font-family: -apple-system, "Apple SD Gothic Neo", sans-serif; max-width: 1100px; margin: 0 auto; padding: 32px 20px 80px; color: #182231; background: #f6f8fc; line-height: 1.6; }
+  h1 { font-size: 28px; letter-spacing: -.02em; }
+  h1 .rain { color: #4a86c5; }
+  .note { color: #7a8698; font-size: 14px; }
+  .card { background: #fff; border: 1px solid #dbe1ec; border-radius: 14px; padding: 20px; margin-top: 16px; box-shadow: 0 8px 24px rgba(24,34,49,.06); overflow-x: auto; }
+  .mermaid { display: flex; justify-content: center; min-width: 700px; }
+</style>
+</head>
+<body>
+  <h1><span class="rain">rainism</span> 데이터 모델 (ERD)</h1>
+  <p class="note">이 파일을 <b>더블클릭</b>하면 브라우저에서 관계도로 열립니다. (인터넷 연결 필요)</p>
+
+  <div class="card"><pre class="mermaid">
+erDiagram
+  PROFILES ||--o{ GARMENTS : "소유"
+  PROFILES ||--o{ OUTFITS : "생성"
+  PROFILES ||--o{ FEED_POSTS : "게시"
+  PROFILES ||--o{ FEED_LIKES : "누름"
+  PROFILES ||--o{ FEED_COMMENTS : "작성"
+  OUTFITS ||--|{ OUTFIT_ITEMS : "구성"
+  GARMENTS ||--o{ OUTFIT_ITEMS : "포함됨"
+  OUTFITS ||--o{ FEED_POSTS : "공유(선택)"
+  FEED_POSTS ||--o{ FEED_LIKES : "받음"
+  FEED_POSTS ||--o{ FEED_COMMENTS : "달림"
+  WEATHER_CACHE ||..o{ OUTFITS : "스냅샷 참조"
+
+  PROFILES {
+    uuid id PK "= auth.users.id"
+    text nickname
+    text gender
+    int  birth_year "나이대"
+    text style_pref "추구미"
+    int  region_nx "기상청 격자"
+    int  region_ny
+    bool onboarding_done
+    timestamptz created_at
+  }
+  GARMENTS {
+    uuid id PK
+    uuid user_id FK
+    text image_path "Storage 경로(배경제거본)"
+    text thumb_path
+    text category "상의/하의/아우터/원피스/신발/악세서리"
+    text subcategory
+    text color_primary
+    text color_secondary
+    text material "소재"
+    text fit "핏"
+    text pattern
+    int  formality "격식 0-5"
+    int  temp_min "적용 체감온도"
+    int  temp_max
+    bool ai_tagged "AI가 태깅함"
+    bool user_edited "사용자가 수정함"
+    jsonb confidence "필드별 신뢰도"
+    timestamptz created_at
+  }
+  OUTFITS {
+    uuid id PK
+    uuid user_id FK
+    text source "ai_generated|user_saved"
+    int  felt_temp "당시 체감온도"
+    text precipitation
+    int  formality
+    jsonb weather_snapshot "생성 당시 날씨"
+    text reason "LLM 근거 문장"
+    numeric score
+    text status "shown|selected|dismissed"
+    date for_date
+    timestamptz created_at
+  }
+  OUTFIT_ITEMS {
+    uuid id PK
+    uuid outfit_id FK
+    uuid garment_id FK
+    text slot "상의|하의|아우터|신발|악세서리"
+  }
+  WEATHER_CACHE {
+    uuid id PK
+    int  nx "격자 X"
+    int  ny "격자 Y"
+    date base_date
+    text base_time
+    timestamptz forecast_dt
+    numeric temp
+    numeric felt_temp "체감온도"
+    int  pop "강수확률"
+    numeric precipitation
+    text sky
+    jsonb raw "기상청 원본"
+    timestamptz fetched_at
+  }
+  FEED_POSTS {
+    uuid id PK
+    uuid user_id FK
+    uuid outfit_id FK "선택"
+    text image_path "Storage 경로"
+    text caption
+    numeric temp_tag "자동 기온 태그"
+    text precip_tag "자동 강수 태그"
+    text visibility
+    timestamptz created_at
+  }
+  FEED_LIKES {
+    uuid id PK
+    uuid post_id FK
+    uuid user_id FK
+    timestamptz created_at
+  }
+  FEED_COMMENTS {
+    uuid id PK
+    uuid post_id FK
+    uuid user_id FK
+    text body
+    timestamptz created_at
+  }
+  </pre></div>
+
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+  </script>
+</body>
+</html>

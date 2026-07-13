@@ -1,0 +1,9 @@
+# 생성물 — shot.py 로 언제든 다시 만들 수 있다
+프로토타입/shots/
+
+# macOS
+.DS_Store
+
+# 파이썬
+__pycache__/
+*.pyc

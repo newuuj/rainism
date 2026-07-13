@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>rainism 의존성 보완 — 포트 & 어댑터</title>
+<style>
+  body { font-family: -apple-system, "Apple SD Gothic Neo", sans-serif; max-width: 980px; margin: 0 auto; padding: 32px 20px 80px; color: #182231; background: #f6f8fc; line-height: 1.6; }
+  h1 { font-size: 26px; letter-spacing: -.02em; }
+  h1 .rain { color: #4a86c5; }
+  .note { color: #7a8698; font-size: 14px; }
+  .legend { display: flex; gap: 16px; margin: 14px 0; font-size: 13px; flex-wrap: wrap; }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .legend i { width: 22px; height: 3px; border-radius: 2px; display: inline-block; }
+  .card { background: #fff; border: 1px solid #dbe1ec; border-radius: 14px; padding: 20px; margin-top: 8px; box-shadow: 0 8px 24px rgba(24,34,49,.06); overflow-x: auto; }
+  .mermaid { display: flex; justify-content: center; min-width: 640px; }
+</style>
+</head>
+<body>
+  <h1><span class="rain">rainism</span> 의존성 보완 — 포트 &amp; 어댑터</h1>
+  <p class="note">모든 외부 서비스를 <b>얇은 어댑터 한 겹</b> 뒤에 숨긴다 → 벤더 교체 = 어댑터 하나만 교체. 더블클릭하면 그림으로 열립니다.</p>
+  <div class="legend">
+    <span><i style="background:#2f8f6b"></i> 현재 사용</span>
+    <span><i style="background:#7a8698;height:0;border-top:3px dashed #7a8698"></i> 갈아끼울 수 있는 대안</span>
+  </div>
+
+  <div class="card"><pre class="mermaid">
+flowchart TB
+  APP["rainism 코어 로직<br/>추천 · 저장 · 온보딩"]
+  subgraph PORTS["얇은 어댑터 층 (/lib) — 갈아끼우는 유일한 곳"]
+    DB["db"]
+    AUTH["auth"]
+    STORE["storage"]
+    WX["weather"]
+    EMB["embeddings"]
+  end
+  APP --> DB
+  APP --> AUTH
+  APP --> STORE
+  APP --> WX
+  APP --> EMB
+  DB -->|현재| SB[(Supabase<br/>Postgres+pgvector)]
+  DB -.대안.-> NEON[(Neon / RDS)]
+  AUTH -->|현재| SBA[Supabase Auth]
+  AUTH -.대안.-> CLERK[Clerk / 자체]
+  STORE -->|현재| SBS[Supabase Storage]
+  STORE -.대안.-> R2[Cloudflare R2]
+  WX -->|현재| KMA[기상청]
+  WX -.대안.-> OW[OpenWeather]
+  EMB -->|현재| REP[Replicate FashionCLIP]
+  EMB -.대안.-> SELF[자체호스팅 / HF]
+
+  classDef cur fill:#e0f0e9,stroke:#2f8f6b,color:#182231
+  classDef alt fill:#eef2f9,stroke:#7a8698,color:#182231,stroke-dasharray:4 3
+  classDef core fill:#e2edf8,stroke:#2f6fb0,color:#182231
+  class SB,SBA,SBS,KMA,REP cur
+  class NEON,CLERK,R2,OW,SELF alt
+  class APP core
+  </pre></div>
+
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+  </script>
+</body>
+</html>

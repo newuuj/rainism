@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>rainism 아키텍처 다이어그램</title>
+<style>
+  body { font-family: -apple-system, "Apple SD Gothic Neo", sans-serif; max-width: 1000px; margin: 0 auto; padding: 32px 20px 80px; color: #182231; background: #f6f8fc; line-height: 1.6; }
+  h1 { font-size: 28px; letter-spacing: -.02em; }
+  h1 .rain { color: #4a86c5; }
+  h2 { margin-top: 44px; font-size: 20px; border-bottom: 2px solid #dbe1ec; padding-bottom: 8px; }
+  .note { color: #7a8698; font-size: 14px; }
+  .card { background: #fff; border: 1px solid #dbe1ec; border-radius: 14px; padding: 20px; margin-top: 16px; box-shadow: 0 8px 24px rgba(24,34,49,.06); overflow-x: auto; }
+  .mermaid { display: flex; justify-content: center; }
+  .hint { background: #e2edf8; border: 1px solid #c4cddd; border-radius: 10px; padding: 12px 16px; font-size: 14px; margin-top: 16px; }
+</style>
+</head>
+<body>
+  <h1><span class="rain">rainism</span> 아키텍처 다이어그램</h1>
+  <p class="note">이 파일을 <b>더블클릭</b>하면 브라우저에서 그림으로 열립니다. (인터넷 연결 필요 — Mermaid를 온라인에서 불러옵니다)</p>
+
+  <div class="hint">파랑 = 내 데이터를 Supabase에 <b>직접</b> · 노랑 = <b>우리 서버 경유</b>(키 숨김)</div>
+
+  <h2>1. 시스템 배치 (4개 층 · 두 갈래 통신)</h2>
+  <div class="card"><pre class="mermaid">
+flowchart TB
+  subgraph CLIENT["① 사용자 기기 · PWA"]
+    direction LR
+    UI["3탭 UI<br/>옷장·날씨·피드"]
+    CAM["카메라 + 업로드"]
+    BG["온디바이스 배경제거<br/>@imgly WASM"]
+    SW["서비스워커<br/>설치·오프라인·웹푸시"]
+  end
+  subgraph SERVER["② 우리 서버 · Vercel 함수"]
+    direction LR
+    W["/api/weather"]
+    T["/api/tag"]
+    C["/api/coordi<br/>코디 엔진 · 두뇌"]
+  end
+  subgraph BAAS["③ Supabase · 관리형 BaaS"]
+    direction LR
+    DB[("Postgres DB")]
+    AUTH["Auth"]
+    ST["Storage"]
+    RLS["RLS · Realtime"]
+  end
+  subgraph EXT["④ 외부 API"]
+    direction LR
+    KMA["기상청 단기예보"]
+    LLM["비전 LLM<br/>Gemini / Haiku"]
+  end
+  CLIENT -->|"Supabase SDK · 내 데이터 직접"| BAAS
+  CLIENT -->|"HTTPS · 비밀·두뇌 작업"| SERVER
+  SERVER -->|"서버-서버 HTTPS"| EXT
+  SERVER -->|"Service Role · 권한 쓰기"| BAAS
+  linkStyle 0 stroke:#2f6fb0,stroke-width:2.5px
+  linkStyle 1 stroke:#b07a1e,stroke-width:2.5px
+  linkStyle 2 stroke:#7a8698,stroke-width:1.5px
+  linkStyle 3 stroke:#b07a1e,stroke-width:1.5px,stroke-dasharray:4 3
+  classDef client fill:#e2edf8,stroke:#4a86c5,color:#182231
+  classDef server fill:#f6ecd6,stroke:#b07a1e,color:#182231
+  classDef baas fill:#e0f0e9,stroke:#2f8f6b,color:#182231
+  classDef ext fill:#eef2f9,stroke:#7a8698,color:#182231
+  class UI,CAM,BG,SW client
+  class W,T,C server
+  class DB,AUTH,ST,RLS baas
+  class KMA,LLM ext
+  </pre></div>
+
+  <h2>2. 코디 엔진 파이프라인</h2>
+  <div class="card"><pre class="mermaid">
+flowchart LR
+  IN["입력<br/>체감온도+강수<br/>+격식+내 옷"] --> F1["① 하드 필터<br/>못 입을 옷 제거"]
+  F1 --> F2["② 소프트 스코어<br/>색·궁합·추구미"]
+  F2 --> F3["③ LLM 재랭킹<br/>근거 문장 생성"]
+  F3 --> F4["④ MMR 다양성<br/>3코디 분산"]
+  F4 --> OUT["⑤ 결과<br/>3코디 + 이유"]
+  classDef code fill:#e0f0e9,stroke:#2f8f6b,color:#182231
+  classDef llm fill:#f6ecd6,stroke:#b07a1e,color:#182231
+  classDef io fill:#e2edf8,stroke:#2f6fb0,color:#182231
+  class F1,F2,F4 code
+  class F3 llm
+  class IN,OUT io
+  </pre></div>
+
+  <h2>3. 흐름 A — 아침 · 오늘의 3코디</h2>
+  <div class="card"><pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant U as 앱 PWA
+  participant S as 우리 서버
+  participant SB as Supabase
+  participant K as 기상청
+  U->>S: /api/weather 요청
+  Note over S: 캐시 우선
+  S->>K: 단기예보 조회 (캐시 미스 시)
+  K-->>S: 강수·기온 수치
+  S-->>U: 체감온도 숫자
+  U->>SB: 내 옷 목록 조회 (직접)
+  SB-->>U: 옷 데이터
+  U->>S: /api/coordi (체감온도 + 옷)
+  Note over S: 엔진 5단계 실행
+  S-->>U: 3코디 + 이유
+  </pre></div>
+
+  <h2>4. 흐름 B — 옷 등록 (12벌의 벽 넘기)</h2>
+  <div class="card"><pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant U as 앱 PWA
+  participant SB as Supabase
+  participant S as 우리 서버
+  participant L as 비전 LLM
+  U->>U: 카메라 촬영 → 배경제거 (온디바이스·무료)
+  U->>SB: 배경제거 이미지 업로드 (Storage 직접)
+  U->>S: /api/tag (이미지 참조)
+  S->>L: 비전 태깅 요청 (JSON 스키마)
+  L-->>S: 카테고리·색 초안
+  S-->>U: 자동 태그 (초안)
+  Note over U: 소재·핏만 확인·수정
+  U->>SB: 최종 저장 (DB)
+  </pre></div>
+
+  <h2>5. 배포 흐름</h2>
+  <div class="card"><pre class="mermaid">
+flowchart LR
+  G["git push<br/>GitHub"] --> V{"Vercel<br/>자동 빌드"}
+  V -->|"브랜치"| P["미리보기 URL<br/>안전한 실험"]
+  V -->|"main"| PROD["실서비스<br/>+ 자동 HTTPS"]
+  PROD -.->|"문제 시"| RB["원클릭 롤백"]
+  PROD --> SB[("Supabase<br/>SQL 마이그레이션")]
+  classDef n fill:#e2edf8,stroke:#2f6fb0,color:#182231
+  classDef prod fill:#e0f0e9,stroke:#2f8f6b,color:#182231
+  class G,P,SB n
+  class PROD prod
+  </pre></div>
+
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+  </script>
+</body>
+</html>

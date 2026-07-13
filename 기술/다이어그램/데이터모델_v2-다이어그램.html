@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>rainism 데이터 모델 v2 (분위기 매칭형)</title>
+<style>
+  body { font-family: -apple-system, "Apple SD Gothic Neo", sans-serif; max-width: 1100px; margin: 0 auto; padding: 32px 20px 80px; color: #182231; background: #f6f8fc; line-height: 1.6; }
+  h1 { font-size: 27px; letter-spacing: -.02em; }
+  h1 .rain { color: #4a86c5; }
+  h2 { margin-top: 40px; font-size: 19px; border-bottom: 2px solid #dbe1ec; padding-bottom: 8px; }
+  .note { color: #7a8698; font-size: 14px; }
+  .card { background: #fff; border: 1px solid #dbe1ec; border-radius: 14px; padding: 20px; margin-top: 16px; box-shadow: 0 8px 24px rgba(24,34,49,.06); overflow-x: auto; }
+  .mermaid { display: flex; justify-content: center; min-width: 640px; }
+</style>
+</head>
+<body>
+  <h1><span class="rain">rainism</span> 데이터 모델 v2 · 분위기 매칭형</h1>
+  <p class="note">더블클릭하면 브라우저에서 관계도·흐름도로 열립니다. (인터넷 연결 필요)</p>
+
+  <h2>관계도 (ERD)</h2>
+  <div class="card"><pre class="mermaid">
+erDiagram
+  PROFILES ||--o{ REFERENCE_PHOTOS : "올림"
+  PROFILES ||--o{ RECOMMENDATIONS : "받음"
+  PROFILES ||--o{ SAVED_LOOKS : "저장"
+  RECOMMENDATIONS ||--|{ RECOMMENDATION_ITEMS : "3장 구성"
+  LIBRARY_LOOKS ||--o{ RECOMMENDATION_ITEMS : "추천됨"
+  LIBRARY_LOOKS ||--o{ SAVED_LOOKS : "저장됨"
+  REFERENCE_PHOTOS ||--o{ RECOMMENDATIONS : "질의(선택)"
+  WEATHER_CACHE ||..o{ RECOMMENDATIONS : "스냅샷"
+
+  PROFILES {
+    uuid id PK "= auth.users.id"
+    text nickname
+    int  region_nx "기상청 격자"
+    int  region_ny
+    text quiz_mood "무드"
+    text quiz_color "색 취향"
+    text quiz_tpo "TPO"
+    vector taste_vector "취향 임베딩"
+    bool onboarding_done
+  }
+  REFERENCE_PHOTOS {
+    uuid id PK
+    uuid user_id FK
+    text image_path
+    vector embedding "업로드 시 1회"
+  }
+  LIBRARY_LOOKS {
+    uuid id PK
+    text image_path "CDN"
+    text source_license "라이선스 근거"
+    vector embedding "FashionCLIP"
+    text_arr mood "분위기 태그"
+    text color_primary
+    int  formality
+    int  temp_min
+    int  temp_max
+    bool rain_ok
+    jsonb items
+    bool active
+  }
+  RECOMMENDATIONS {
+    uuid id PK
+    uuid user_id FK
+    date for_date
+    jsonb weather_snapshot
+    text query_source "photo|taste"
+    uuid reference_photo_id FK
+  }
+  RECOMMENDATION_ITEMS {
+    uuid id PK
+    uuid recommendation_id FK
+    uuid look_id FK
+    int  rank
+    numeric similarity
+    text status "shown|saved|dismissed"
+  }
+  SAVED_LOOKS {
+    uuid id PK
+    uuid user_id FK
+    uuid look_id FK
+    uuid from_recommendation_id FK
+  }
+  WEATHER_CACHE {
+    uuid id PK
+    int  nx
+    int  ny
+    numeric felt_temp
+    int  pop
+    numeric precipitation
+    jsonb raw
+  }
+  </pre></div>
+
+  <h2>흐름 3 — 아침 추천 (코어 루프)</h2>
+  <div class="card"><pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant U as 앱
+  participant S as 서버 /api/recommend
+  participant W as weather_cache
+  participant DB as Postgres+pgvector
+  U->>S: 앱 열기(오늘 추천)
+  S->>W: 오늘 날씨(격자 캐시)
+  W-->>S: 체감온도·강수
+  Note over S: 질의벡터 결정<br/>참고사진 있으면 그 임베딩,<br/>없으면 taste_vector
+  S->>DB: 날씨 하드필터 + 코사인 유사도(단일 SQL)
+  DB-->>S: 상위 후보 N
+  Note over S: MMR 3장 + 이유 문장(템플릿)
+  S->>DB: recommendations + items 기록
+  S-->>U: 코디 3장 + 이유
+  </pre></div>
+
+  <h2>흐름 1 — 라이브러리 적재 (미리, 우리 쪽)</h2>
+  <div class="card"><pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant A as 관리자/배치
+  participant ST as Storage/CDN
+  participant L as 비전 LLM
+  participant E as FashionCLIP
+  participant DB as library_looks
+  A->>ST: 라이선스 사진 업로드
+  A->>L: 메타 태깅(분위기·색·격식·온도밴드)
+  L-->>A: 메타 JSON
+  A->>E: 이미지 임베딩
+  E-->>A: embedding
+  A->>DB: 사진+메타+embedding 저장
+  </pre></div>
+
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+  </script>
+</body>
+</html>
