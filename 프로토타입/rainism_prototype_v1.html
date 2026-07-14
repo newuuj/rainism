@@ -214,15 +214,17 @@
   .tabbar button.active{ color:var(--accent); }
 
   /* 상황 시뮬레이터 — 폰 바깥. 앱 화면은 깨끗하게 둔다 */
-  #simfab{ position:fixed; right:14px; bottom:104px; z-index:80; border:none; cursor:pointer;
+  #simfab, #metfab{ position:fixed; right:14px; z-index:80; border:none; cursor:pointer;
     background:#2f3646; color:#fff; border-radius:26px; padding:12px 16px; font-family:inherit;
     font-size:13px; font-weight:700; box-shadow:0 6px 20px rgba(30,40,60,.3); }
-  #sim{ position:fixed; right:14px; bottom:154px; z-index:80; width:288px; max-height:66vh; overflow:auto;
+  #simfab{ bottom:104px; }
+  #metfab{ bottom:152px; }
+  #sim, #metrics{ position:fixed; right:14px; bottom:200px; z-index:80; width:288px; max-height:62vh; overflow:auto;
     background:#fff; border:1px solid var(--line); border-radius:18px; padding:15px 16px;
     box-shadow:0 14px 44px rgba(40,50,70,.24); display:none; }
-  #sim.on{ display:block; }
-  #sim h4{ font-size:13.5px; font-weight:800; margin-bottom:2px; }
-  #sim .simsub{ font-size:11.5px; color:var(--sub); margin-bottom:12px; line-height:1.5; }
+  #sim.on, #metrics.on{ display:block; }
+  #sim h4, #metrics h4{ font-size:13.5px; font-weight:800; margin-bottom:2px; }
+  #sim .simsub, #metrics .simsub{ font-size:11.5px; color:var(--sub); margin-bottom:12px; line-height:1.5; }
   #sim .simrow{ margin-bottom:11px; }
   #sim .simk{ font-size:11px; font-weight:800; color:var(--sub); margin-bottom:5px; }
   #sim .simopts{ display:flex; gap:5px; flex-wrap:wrap; }
@@ -230,8 +232,16 @@
     border-radius:9px; padding:7px 5px; font-family:inherit; font-size:11.5px; font-weight:700;
     color:var(--sub); cursor:pointer; }
   #sim .simopts button.on{ background:var(--ink); color:#fff; border-color:var(--ink); }
-  #sim .simreset{ width:100%; margin-top:6px; border:1.3px solid var(--line); background:#f6f8fb;
+  #sim .simreset, #metrics .simreset{ width:100%; margin-top:10px; border:1.3px solid var(--line); background:#f6f8fb;
     border-radius:10px; padding:9px; font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; }
+  /* 📊 지표 패널 (데모 전용 · 앱 화면엔 없다) */
+  #metrics .mk{ font-size:11px; font-weight:800; color:var(--sub); margin:13px 0 4px; }
+  #metrics .mrow{ display:flex; justify-content:space-between; align-items:baseline; gap:8px;
+    font-size:12.5px; padding:6px 0; border-bottom:1px dashed var(--line); }
+  #metrics .mrow b{ font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  #metrics .mrow i{ display:block; font-style:normal; font-size:10.5px; color:var(--sub); font-weight:600; margin-top:2px; }
+  #metrics .north{ background:#eef6ee; border:1px solid #cfe3cf; border-radius:11px;
+    padding:10px 11px; font-size:12px; line-height:1.55; margin-top:4px; }
 
   /* 사진 에러 — 막다른 길을 만들지 않는다 */
   .photoerr{ background:#fdecec; color:#9a4a4a; border-radius:13px; padding:12px 13px;
@@ -324,6 +334,12 @@
   .demoNote{ font-size:11.5px; color:#9aa2b1; text-align:center; margin-top:14px; }
   .licenseNote{ margin-top:8px; font-size:10.5px; line-height:1.5; opacity:.72; }
   .licenseNote b{ font-weight:700; }
+  /* 동네 고르기 (데모) — 실서비스는 GPS가 자동으로 잡는다 */
+  .locpick{ display:flex; flex-wrap:wrap; gap:7px; margin-top:12px; }
+  .locpick button{ font-family:inherit; font-size:13px; font-weight:700; color:var(--sub);
+    background:#fff; border:1.6px solid var(--line); border-radius:20px; padding:8px 13px; cursor:pointer; }
+  .locpick button.on{ border-color:var(--ink); color:var(--ink); }
+  .locpick button:active{ transform:scale(.97); }
   .weatherpick{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:18px; }
   .wp{ background:#fff; border:1.6px solid var(--line); border-radius:16px; padding:16px 12px; cursor:pointer;
     font-family:inherit; text-align:center; transition:.12s; }
@@ -367,7 +383,7 @@
   <!-- 1. SPLASH -->
   <section class="screen on" id="s-splash">
     <div class="wwidget">
-      <div class="t">오늘 아침 · 서울</div>
+      <div class="t">오늘 아침 · 관악구</div>
       <div class="big">체감 23°</div>
       <div class="d">☂ 비 · 종일 습해요 · 우산 챙겨요</div>
     </div>
@@ -501,8 +517,10 @@
       </div>
       <div class="choice" style="cursor:default; align-items:flex-start">
         <span style="font-size:20px">📷</span>
+        <!-- ⚠️ "원본은 지워요"라고 쓰여 있었으나 실제로 지우는 코드가 없었다. 게다가 사진 보관 정책은
+             아직 미정(PRD RG-2 🔬)이라 화면이 먼저 확정해버리면 안 된다 → 실제로 하는 일만 남긴다(§9-1) -->
         <div><b style="font-size:15px">참고 사진 (선택)</b>
-          <small>올릴 때만 받고, 분위기를 읽은 뒤 <b>원본은 지워요</b>. 언제든 뺄 수 있어요.</small></div>
+          <small>올릴 때만 받아서 <b>분위기를 읽는 데만</b> 써요. 언제든 ✕로 빼면 바로 사라져요.</small></div>
       </div>
     </div>
     <div class="spacer"></div>
@@ -520,7 +538,8 @@
   <!-- 8. WEATHER PICK (demo stand-in for live API) -->
   <section class="screen" id="s-weather">
     <h2>오늘 날씨를 골라볼까요?</h2>
-    <p class="sub">진짜 앱은 기상청에서 자동으로 읽어와요. 데모라 직접 바꿔보며<br>날씨에 따라 코디가 어떻게 달라지는지 볼 수 있어요.</p>
+    <p class="sub" id="w-sub">진짜 앱은 <b>GPS로 동네를, 기상청에서 날씨를</b> 자동으로 읽어와요.<br>데모라 직접 바꿔보며 코디가 어떻게 달라지는지 볼 수 있어요.</p>
+    <div class="locpick" id="locpick"></div>
     <div class="weatherpick" id="weatherpick"></div>
   </section>
 
@@ -528,7 +547,7 @@
   <section class="screen" id="s-result">
     <div class="rhead">
       <div>
-        <div style="font-size:12px;color:var(--sub);font-weight:700" id="r-date">오늘 · 서울</div>
+        <div style="font-size:12px;color:var(--sub);font-weight:700" id="r-date">오늘 · 관악구</div>
         <h2 id="r-title">비 오는 오늘, 입을 만한 3가지</h2>
       </div>
       <button class="resetlink" onclick="resetAll()">↻ 처음부터</button>
@@ -544,7 +563,7 @@
     <div class="statebar warn" id="thinBar" style="display:none"></div>
     <div class="yday" id="ydayAsk" style="display:none">
       <img id="yd-img" alt="어제 코디">
-      <div class="yt"><b>어제 이거 입었어요?</b><span>입었다고 하면 오늘은 안 보여드릴게요</span></div>
+      <div class="yt"><b>어제 이거 입었어요?</b><span>알려주면 기록에 ✓로 남겨둘게요</span></div>
       <div class="ya">
         <button class="yes" onclick="answerWorn(true)">입었어요</button>
         <button onclick="answerWorn(false)">아니요</button>
@@ -600,7 +619,7 @@
   <section class="screen" id="s-weathertab">
     <h2 style="margin-bottom:16px">날씨</h2>
     <div class="whero">
-      <div style="font-size:13px;opacity:.9" id="wt-loc">오늘 · 서울</div>
+      <div style="font-size:13px;opacity:.9" id="wt-loc">오늘 · 관악구</div>
       <div class="big" id="wt-temp">체감 24°</div>
       <div id="wt-desc" style="opacity:.95">☂ 비 · 종일 습해요</div>
     </div>
@@ -650,6 +669,15 @@
     </div>
   </div>
 
+  <div class="sheet" id="resetSheet">
+    <div class="sheetcard">
+      <h3>처음부터 다시 볼까요?</h3>
+      <p>취향을 다시 고르는 화면으로 돌아가요.<br><b>담아둔 코디 기록도 함께 지워져요.</b></p>
+      <button class="btn" onclick="doReset()">네, 처음부터</button>
+      <button class="btn ghost" onclick="closeReset()">아니요</button>
+    </div>
+  </div>
+
   <div class="sheet" id="loginSheet">
     <div class="sheetcard">
       <h3>저장하려면 로그인이 필요해요</h3>
@@ -665,6 +693,15 @@
     <div class="simsub">예외 경로를 켜고 다시 걸어보세요.<br>앱 화면엔 이 패널이 없습니다(데모용).</div>
     <div id="simrows"></div>
     <button class="simreset" onclick="resetAll()">↻ 처음부터 다시 걷기</button>
+  </div>
+
+  <!-- 📊 지표 — "측정할 수 있어야 한다"(PRD §4)의 실물. 앱 화면엔 없다(데모용) -->
+  <button id="metfab" onclick="toggleMetrics()">📊 지표</button>
+  <div id="metrics">
+    <h4>📊 지표</h4>
+    <div class="simsub">이 브라우저에서 일어난 일만 셉니다.<br>실서비스는 <b>유저 단위</b>로 집계합니다.</div>
+    <div id="mbody"></div>
+    <button class="simreset" onclick="clearMetrics()">이벤트 기록 지우기</button>
   </div>
 
   <div id="toast"></div>
@@ -705,7 +742,7 @@
 </script>
 
 <script>
-/* ---------- 라이브러리 (제가 사진 31장을 직접 보고 태깅) ---------- */
+/* ---------- 라이브러리 (제가 사진 39장을 직접 보고 태깅) ---------- */
 /* temp: chilly(17-19) cool(20-22) warm(23-27) hot(28+) / rain=비적합 여부 / safe=안전빵 후보 */
 const T={chilly:0,cool:1,warm:2,hot:3};
 const LOOKS=[
@@ -739,6 +776,16 @@ const LOOKS=[
  {id:28, mood:'시크', color:'다크', temp:'chilly', rain:true, form:2, name:'그레이 니트 원피스 × 레인부츠', items:'그레이 니트 원피스 · 레드 반다나 · 레인부츠', safe:false, boots:true},
  {id:30, mood:'캐주얼', color:'웜톤', temp:'warm', rain:false, form:1, name:'옐로 베이비티 × 스웻쇼츠', items:'옐로 베이비티 · 네이비 스웻 쇼츠 · 스니커즈', safe:false},
  {id:31, mood:'러블리', color:'웜톤', temp:'warm', rain:true, form:2, name:'여름 비, 자수 블라우스 × 깅엄', items:'화이트 자수 블라우스 · 깅엄 쇼츠 · 레인부츠', safe:false, boots:true},
+ /* 2026-07-13 추가 9장 — 비 오는 날 후보가 얇아서 보강. rain:true는 비 전용(맑은 날엔 안 나옴) */
+ {id:32, mood:'캐주얼', color:'쿨톤', temp:'warm', rain:false, form:1, name:'하늘색 롱슬리브 × 차콜 쇼츠', items:'하늘 롱슬리브 · 차콜 쇼츠 · 블랙 부츠', safe:false},
+ {id:33, mood:'러블리', color:'웜톤', temp:'warm', rain:true, form:2, name:'비 오는 골목, 크림 블라우스', items:'크림 블라우스 · 연청 데님 · 크림 레인부츠', safe:false, boots:true},
+ {id:34, mood:'시크', color:'다크', temp:'cool', rain:true, form:1, name:'올블랙 × 레인부츠', items:'블랙 후디 · 블랙 팬츠 · 블랙 레인부츠', safe:true, boots:true},
+ {id:35, mood:'러블리', color:'뉴트럴', temp:'warm', rain:true, form:2, name:'화이트 레이어드 × 핑크 레인부츠', items:'화이트 블라우스 · 화이트 스커트 · 핑크 레인부츠', safe:false, boots:true},
+ {id:36, mood:'미니멀', color:'뉴트럴', temp:'warm', rain:true, form:2, name:'버터색 원피스 × 블랙 레인부츠', items:'크림 코튼 원피스 · 블랙 롱 레인부츠', safe:true, boots:true},
+ {id:37, mood:'미니멀', color:'다크', temp:'warm', rain:false, form:1, name:'화이트 티 × 블랙 버뮤다', items:'화이트 반팔 티 · 블랙 버뮤다 · 블랙 부츠', safe:true},
+ {id:38, mood:'러블리', color:'뉴트럴', temp:'hot', rain:false, form:2, name:'레이스 캐미 × 레이스 버뮤다', items:'화이트 레이스 캐미 · 레이스 버뮤다 · 스니커즈', safe:false},
+ {id:39, mood:'러블리', color:'웜톤', temp:'cool', rain:false, form:2, name:'화이트 긴팔 × 연두 티어드 스커트', items:'화이트 롱슬리브 · 연두 티어드 스커트 · 화이트 뮬', safe:false},
+ {id:40, mood:'러블리', color:'웜톤', temp:'warm', rain:true, form:2, name:'비 오는 날 크림 셔츠 × 네이비 레인부츠', items:'크림 셔츠 · 화이트 쇼츠 · 네이비 레인부츠', safe:false, boots:true},
 ];
 LOOKS.forEach(l=> l.img='./proto_img/'+String(l.id).padStart(2,'0')+'.jpg');
 
@@ -751,8 +798,11 @@ const WEATHER=[
 ];
 
 /* ---------- 상태 ---------- */
-const state={ gender:null, age:null, mood:null, color:null, tpo:null, photo:false, weather:WEATHER[0], saved:[], diary:{}, selectedDay:null, calOff:0, usedReroll:false, batch:0, booted:false, consent:false, loc:'서울', authed:true, wakeTime:'07:00', wakeOn:false,
-  refPhotoUrl:null, refEmb:null, libEmb:null, clipOn:false };   /* refEmb=올린 사진의 분위기 좌표 · libEmb=라이브러리 31장 좌표 · clipOn=진짜 AI 매칭 작동 중 */
+/* saved 배열은 없앴다 — '오늘 뭘 골랐나'를 배열과 달력(diary)이 따로 들고 있어서 어긋났다.
+   (2장 고르면 카드는 둘 다 '입기로 했어요'인데 달력엔 1장만 남았다)
+   이제 정본은 달력 한 곳뿐이다. 하루 = 코디 한 벌. */
+const state={ gender:null, age:null, mood:null, color:null, tpo:null, photo:false, weather:WEATHER[0], diary:{}, shown:{}, selectedDay:null, calOff:0, usedReroll:false, batch:0, booted:false, consent:false, loc:'관악구', authed:true,   /* loc=데모 기본 동네(실서비스는 GPS가 잡는다) */ wakeTime:'07:00', wakeOn:false,
+  refPhotoUrl:null, refEmb:null, libEmb:null, clipOn:false };   /* refEmb=올린 사진의 분위기 좌표 · libEmb=라이브러리 39장 좌표 · clipOn=진짜 AI 매칭 작동 중 · shown={룩id:마지막으로 보여준 날} */
 const TODAY=new Date();
 const dkeyOf=d=> d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
 const todayKey=()=> dkeyOf(TODAY);
@@ -761,6 +811,8 @@ const tmrwKey=()=>{ const d=new Date(TODAY); d.setDate(TODAY.getDate()+1); retur
 /* 밤에 "오늘의 코디"는 이미 끝난 날의 코디다 → 내일 아침 것을 준비한다.
    덤으로 감정지도 ①(전날 밤 "내일 뭐 입지" 불안)을 정면으로 친다. */
 function isNight(){
+  if(SIM.time==='morning') return false;                   // 데모: 아침에 연 것처럼
+  if(SIM.time==='night')   return true;                    // 데모: 밤에 연 것처럼
   const h=new Date().getHours();
   return (h>=17 || h<4);                                   // 17시~새벽4시 = 밤 → '내일 아침' 코디
 }
@@ -775,12 +827,14 @@ function persist(){
   try{ localStorage.setItem(LS, JSON.stringify({
     onboarded:true, gender:state.gender, age:state.age,
     mood:state.mood, color:state.color, tpo:state.tpo,
-    saved:state.saved, diary:state.diary, weatherKey:state.weather.key, wakeTime:state.wakeTime, wakeOn:state.wakeOn
+    diary:state.diary, shown:state.shown, loc:state.loc, weatherKey:state.weather.key, wakeTime:state.wakeTime, wakeOn:state.wakeOn
   })); }catch(e){}
 }
 function loadPersisted(){ try{ return JSON.parse(localStorage.getItem(LS)); }catch(e){ return null; } }
-function resetAll(){
-  if(!confirm('처음(온보딩)부터 다시 볼까요? 담아둔 코디 기록도 지워져요.')) return;
+/* 브라우저 confirm()은 iframe(아티팩트)에서 차단돼 "안 눌리는 버튼"이 된다 → 앱 안에서 확인받는다 */
+function resetAll(){ document.getElementById('resetSheet').classList.add('on'); }
+function closeReset(){ document.getElementById('resetSheet').classList.remove('on'); }
+function doReset(){
   try{ localStorage.removeItem(LS); }catch(e){}
   location.reload();
 }
@@ -793,22 +847,80 @@ function seedDiary(){
   });
 }
 
+/* ================= 계측 (PRD §4 성공지표) =================
+   문서는 "퍼널 이벤트와 프록시 지표를 측정할 수 있어야 한다"고 요구하는데
+   재는 코드가 한 줄도 없었다 — 출시해도 잘 되는지 못 되는지 알 방법이 없었다는 뜻이다.
+   → 구멍(seam)을 하나만 뚫는다. 부르는 자리(아래 8곳)는 그대로 두고,
+     실서비스에선 track() 속만 GA4 / Amplitude / Supabase로 갈아끼우면 된다. */
+const EV='rainism_events_v1';
+let events=[];
+try{ events=JSON.parse(localStorage.getItem(EV))||[]; }catch(e){ events=[]; }
+function track(ev, props){
+  const e={ ev, t:Date.now(), ...(props||{}) };
+  events.push(e);
+  if(events.length>500) events=events.slice(-500);        // 데모라 무한히 쌓지 않는다
+  try{ localStorage.setItem(EV, JSON.stringify(events)); }catch(err){}
+  console.log('[지표]', ev, props||'');
+  /* 실서비스: 여기서 gtag('event', ev, props) 또는 supabase.from('events').insert(e) */
+  if(document.getElementById('metrics').classList.contains('on')) renderMetrics();
+}
+const evCount=n=> events.filter(e=>e.ev===n).length;
+
+/* 북극성 = D1(다음 날 아침 재방문). 마지막으로 온 날을 적어두고 오늘과 비교한다. */
+const LV='rainism_lastvisit_v1';
+let visitGap=null, firstVisit=true;
+function trackVisit(){
+  let last=null;
+  try{ last=localStorage.getItem(LV); }catch(e){}
+  firstVisit=!last;
+  if(last && last!==todayKey()) visitGap=Math.round((keyToDate(todayKey())-keyToDate(last))/86400000);
+  track('앱_열기', firstVisit ? {첫방문:true} : {며칠만에:visitGap});
+  try{ localStorage.setItem(LV, todayKey()); }catch(e){}
+}
+/* 3장을 '보여준 것'은 한 번만 센다 — renderResult는 저장·착용답변 때도 다시 도니까
+   그대로 세면 노출 수가 부풀어 저장률이 거짓이 된다. */
+let lastImp='';
+function trackImpression(picks){
+  const k=targetKey()+'|'+picks.map(p=>p.id).join(',');
+  if(k===lastImp) return;
+  lastImp=k;
+  track('3장_표시', { 장수:picks.length, 날씨:state.weather.key,
+                     질의: state.clipOn ? '참고사진' : '취향', 리롤:state.usedReroll });
+}
+
 /* ---------- 동의 · 위치 (예외: 권한 거부 = 실패가 아니라 다른 입력 경로) ---------- */
-const DONG=['서울 · 관악구','서울 · 마포구','서울 · 성동구','서울 · 강남구','서울 · 노원구'];
+const DONG=['관악구','마포구','성동구','강남구','노원구'];
 function acceptConsent(){
   state.consent=true;
-  if(SIM.geo==='deny'){ renderLoc(); go('s-location'); return; }
-  state.loc='서울'; go('s-q1');
+  if(SIM.geo==='deny'){ renderLoc(); go('s-location'); return; }   // 권한 거부 → 직접 고르기(J1). 막다른 길 아님
+  go('s-q1');                                                       // 허용 → GPS가 잡은 동네로 (데모 기본값)
 }
+/* 동네를 바꾸는 자리는 한 곳뿐이다 — 여기서 바꾸고, 동네를 쓰는 화면을 전부 다시 그린다.
+   예전엔 state.loc에 넣기만 하고 어디서도 안 읽어서, 동네를 골라도 화면은 계속 '서울'이었다. */
+function setLoc(d){ state.loc=d; persist(); renderLocPick(); paintLoc(); }
+/* 동네가 뜨는 곳: 오늘 탭 머리 · 날씨 탭 머리 */
+function paintLoc(){
+  const r=document.getElementById('r-date'), w=document.getElementById('wt-loc');
+  if(r) r.textContent=(isNight()?'내일 아침':'오늘')+' · '+state.loc;
+  if(w) w.textContent='오늘 · '+state.loc;
+}
+/* 위치 권한 거부 시의 대체 경로(J1) */
 function renderLoc(){
   document.getElementById('locList').innerHTML=DONG.map(d=>
-    `<button class="choice" onclick="pickLoc('${d}')"><span class="sw" style="background:#dfe7f0"></span>${d}</button>`).join('');
+    `<button class="choice" onclick="pickLoc('${d}')"><span class="sw" style="background:#dfe7f0"></span>서울 · ${d}</button>`).join('');
 }
-function pickLoc(d){ state.loc=d; toast(d+' 날씨로 골라드릴게요'); go('s-q1'); }
+function pickLoc(d){ setLoc(d); toast(d+' 날씨로 골라드릴게요'); go('s-q1'); }
+/* 데모: 날씨와 마찬가지로 동네도 직접 고른다. 실서비스는 GPS가 자동으로 잡는다. */
+function renderLocPick(){
+  const el=document.getElementById('locpick'); if(!el) return;
+  el.innerHTML='<span style="font-size:12px;color:var(--sub);font-weight:700;align-self:center;margin-right:3px">📍 서울</span>'
+    + DONG.map(d=>`<button class="${state.loc===d?'on':''}" onclick="setLoc('${d}')">${d}</button>`).join('');
+}
 
 /* ================= 상황 시뮬레이터 (데모 전용 · 앱 화면엔 없음) ================= */
-const SIM={ geo:'ok', kma:'ok', ai:'ok', auth:'ok', lib:'ok' };
+const SIM={ time:'auto', geo:'ok', kma:'ok', ai:'ok', auth:'ok', lib:'ok' };
 const SIMDEF=[
+ {k:'time', t:'앱을 언제 열었나', o:[['auto','지금 시각'],['morning','아침'],['night','밤']]},
  {k:'geo',  t:'위치 권한',    o:[['ok','허용'],['deny','거부']]},
  {k:'kma',  t:'기상청 API',   o:[['ok','정상'],['cache','장애(캐시 있음)'],['down','장애(캐시 없음)']]},
  {k:'ai',   t:'참고사진 처리', o:[['ok','정상'],['fail','AI 실패'],['block','부적절 차단']]},
@@ -823,10 +935,69 @@ function renderSim(){
 }
 function setSim(k,v){
   SIM[k]=v; renderSim();
-  if(k==='lib' || k==='kma'){ if(document.getElementById('s-result').classList.contains('on')){ state.booted=true; renderResult(); } }
+  if(k==='lib'||k==='kma'||k==='time'){ if(document.getElementById('s-result').classList.contains('on')){ state.booted=true; renderResult(); } }
   toast('상황을 바꿨어요 · 다시 걸어보세요');
 }
-function toggleSim(){ document.getElementById('sim').classList.toggle('on'); }
+function toggleSim(){
+  document.getElementById('metrics').classList.remove('on');       // 두 패널이 겹치지 않게
+  document.getElementById('sim').classList.toggle('on');
+}
+
+/* ================= 📊 지표 패널 (데모 전용 · 앱 화면엔 없다) ================= */
+function toggleMetrics(){
+  document.getElementById('sim').classList.remove('on');
+  const m=document.getElementById('metrics');
+  m.classList.toggle('on');
+  if(m.classList.contains('on')) renderMetrics();
+}
+function clearMetrics(){
+  events=[];
+  try{ localStorage.removeItem(EV); localStorage.removeItem(LV); }catch(e){}
+  lastImp=''; renderMetrics(); toast('이벤트 기록을 지웠어요');
+}
+const pct=(a,b)=> b ? Math.round(a/b*100)+'%' : '—';
+function mrow(label, value, note){
+  return `<div class="mrow"><div>${label}${note?`<i>${note}</i>`:''}</div><b>${value}</b></div>`;
+}
+function renderMetrics(){
+  const el=document.getElementById('mbody'); if(!el) return;
+  const 열기=evCount('앱_열기'), 퀴즈=evCount('퀴즈_완료'), 표시=evCount('3장_표시'),
+         결정=evCount('결정'), 변경=evCount('결정_변경'), 취소=evCount('결정_취소'),
+         리롤=evCount('리롤');
+  const 입었=events.filter(e=>e.ev==='착용_답변' && e.입었다===true).length;
+  const 답변=evCount('착용_답변');
+
+  /* 북극성 = D1. "어제 왔다가 오늘 또 왔나" — 이거 하나로 성공/실패를 판단한다. */
+  const north = firstVisit
+    ? '🌱 <b>첫 방문이에요.</b><br>내일 다시 열면 여기에 D1이 찍힙니다.'
+    : (visitGap===1 ? '⭐️ <b>D1 달성 — 어제 왔다가 오늘 또 왔어요.</b><br>이게 이 제품의 북극성입니다.'
+      : visitGap===null ? '↩︎ <b>오늘 안에 다시 열었어요</b> (같은 날 재방문).<br>D1은 날짜가 바뀌어야 찍힙니다.'
+      : `📅 <b>${visitGap}일 만에 왔어요.</b><br>D1(다음 날)은 아니지만 돌아오긴 했습니다.`);
+
+  el.innerHTML =
+    `<div class="mk">북극성 — D1 아침 재방문</div>
+     <div class="north">${north}</div>
+
+     <div class="mk">퍼널 — 어디서 빠져나가나</div>
+     ${mrow('앱 열기', 열기)}
+     ${mrow('퀴즈 완료', 퀴즈, '온보딩을 끝까지 걸었나')}
+     ${mrow('3장 표시', 표시, '추천이 실제로 뜬 횟수')}
+     ${mrow('결정 “이거 입을래”', 결정, '코어 루프 종료점')}
+
+     <div class="mk">품질 — 추천이 쓸 만한가</div>
+     ${mrow('저장률', pct(결정,표시), `3장 보여준 ${표시}번 중 ${결정}번 결정`)}
+     ${mrow('“입었어요” 회수율', pct(입었,답변), `답변 ${답변}건 중 ${입었}건이 실제 착용`)}
+     ${mrow('리롤률', pct(리롤,표시), '첫 3장이 마음에 안 든 비율')}
+     ${mrow('결정 번복', 변경+'회', `취소 ${취소}회`)}
+
+     <div class="mk">최근 이벤트</div>
+     <div style="font-size:10.5px;color:var(--sub);line-height:1.7;font-weight:600">${
+       events.slice(-6).reverse().map(e=>{
+         const p=Object.keys(e).filter(k=>k!=='ev'&&k!=='t').map(k=>k+'='+e[k]).join(' ');
+         return `· <b>${e.ev}</b> ${p}`;
+       }).join('<br>') || '아직 없어요'
+     }</div>`;
+}
 
 /* ---------- 내비 ---------- */
 const ONB=['s-splash','s-gender','s-age','s-q1','s-q2','s-q3','s-photo'];
@@ -870,13 +1041,20 @@ function pickQuiz(k,v){
   state[k]=v;
   if(k==='mood') go('s-q2');
   else if(k==='color') go('s-q3');
-  else go('s-photo');
+  else { track('퀴즈_완료', {무드:state.mood, 색:state.color, TPO:v}); go('s-photo'); }   // ② 퍼널
 }
 /* ---------- 참고사진 → 진짜 임베딩(CLIP) ---------- */
 function setStatus(id,html){ const e=id&&document.getElementById(id); if(e) e.innerHTML=html; }
 
+/* 사진을 실제로 놓아준다. 참조만 null로 바꾸면 브라우저는 사진을 계속 붙들고 있다.
+   화면이 "빼면 바로 사라져요"라고 말하므로, 말한 대로 한다(§9-1). */
+function releaseRefPhoto(){
+  if(state.refPhotoUrl) URL.revokeObjectURL(state.refPhotoUrl);
+  state.photo=false; state.refPhotoUrl=null; state.refEmb=null; state.clipOn=false;
+}
 /* 사진을 질의(query)로 만든다. 성공하면 true → 추천이 실제로 사진 기반으로 바뀐다. */
 async function applyRefPhoto(file, statusId){
+  releaseRefPhoto();                             // 이전 사진은 먼저 놓아준다
   state.photo=true;
   state.refPhotoUrl=URL.createObjectURL(file);
   const pi=document.getElementById('photoImg');
@@ -891,7 +1069,7 @@ async function applyRefPhoto(file, statusId){
     setStatus(statusId,'🧠 AI가 사진 분위기를 읽는 중…<br><b>첫 실행은 모델을 내려받느라 20~40초</b> 걸려요.');
     state.refEmb = await window.CLIP.embed(state.refPhotoUrl);
 
-    if(!state.libEmb){                           // 라이브러리 31장은 최초 1회만 임베딩(이후 재사용)
+    if(!state.libEmb){                           // 라이브러리 39장은 최초 1회만 임베딩(이후 재사용)
       state.libEmb={};
       for(let i=0;i<LOOKS.length;i++){
         state.libEmb[LOOKS[i].id] = await window.CLIP.embed(LOOKS[i].img);
@@ -900,11 +1078,13 @@ async function applyRefPhoto(file, statusId){
     }
     state.clipOn=true;
     setStatus(statusId,'✅ 준비 끝 — 이 사진과 <b>분위기가 비슷한 코디</b>를 골라줄게요.');
+    track('참고사진', {결과:'성공'});                 // ③ 사진이 실제로 질의가 됐나
     return true;
   }catch(e){
     console.warn('[CLIP]',e);
     state.clipOn=false; state.refEmb=null;
     setStatus(statusId,'⚠️ AI 모델을 못 불러왔어요 — 취향 퀴즈 기반으로 골라요.');
+    track('참고사진', {결과:'실패'});
     return false;
   }
 }
@@ -919,7 +1099,8 @@ async function onPhoto(inp){
     toast('사진이 커서 줄여서 올렸어요');        // (실서비스는 올리기 전 클라이언트 압축 · NFR-5)
   }
   if(SIM.ai==='block'){                          // 모더레이션 차단(FR-5) — 막다른 길 금지
-    state.photo=false; state.refPhotoUrl=null;
+    releaseRefPhoto();                           // 차단된 사진은 붙들고 있지 않는다
+    track('참고사진', {결과:'차단'});
     document.getElementById('photoPrev').style.display='none';
     document.getElementById('photoErr').innerHTML=
       `<div class="photoerr">이 사진은 쓸 수 없어요. 코디가 잘 보이는 사진으로 올려주세요.
@@ -930,7 +1111,8 @@ async function onPhoto(inp){
     return;
   }
   if(SIM.ai==='fail'){                           // AI 장애 → 취향으로 폴백. 폴백하되 말해준다(AP-2)
-    state.photo=true; state.refPhotoUrl=URL.createObjectURL(f); state.clipOn=false; state.refEmb=null;
+    releaseRefPhoto();
+    state.photo=true; state.refPhotoUrl=URL.createObjectURL(f);
     const pi=document.getElementById('photoImg');
     pi.src=state.refPhotoUrl; document.getElementById('photoPrev').style.display='block';
     setStatus('clipStatus','⚠️ 사진을 못 읽었어요 — <b>취향으로 골라드릴게요.</b> 추천은 그대로 나와요.');
@@ -975,27 +1157,53 @@ function pendingWornKey(){
   ks.sort((a,b)=> keyToDate(b)-keyToDate(a));
   return ks[0];
 }
-/* 최근 이틀 안에 실제로 입은 룩 → 추천에서 뺀다.
-   VOC ⑥ "어제 입은 옷 피하려다…" — 유저가 실제로 원하는 것. 물어본 값을 돌려주는 자리. */
-function recentlyWorn(){
-  const t=keyToDate(targetKey()), out=[];
-  for(const k in state.diary){
-    const e=state.diary[k];
-    if(e.worn!==true) continue;
-    const days=(t-keyToDate(k))/86400000;
-    if(days>0 && days<=2) out.push(e.look);
-  }
+/* ---------- 반복 방지 (§7.3) ----------
+   예전엔 "입었어요"라고 답한 룩만 뺐다. 그래서 답을 안 하면 아무것도 안 빠졌고,
+   같은 날씨·같은 취향이면 매일 똑같은 3장이 나왔다(북극성이 D1인데 D1에 어제 화면을 보여줌).
+   → 이제 "보여준 것"까지 기록해서 뺀다. 텀은 두 종류다:
+     · 고른 것(=입기로 한 것)  7일 — 한 주에 같은 코디를 두 번 권하지 않는다
+     · 보여주기만 한 것        2일 — 어제 본 3장이 오늘 또 뜨는 걸 막는다
+   라이브러리가 39장뿐이라 무한정 빼면 후보가 마른다 → 마르면 아래 사다리로 푼다.
+   🚫 강수·온도는 어떤 경우에도 안 푼다(원칙 2). */
+const COOL_PICK=7, COOL_SHOW=2;
+/* 대상일(오늘/밤이면 내일) 기준으로 며칠 전인가. 0일(당일)은 뺄 대상이 아니다 —
+   오늘 보여준 걸 오늘 빼버리면 화면이 자기가 띄운 3장을 스스로 지운다. */
+const daysBefore=k=> (keyToDate(targetKey())-keyToDate(k))/86400000;
+/* 최근 n일 안에 고른(=담아둔) 룩. "입었어요"까지 답한 것도 여기 포함된다. */
+function recentlyPicked(n){
+  const out=[];
+  for(const k in state.diary){ const d=daysBefore(k); if(d>0 && d<=n) out.push(state.diary[k].look); }
   return out;
+}
+/* 최근 n일 안에 화면에 보여준 룩 (고르지 않고 지나친 것까지) */
+function recentlyShown(n){
+  const out=[];
+  for(const id in state.shown){ const d=daysBefore(state.shown[id]); if(d>0 && d<=n) out.push(Number(id)); }
+  return out;
+}
+/* 보여준 걸 기록한다 — 이 기록이 없으면 반복 방지 자체가 성립하지 않는다 */
+function markShown(picks){
+  const k=targetKey();
+  picks.forEach(l=> state.shown[l.id]=k);
+  persist();
 }
 function hardFilter(w){
   const ti=T[w.temp];
-  const skip=recentlyWorn();
-  const pool=LOOKS.filter(l=>{
-    if(skip.includes(l.id)) return false;          // 최근에 입은 건 다시 안 보여준다
+  /* 뼈대: 날씨. 여기는 절대 안 푼다 */
+  const base=LOOKS.filter(l=>{
     if(w.rain){ if(!l.rain) return false; }        // 비 → 비 적합 룩만 (날씨 하드필터)
     else { if(l.rain) return false; }              // 맑음 → 레인 전용 룩 제외
     return Math.abs(T[l.temp]-ti) <= 1;            // 체감온도 ±1 밴드
   });
+  /* 반복 방지를 얹되, 후보가 3장 밑으로 마르면 앞에서부터 푼다.
+     푸는 순서: 보여준 것 → 고른 것. (날씨는 사다리에 없다) */
+  const picked=recentlyPicked(COOL_PICK), shown=recentlyShown(COOL_SHOW);
+  const ladder=[
+    base.filter(l=> !picked.includes(l.id) && !shown.includes(l.id)),  // 둘 다 적용
+    base.filter(l=> !picked.includes(l.id)),                            // 보여준 것만 품
+    base,                                                               // 다 품 (그래도 날씨는 지킨다)
+  ];
+  const pool = ladder.find(p=>p.length>=3) || base;
   return SIM.lib==='thin' ? pool.slice(0,2) : pool;   // 데모: 라이브러리에 구멍이 난 날
 }
 /* 취향 퀴즈 기반 점수 (사진이 없을 때의 질의) */
@@ -1106,7 +1314,7 @@ function renderResult(){
   const w=state.weather;
   const night=isNight();
   document.getElementById('nightBar').style.display = night?'flex':'none';
-  document.getElementById('r-date').textContent = (night?'내일 아침':'오늘')+' · 서울';
+  document.getElementById('r-date').textContent = (night?'내일 아침':'오늘')+' · '+state.loc;
   document.getElementById('r-title').textContent = night
     ? '내일 아침, 입을 만한 3가지'
     : w.title;
@@ -1117,6 +1325,7 @@ function renderResult(){
   if(pool.length===0){ go('s-fallback'); return; }        // 강수는 못 푼다 → 폴백(온도 완화)
   const picks=recommend(0) || ensureSafe(mmrPick(pool,Math.min(3,pool.length),0),pool);
   currentPicks=picks;
+  markShown(picks);                                       // 보여줬다고 남긴다 → 내일 이 3장은 안 나온다
   if(state.booted){ drawLooks(picks); drawStateBars(picks.length); }
   else {                                                  // 첫 진입만 로딩 상태를 보여준다
     drawSkeleton(3); document.getElementById('thinBar').style.display='none';
@@ -1147,15 +1356,20 @@ function renderYdayAsk(){
   el.dataset.key=key;
   document.getElementById('yd-img').src=l.img;
   el.querySelector('.yt b').textContent=whenWord(key)+' 이거 입었어요?';
-  el.querySelector('.yt span').textContent='입었다고 하면 '+dayWord()+'은 안 보여드릴게요';
+  /* 예전 문구는 "입었다고 하면 오늘은 안 보여드릴게요"였다. 이제 고른 코디는 답과 무관하게
+     7일간 안 나오므로 그 말은 거짓이 된다 → 실제로 하는 일(기록에 ✓)만 말한다(§9-1). */
+  el.querySelector('.yt span').textContent='알려주면 기록에 ✓로 남겨둘게요';
   el.style.display='flex';
 }
 function answerWorn(v){
   const key=document.getElementById('ydayAsk').dataset.key;
   const e=state.diary[key];
-  if(e && v!==null){ e.worn=v; persist(); }
+  /* ⑦ 품질을 재는 유일한 눈금 — "입을래"는 눌렀는데 "입었어요"가 안 오는 코디
+     = 예쁘지만 실제론 못 입은 옷. 이걸 안 재면 제품의 상한을 모른다. */
+  if(e && v!==null){ e.worn=v; persist(); track('착용_답변', {룩:e.look, 입었다:v}); }
+  else if(v===null) track('착용_무시', {});
   document.getElementById('ydayAsk').style.display='none';
-  if(v===true){ renderResult(); toast('입은 건 '+dayWord()+' 추천에서 뺐어요 👍'); }
+  if(v===true){ renderResult(); toast('기록에 ✓ 남겼어요 👍'); }
   else if(v===false){ toast('알려줘서 고마워요 🙂'); }
 }
 /* 기록 탭에서 놓친 날을 나중에 채우는 자리 (보조) */
@@ -1173,10 +1387,12 @@ function paintWornBtn(key){
   b.onclick = ()=>toggleWorn(key);
 }
 function drawLooks(picks){
-  const decided = picks.some(l=>state.saved.includes(l.id));
+  trackImpression(picks);                             // ④ 코어 루프: 3장을 실제로 보여준 순간
+  const chosen  = pickedId();                         // 오늘 고른 한 벌 (없으면 undefined)
+  const decided = picks.some(l=>l.id===chosen);       // 지금 보이는 3장 중에 그게 있나
   const reasons = reasonsFor(picks, state.weather);   // 3장 문장이 서로 겹치지 않게 한 번에 생성
   document.getElementById('looks').innerHTML=picks.map((l,i)=>{
-    const saved=state.saved.includes(l.id);
+    const saved=(l.id===chosen);
     /* 결정 전 = 사진이 주인공. 아이템 목록은 아예 안 보여준다 —
        고르는 순간엔 읽을 게 많을수록 결정이 느려진다(선택 과부하). 사진과 한 줄 이유면 충분.
        결정 후 = 아이템이 주인공 — 8:10, 옷장 앞에서 읽는 건 사진이 아니라 이 목록이다(08 막힘⑤) */
@@ -1219,10 +1435,11 @@ function drawStateBars(n){
 function reroll(){
   if(state.usedReroll){ toast('오늘은 여기까지예요 🙂'); return; }
   state.usedReroll=true;
+  track('리롤', {날씨:state.weather.key});                            // ⑥ 첫 3장이 실패한 비율
   const cur=new Set(currentPicks.map(p=>p.id));
   const pool=hardFilter(state.weather).filter(l=>!cur.has(l.id));   // 방금 본 3장 제외
   const picks = pool.length>=3 ? ensureSafe(mmrPick(pool,3,0),pool) : (recommend(3)||recommend(0));
-  currentPicks=picks; drawLooks(picks);
+  currentPicks=picks; markShown(picks); drawLooks(picks);
   const rb=document.getElementById('rerollBtn'); rb.disabled=true; rb.style.opacity=.45; rb.textContent='오늘은 여기까지예요';
   toast('다른 걸로 3개 골라봤어요');
 }
@@ -1236,6 +1453,7 @@ function relaxAndShow(){
   );
   const n=Math.min(3,pool.length);
   currentPicks=ensureSafe(mmrPick(pool,n,0),pool);    // 3장이 안 되면 있는 만큼만
+  markShown(currentPicks);
   renderMeta(); go('s-result');
   drawLooks(currentPicks); drawStateBars(currentPicks.length);
 }
@@ -1260,7 +1478,7 @@ function renderRefchip(){
   } else el.innerHTML='';
 }
 function removeRefPhoto(){
-  state.photo=false; state.refPhotoUrl=null; state.refEmb=null; state.clipOn=false;   // 질의를 취향으로 되돌림
+  releaseRefPhoto();                  // 진짜로 놓아준다 + 질의를 취향으로 되돌림
   renderResult();
   toast('참고사진을 뺐어요 · 취향으로 다시 골랐어요');
 }
@@ -1337,16 +1555,33 @@ function doLogin(){
   if(id!=null) toggleSave(id, null);
   toast('로그인했어요 · 기록에 담았어요 ♥');
 }
+/* 오늘(밤이면 내일) 고른 코디. 달력이 정본이다 — 하루 한 칸, 코디 한 벌. */
+const pickedId=()=> (state.diary[targetKey()]||{}).look;
+
 function toggleSave(id,btn){
   if(SIM.auth==='expired'){ openLogin(id); return; }        // 추천은 보여주되, 저장할 때만 막는다
-  const i=state.saved.indexOf(id);
-  const key=targetKey();                                   // 밤이면 '내일' 칸에 담긴다
-  if(i<0){ state.saved.push(id); state.diary[key]={look:id, w:state.weather.key};
-           toast(dayWord()+' 이걸로 정했어요 ♥ · 옷장에서 꺼낼 것을 적어뒀어요'); }
-  else { state.saved.splice(i,1); const e=state.diary[key]; if(e && e.look===id) delete state.diary[key]; }
+  const key=targetKey();                                    // 밤이면 '내일' 칸에 담긴다
+  const cur=pickedId();
+  if(cur===id){                                             // 같은 카드를 또 누름 = 결정 취소
+    delete state.diary[key];
+    track('결정_취소', {룩:id});
+    toast('결정을 취소했어요');
+  } else {
+    /* ⑤ 코어 루프 종료점 — 저장률의 분자다. '갈아타기'는 새 결정으로 세지 않는다
+       (한 번 보여준 3장에서 결정은 한 번뿐이어야 저장률이 100%를 넘지 않는다) */
+    track(cur!=null ? '결정_변경' : '결정',
+          {룩:id, 순위:currentPicks.findIndex(p=>p.id===id)+1, 날씨:state.weather.key,
+           질의: state.clipOn ? '참고사진' : '취향'});
+    /* 다른 카드를 누르면 '추가'가 아니라 '갈아탄다'.
+       여러 벌을 담게 두면 달력 한 칸에 뭘 넣을지 정할 수 없고, 사실상 찜 목록이 생겨
+       "찜한 것"과 "입은 것"이 갈라진다 — 만들지 않기로 한 것이다. */
+    state.diary[key]={look:id, w:state.weather.key};
+    toast(cur!=null ? '이걸로 바꿨어요 ♥ · 옷장에서 꺼낼 것을 다시 적었어요'
+                    : dayWord()+' 이걸로 정했어요 ♥ · 옷장에서 꺼낼 것을 적어뒀어요');
+  }
   drawLooks(currentPicks);                                 // 결정 카드 = 체크리스트로 변신
   persist();
-  if(i<0 && !navigator.onLine)                             // 낙관적 UI: 먼저 담고, 조용히 재시도
+  if(pickedId()!=null && !navigator.onLine)                // 낙관적 UI: 먼저 담고, 조용히 재시도
     setTimeout(()=>toast('아직 오프라인이에요 · 연결되면 자동으로 올려둘게요'), 1200);
 }
 function renderSaved(){
@@ -1462,6 +1697,7 @@ function switchTab(t){
 }
 function renderWeatherTab(){
   const w=state.weather;
+  paintLoc();                                    // 날씨 탭 머리도 고른 동네를 따라간다
   document.getElementById('wt-temp').textContent=w.badge.replace(/^[^체]*/,'');
   document.getElementById('wt-desc').textContent=w.e+' '+w.m;
   document.getElementById('wt-line').textContent=w.line;
@@ -1477,14 +1713,17 @@ addEventListener('offline', ()=>drawStateBars(currentPicks.length));
 /* init */
 renderSim();
 renderWeatherPick();
+renderLocPick();
 seedDiary();
+trackVisit();          // ① 퍼널 시작 + 북극성(D1) 계산
 (function boot(){
   const saved=loadPersisted();
   if(saved && saved.onboarded){           // 재방문: 온보딩 스킵 → 바로 '오늘'
     state.gender=saved.gender; state.age=saved.age;
     state.mood=saved.mood; state.color=saved.color; state.tpo=saved.tpo;
-    state.saved=saved.saved||[];
     Object.assign(state.diary, saved.diary||{});   // 유저 저장을 데모 시드 위에 덮기
+    state.shown=saved.shown||{};                   // 노출 이력도 살려야 어제 본 3장이 오늘 또 안 뜬다
+    state.loc=saved.loc||state.loc;
     state.weather=WBY[saved.weatherKey]||WEATHER[0];
     state.wakeTime=saved.wakeTime||'07:00'; state.wakeOn=!!saved.wakeOn;
     renderResult(); go('s-result');
