@@ -24,7 +24,7 @@
     font-family:'Pretendard',-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;
     line-height:1.5; -webkit-font-smoothing:antialiased; }
   /* 숫자가 세로로 줄맞춤돼야 하는 곳 (체감온도·캘린더 날짜) */
-  .whero .big, .wwidget .big, .cal-cell .dn, .lockscreen .lstime{ font-variant-numeric:tabular-nums; }
+  .whero .big, .cal-cell .dn, .lockscreen .lstime{ font-variant-numeric:tabular-nums; }
   #phone{
     max-width:430px; margin:0 auto; min-height:100vh; background:#f6f8fb;
     position:relative; overflow:hidden; box-shadow:0 0 40px rgba(40,50,70,.12);
@@ -33,7 +33,7 @@
   .screen{ display:none; flex-direction:column; flex:1; padding:26px 22px 96px; animation:fade .35s ease; }
   .screen.on{ display:flex; }
   @keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
-  @media (prefers-reduced-motion:reduce){ .screen{animation:none;} .rain span{display:none;} }
+  @media (prefers-reduced-motion:reduce){ .screen{animation:none;} .rain span{display:none;} .otter{animation:none;} }
 
   h1{ font-size:26px; font-weight:800; letter-spacing:-.5px; }
   h2{ font-size:21px; font-weight:800; letter-spacing:-.4px; margin-bottom:4px; }
@@ -76,14 +76,28 @@
   .progress i{ height:4px; border-radius:3px; background:var(--line); flex:1; }
   .progress i.done{ background:var(--accent); }
 
-  /* splash weather widget */
-  .wwidget{ background:var(--wgrad); color:#fff; border-radius:22px;
-    padding:20px 22px; margin-bottom:24px; box-shadow:0 10px 24px rgba(90,120,160,.28); }
-  .wwidget .t{ font-size:13px; opacity:.9; }
-  .wwidget .big{ font-size:34px; font-weight:800; margin:2px 0; }
-  .wwidget .d{ font-size:13.5px; opacity:.95; }
+  /* 스플래시 도트 씬 — 수달 '루비'. 첫 실행에서만 보인다(재방문은 boot()이 바로 '오늘'로 보냄) */
+  .scene{ position:relative; height:250px; margin:8px -22px 0;
+    background:linear-gradient(170deg,#fff4ea 0%,#f4ece6 42%,#e7eef7 100%);
+    overflow:hidden; display:flex; align-items:flex-end; justify-content:center; }
+  .scene .rain{ position:absolute; inset:0; pointer-events:none; }
+  /* 빗줄기도 도트답게 — 둥근 끝 없이 네모난 2px 막대 */
+  .scene .rain span{ position:absolute; top:-14px; width:2px; height:9px;
+    background:#9db6d4; opacity:.55; animation:drop linear infinite; }
+  @keyframes drop{ to{ transform:translateY(268px); } }
+  /* 수달은 물에 떠 있다 — 아주 살짝 위아래로 */
+  .otter{ position:relative; width:310px; margin-bottom:18px; animation:bob 3.4s ease-in-out infinite; }
+  @keyframes bob{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(4px)} }
+  .otter svg{ width:100%; height:auto; display:block; image-rendering:pixelated; }
+  /* 수면 — 도트 계단으로 만든 물결 두 줄 */
+  /* 물은 수달 '위'에 덮인다 — 반투명이라 잠긴 등이 비쳐 보인다 */
+  .water{ position:absolute; left:0; right:0; bottom:0; height:48px; background:rgba(180,208,232,.88); }
+  .water::before{ content:''; position:absolute; left:0; right:0; top:-6px; height:6px;
+    background:repeating-linear-gradient(90deg,rgba(180,208,232,.88) 0 12px,transparent 12px 24px); }
+  .water::after{ content:''; position:absolute; left:0; right:0; top:8px; height:4px;
+    background:repeating-linear-gradient(90deg,transparent 0 18px,#eaf2fa 18px 34px); opacity:.8; }
 
-  .logo{ font-size:34px; font-weight:900; letter-spacing:-1.2px; }
+  .logo{ font-size:34px; font-weight:900; letter-spacing:-1.2px; margin-top:26px; }
   .logo b{ color:var(--rain); }
   .tag{ color:var(--sub); font-size:15px; margin-top:8px; }
 
@@ -180,6 +194,13 @@
      스캔할 땐 사진이 주인공, 옷장 앞에선 아이템이 주인공 */
   .look.picked{ box-shadow:0 0 0 2px var(--heart), 0 8px 22px rgba(224,122,122,.18); }
   .look.faded{ opacity:.55; }
+  /* 3장이 한꺼번에 툭 뜨지 않고 차례로 올라온다 (화면 전환에 쓰는 fade를 그대로 재사용).
+     결정을 누르면 3장을 다시 그리는데, 그때까지 스르륵하면 눈이 아프다 → .quiet 이면 안 움직인다.
+     fill은 backwards — forwards/both 를 쓰면 끝난 뒤 opacity:1 이 박혀서 .faded(.55)가 안 먹는다 */
+  #looks:not(.quiet) .look{ animation:fade .45s ease backwards; }
+  #looks:not(.quiet) .look:nth-child(2){ animation-delay:.09s; }
+  #looks:not(.quiet) .look:nth-child(3){ animation-delay:.18s; }
+  @media (prefers-reduced-motion:reduce){ #looks:not(.quiet) .look{ animation:none; } }
   .pack{ margin-top:12px; padding-top:12px; border-top:1px dashed var(--line); }
   .pack .pt{ font-size:11.5px; font-weight:800; color:var(--heart); letter-spacing:.2px; margin-bottom:7px; }
   .pack li{ list-style:none; display:flex; gap:8px; align-items:baseline;
@@ -382,12 +403,11 @@
 
   <!-- 1. SPLASH -->
   <section class="screen on" id="s-splash">
-    <div class="wwidget">
-      <div class="t">오늘 아침 · 관악구</div>
-      <div class="big">체감 23°</div>
-      <div class="d">☂ 비 · 종일 습해요 · 우산 챙겨요</div>
+    <div class="scene">
+      <div class="rain" id="splash-rain"></div>
+      <div class="otter" id="splash-otter"></div>
+      <div class="water"></div>
     </div>
-    <div class="spacer"></div>
     <div class="logo">rain<b>ism</b></div>
     <div class="tag">오늘 뭐 입지, 내가 대신 골라줄게요.</div>
     <div class="spacer"></div>
@@ -1710,7 +1730,80 @@ function renderWeatherTab(){
 addEventListener('online', ()=>drawStateBars(currentPicks.length));
 addEventListener('offline', ()=>drawStateBars(currentPicks.length));
 
+/* ─────────────────────────────────────────────────────────────
+   스플래시 마스코트 — 수달 '루비'. 도트 한 칸 = 글자 한 개.
+   그림을 고치고 싶으면 아래 격자에서 글자만 바꾸면 된다(이미지 파일 없음).
+   수달을 고른 이유: 비 오는 날 기분이 좋아지는 동물이라야 캐릭터가 성립한다.
+   우비 입고 참는 동물이면 "비 = 귀찮음"을 인정하는 꼴이라 제품이 하려는 말과 반대다.
+   품에 안고 있는 건 '오늘 골라둔 한 벌'(하루 한 벌 = AGENTS.md §5).
+   ───────────────────────────────────────────────────────────── */
+const OTTER_PAL = {
+  D:'#5b4234',  // 외곽선
+  B:'#c08d63',  // 털
+  b:'#8f6244',  // 앞발·잠긴 등 (그늘진 털)
+  c:'#e2c3a2',  // 배 (밝은 털)
+  C:'#f7e6d6',  // 얼굴·배·앞발(크림)
+  E:'#3d2f26',  // 눈
+  W:'#ffffff',  // 눈 반짝
+  N:'#6d4c3a',  // 코
+  P:'#eba493',  // 볼터치
+  R:'#e8907f',  // 품에 안은 옷 — 상의
+  A:'#7ba0cf'   // 품에 안은 옷 — 하의
+};
+/* 누워서 배를 위로 하고 떠 있는 옆모습 — 실제 수달 사진에서 가져온 특징 4가지:
+   ① 뒷발(물갈퀴)이 물 밖으로 삐죽  ② 크림색 얼굴 + 수염  ③ 앞발로 배 위에 뭘 안고 있음
+   ④ 등은 물에 잠겨 어둡다.  이 실루엣이 없으면 수달이 아니라 곰이 된다(한 번 그렇게 됐다) */
+const OTTER = [
+  '..............................................',
+  '..............................................',
+  '..............................................',
+  '.....DDD...DD...................DDDDD.........',
+  '....DBBBD.DBBD................DDCCCCCDD.......',
+  '....DbBBbDBbBBb..............BBCCCCCCCBB......',
+  '...DBbBBbDBbBBb.............BBBCCCCCCCBBB.....',
+  '...DBbBBbDBbBBb.............DBBCCCCCCCBBD.....',
+  '...DBbBBbBBbBBb............DCCCWECCCWECCCD....',
+  '...DBBBBBBBBBBD..DDDDD.....DCCCEECCCEECCCD....',
+  '...DBBBBBBBBBBDDDBBBBBDDDDDDCCCEECCCEECCCD....',
+  '...DBBBBBBBBBBBBRRRRRRRRBBBBCCCCCCCCCCCCCDDDD.',
+  '...DBBBBBBBBBBbBRRRRRRRRBbbBCCCCCNNNCCCCCD....',
+  '...DBBBBBBBBBbbbRRRRRRRRbbbbBPPCCCNCCCPPD.....',
+  '....DBBBBBcccbbbRRRRRRRRbbbbcCCCCNCNCCCCDDDD..',
+  '...DBBBBcccccbbbAAAAAAAAbbbbccCCCCNCCCCD......',
+  '...DBBBBcccccbbbAAAAAAAAcbbcccccCCCCCDD.......',
+  '....DBBBccccccbcAAAAAAAAcccccccccBDDD.........',
+  '.....DBBBBcccccccccccccccccccccBBD............',
+  '......DbbbbbbbbbbbbbbbbbbbbbbbbbD.............',
+  '.......DDDbbbbbbbbbbbbbbbbbbbDDD..............',
+  '..........DDDDDDDbbbbbDDDDDDD.................',
+  '.................DDDDD........................',
+  '..............................................'
+];
+/* 격자를 SVG 네모로 찍어낸다. crispEdges라 확대해도 도트가 뭉개지지 않는다 */
+function renderOtter(){
+  const box=document.getElementById('splash-otter'); if(!box) return;
+  const w=OTTER[0].length, h=OTTER.length, px=[];
+  OTTER.forEach((row,y)=>{
+    [...row].forEach((ch,x)=>{
+      const c=OTTER_PAL[ch]; if(!c) return;                    // '.' = 투명
+      px.push(`<rect x="${x}" y="${y}" width="1" height="1" fill="${c}"/>`);
+    });
+  });
+  box.innerHTML=`<svg viewBox="0 0 ${w} ${h}" shape-rendering="crispEdges"
+    role="img" aria-label="비를 반기는 수달이 오늘 입을 옷 한 벌을 안고 물에 떠 있다">${px.join('')}</svg>`;
+}
+/* 빗줄기 — 위치·속도만 흩어놓는다 */
+function renderSplashRain(){
+  const box=document.getElementById('splash-rain'); if(!box) return;
+  box.innerHTML=Array.from({length:14},(_,i)=>{
+    const left=(i*7.3+3)%97, dur=(.7+(i%4)*.18).toFixed(2), delay=((i*.31)%1.4).toFixed(2);
+    return `<span style="left:${left}%;animation-duration:${dur}s;animation-delay:${delay}s"></span>`;
+  }).join('');
+}
+
 /* init */
+renderOtter();
+renderSplashRain();
 renderSim();
 renderWeatherPick();
 renderLocPick();
