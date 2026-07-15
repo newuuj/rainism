@@ -30,7 +30,9 @@
     position:relative; overflow:hidden; box-shadow:0 0 40px rgba(40,50,70,.12);
     display:flex; flex-direction:column;
   }
-  .screen{ display:none; flex-direction:column; flex:1; padding:26px 22px 96px; animation:fade .35s ease; }
+  .screen{ display:none; flex-direction:column; flex:1; padding:26px 22px 32px; animation:fade .35s ease; }
+  /* 하단 여백은 32px 기본 — 온보딩 '다음' 버튼이 바닥 가까이 오게. 탭바 덮이는 화면만 96px로 되돌림 */
+  #s-result, #s-weathertab, #s-saved{ padding-bottom:96px; }
   .screen.on{ display:flex; }
   @keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
   @media (prefers-reduced-motion:reduce){ .screen{animation:none;} .rain span{display:none;} .otter{animation:none;} }
@@ -42,10 +44,11 @@
 
   .btn{ display:block; width:100%; border:none; border-radius:16px; padding:16px;
     font-size:16px; font-weight:700; cursor:pointer; font-family:inherit;
-    background:var(--ink); color:#fff; transition:transform .08s; }
+    background:var(--accent); color:#fff; transition:transform .08s; }
   .btn:active{ transform:scale(.985); }
   .btn.ghost{ background:transparent; color:var(--sub); font-weight:600; font-size:14.5px; padding:12px; }
   .btn.soft{ background:#fff; color:var(--ink); border:1.5px solid var(--line); }
+  .btn.soft.outline{ background:transparent; }   /* 배경색과 같게 — 네모 선만 보인다 */
 
   /* choice buttons */
   .choices{ display:flex; flex-direction:column; gap:11px; margin-top:22px; }
@@ -54,17 +57,61 @@
     display:flex; align-items:center; gap:13px; transition:.12s; }
   .choice:active{ transform:scale(.99); }
   .choice .sw{ width:26px; height:26px; border-radius:9px; flex:none; }
+  .choice .emo{ width:26px; flex:none; font-size:21px; line-height:1; text-align:center; }
   .choice small{ display:block; color:var(--sub); font-weight:500; font-size:12.5px; margin-top:2px; }
   .choice.two{ flex-direction:column; align-items:flex-start; gap:2px; }
+  /* 색 퀴즈 — 톤별 원 3개를 살짝 겹쳐 보이고, 고르면 무드 화면처럼 파란 테두리 */
+  .sws{ display:flex; flex:none; }
+  .sws span{ width:26px; height:26px; border-radius:50%; box-shadow:0 0 0 2px #fff; }
+  .sws span + span{ margin-left:-9px; }
+  .choice .chk{ display:none; color:var(--accent); font-weight:800; margin-left:auto; }
+  .choice.sel{ border-color:var(--accent); background:var(--accent2); color:var(--accent); font-weight:700; }
+  .choice.sel .chk{ display:inline; }
+
+  /* 이름 입력칸 — .choice와 같은 톤 */
+  .txtin{ width:100%; background:#fff; border:1.6px solid var(--line); border-radius:16px;
+    padding:16px 18px; font-size:16px; font-weight:600; font-family:inherit; color:var(--ink);
+    margin-top:22px; box-sizing:border-box; }
+  .txtin::placeholder{ color:var(--sub); font-weight:500; }
+  .txtin:focus{ outline:none; border-color:var(--accent); }
+  .miniq{ font-size:21px; font-weight:800; color:var(--ink); margin-top:26px; margin-bottom:2px; letter-spacing:-.4px; }  /* 제목 h2와 같은 크기 */
+
+  /* 성별·나이 선택 버튼 (합친 온보딩 화면) */
+  .genderrow{ display:grid; grid-template-columns:1fr 1fr; gap:11px; margin-top:16px; }
+  .pick{ background:#fff; border:1.6px solid var(--line); border-radius:16px;
+    padding:16px 18px; font-size:16px; font-weight:600; cursor:pointer; font-family:inherit; color:var(--ink);
+    display:flex; align-items:center; justify-content:space-between; gap:10px; transition:.12s; }
+  .genderrow .pick{ justify-content:center; }
+  .pick:active{ transform:scale(.99); }
+  .pick.sel{ border-color:var(--accent); background:var(--accent2); color:var(--accent); font-weight:700; }
+  .pick .chk{ display:none; color:var(--accent); font-weight:800; }
+  .pick.sel .chk{ display:inline; }
+  .btn:disabled{ opacity:.4; cursor:default; }
+
+  /* 참고사진 드롭존 */
+  .dropzone{ display:flex; flex-direction:column; align-items:center; justify-content:center;
+    min-height:230px; margin-top:20px; padding:20px; text-align:center; cursor:pointer;
+    background:#f4f5f7; border:2px dashed #cfd5df; border-radius:18px; transition:.12s; }
+  .dropzone:active{ transform:scale(.995); }
+  .dz-empty{ display:flex; flex-direction:column; align-items:center; }
+  .dz-ic{ color:#aab2c0; margin-bottom:14px; }
+  .dz-t{ color:var(--sub); font-weight:600; font-size:15px; }
+  .dz-sub{ color:#9aa2b1; font-size:13px; margin-top:3px; }
+  .dz-img{ max-width:100%; max-height:300px; border-radius:12px; }
+  .privnote{ display:flex; align-items:center; gap:6px; color:var(--sub); font-size:12.5px; margin-top:10px; }
 
   /* 무드 = 말이 아니라 사진으로 고른다 (취향 미확정 유저는 '시크/미니멀'을 언어로 답 못 함) */
-  .moodgrid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:20px; }
-  .moodgrid button{ position:relative; padding:0; overflow:hidden; cursor:pointer;
-    background:#fff; border:1.6px solid var(--line); border-radius:16px; transition:transform .08s; }
+  .moodgrid{ display:grid; grid-template-columns:1fr 1fr; gap:12px 8px; margin-top:8px; }
+  .moodgrid button{ display:flex; flex-direction:column; gap:7px; padding:0; cursor:pointer;
+    background:none; border:none; font-family:inherit; transition:transform .08s; }
   .moodgrid button:active{ transform:scale(.98); }
-  .moodgrid img{ display:block; width:100%; aspect-ratio:4/5; object-fit:cover; }
-  .moodgrid b{ position:absolute; left:10px; bottom:9px; color:#fff; font-size:14px; font-weight:700;
-    letter-spacing:-.2px; text-shadow:0 1px 8px rgba(0,0,0,.75); }
+  .moodgrid img{ display:block; width:100%; aspect-ratio:6/7; object-fit:cover;
+    border-radius:16px; border:1.6px solid var(--line); transition:border-color .1s, box-shadow .1s; }
+  .moodgrid b{ text-align:center; font-size:15px; font-weight:600; color:var(--ink); letter-spacing:-.2px; }
+  .moodgrid .chk{ display:none; color:var(--accent); font-weight:800; margin-left:3px; }
+  .moodgrid button.sel img{ border-color:var(--accent); box-shadow:0 0 0 2.5px var(--accent2); }
+  .moodgrid button.sel b{ color:var(--accent); font-weight:700; }
+  .moodgrid button.sel .chk{ display:inline; }
 
   /* 온보딩 뒤로가기 — 잘못 누른 답을 되돌릴 수 있어야 한다 */
   .backb{ align-self:flex-start; background:none; border:none; cursor:pointer; font-family:inherit;
@@ -77,21 +124,21 @@
   .progress i.done{ background:var(--accent); }
 
   /* 스플래시 도트 씬 — 수달 '루비'. 첫 실행에서만 보인다(재방문은 boot()이 바로 '오늘'로 보냄) */
-  .scene{ position:relative; height:250px; margin:8px -22px 0;
-    background:linear-gradient(170deg,#fff4ea 0%,#f4ece6 42%,#e7eef7 100%);
-    overflow:hidden; display:flex; align-items:flex-end; justify-content:center; }
+  .scene{ position:relative; flex:1; min-height:260px; margin:22px -22px 0;
+    overflow:hidden; background:linear-gradient(180deg,#f4f6fa 0%,#eaf1f8 100%); }
   .scene .rain{ position:absolute; inset:0; pointer-events:none; }
   /* 빗줄기도 도트답게 — 둥근 끝 없이 네모난 2px 막대 */
   .scene .rain span{ position:absolute; top:-14px; width:2px; height:9px;
     background:#9db6d4; opacity:.55; animation:drop linear infinite; }
-  @keyframes drop{ to{ transform:translateY(268px); } }
-  /* 수달은 물에 떠 있다 — 아주 살짝 위아래로 */
-  .otter{ position:relative; width:310px; margin-bottom:18px; animation:bob 3.4s ease-in-out infinite; }
+  @keyframes drop{ to{ transform:translateY(560px); } }
+  /* 수달은 바닷물 수면에 떠 있다 — 아주 살짝 위아래로 */
+  .otter{ position:absolute; left:50%; margin-left:-140px; bottom:44%; width:280px;
+    z-index:1; animation:bob 3.4s ease-in-out infinite; }
   @keyframes bob{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(4px)} }
   .otter svg{ width:100%; height:auto; display:block; image-rendering:pixelated; }
-  /* 수면 — 도트 계단으로 만든 물결 두 줄 */
-  /* 물은 수달 '위'에 덮인다 — 반투명이라 잠긴 등이 비쳐 보인다 */
-  .water{ position:absolute; left:0; right:0; bottom:0; height:48px; background:rgba(180,208,232,.88); }
+  /* 바닷물 — 화면 밑까지 꽉 차게. 반투명이라 잠긴 수달 등이 비쳐 보인다 */
+  .water{ position:absolute; left:0; right:0; bottom:0; height:50%; z-index:2;
+    background:linear-gradient(180deg,rgba(171,203,230,.95) 0%,rgba(143,184,220,.98) 100%); }
   .water::before{ content:''; position:absolute; left:0; right:0; top:-6px; height:6px;
     background:repeating-linear-gradient(90deg,rgba(180,208,232,.88) 0 12px,transparent 12px 24px); }
   .water::after{ content:''; position:absolute; left:0; right:0; top:8px; height:4px;
@@ -99,21 +146,25 @@
 
   .logo{ font-size:34px; font-weight:900; letter-spacing:-1.2px; margin-top:26px; }
   .logo b{ color:var(--rain); }
-  .tag{ color:var(--sub); font-size:15px; margin-top:8px; }
+  .tag{ color:var(--ink); font-size:25px; font-weight:800; letter-spacing:-.6px; line-height:1.3; margin-top:14px; }
+  .tagsub{ color:var(--sub); font-size:15px; line-height:1.5; margin-top:12px; }
 
   /* result */
-  .rhead{ display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
+  .rtop{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
+  .rdate{ font-size:12.5px; color:var(--sub); font-weight:600; text-align:right; flex:none; }
+  #r-title{ white-space:pre-line; }   /* 제목의 줄바꿈(,\n)을 그대로 보여준다 */
   .wbadge{ display:inline-flex; align-items:center; gap:7px; background:#e7eefa; color:#3f5b82;
     padding:7px 13px; border-radius:20px; font-size:13px; font-weight:700; }
   .tasteline{ color:var(--sub); font-size:13.5px; margin:10px 0 18px; }
+  .tasteline:empty{ display:none; }
   .tasteline b{ color:var(--accent); }
   .look{ background:var(--card); border-radius:20px; overflow:hidden; margin-bottom:16px;
     box-shadow:0 6px 18px rgba(50,65,90,.08); }
-  .look .ph{ width:100%; aspect-ratio:3/4; object-fit:cover; display:block; background:#dde3ec; }
+  .look .ph{ width:100%; aspect-ratio:5/8; object-fit:cover; display:block; background:#dde3ec; }
   .look .body{ padding:14px 16px 16px; }
   .look .lname{ font-size:16.5px; font-weight:800; letter-spacing:-.3px; display:flex; align-items:center; gap:8px; }
   .safechip{ font-size:10.5px; font-weight:800; color:var(--safe); background:var(--safebg);
-    padding:3px 8px; border-radius:20px; letter-spacing:.2px; }
+    padding:3px 8px; border-radius:20px; letter-spacing:.2px; white-space:nowrap; }
   .chips{ display:flex; flex-wrap:wrap; gap:6px; margin:9px 0; }
   .chip{ font-size:11.5px; background:#eef1f7; color:#5b6474; padding:4px 10px; border-radius:20px; font-weight:600; }
   .reason{ font-size:13.5px; color:#556; display:flex; gap:7px; align-items:flex-start; }
@@ -124,6 +175,7 @@
     padding:11px; font-size:14.5px; font-weight:700; cursor:pointer; font-family:inherit; color:var(--ink);
     display:flex; align-items:center; justify-content:center; gap:8px; transition:.15s; }
   .heart.saved{ background:#fdeef0; border-color:#f5d3d8; color:var(--heart); }
+  .heart.primary{ background:var(--accent); border-color:var(--accent); color:#fff; }   /* 첫 추천 = 파란 CTA */
 
   /* 어제 입었어요? — 신호는 여기서만 잡힌다(유저가 확실히 오는 시점 = 다음 날 아침) */
   .yday{ display:flex; align-items:center; gap:10px; background:#fff; border:1.5px solid var(--line);
@@ -135,17 +187,20 @@
   .yday .ya{ display:flex; gap:6px; flex:none; }
   .yday .ya button{ border:1.4px solid var(--line); background:#fff; border-radius:10px; padding:7px 10px;
     font-size:12.5px; font-weight:700; font-family:inherit; color:var(--ink); cursor:pointer; }
-  .yday .ya button.yes{ background:var(--ink); color:#fff; border-color:var(--ink); }
+  .yday .ya button.yes{ background:var(--accent); color:#fff; border-color:var(--accent); }
   .yday .yx{ position:absolute; top:-7px; right:-7px; width:20px; height:20px; border-radius:50%;
     border:1px solid var(--line); background:#fff; color:var(--sub); font-size:10px; cursor:pointer; line-height:1; }
   .wornchip{ font-size:10.5px; font-weight:800; color:#6a8fbf; background:#e7eefa;
     padding:3px 8px; border-radius:20px; margin-left:6px; }
 
   /* 밤 모드 · 알람 · 설치 */
-  .nightbar{ display:flex; align-items:center; gap:9px; background:#2f3646; color:#fff;
-    border-radius:14px; padding:11px 13px; margin-bottom:12px; font-size:13px; }
+  .nightbar{ position:relative; display:flex; align-items:center; gap:9px; background:#2f3646; color:#fff;
+    border-radius:14px; padding:11px 13px; margin:7px 0 12px; font-size:13px; }
   .nightbar b{ font-weight:800; }
   .nightbar span{ opacity:.75; display:block; font-size:11.5px; }
+  .nightbar .nx{ position:absolute; top:-7px; right:-7px; width:20px; height:20px;
+    border-radius:50%; border:1px solid var(--line); background:#fff; color:var(--sub);
+    font-size:10px; line-height:1; cursor:pointer; padding:0; font-family:inherit; }
 
   .wake{ background:#fff; border:1.5px solid var(--line); border-radius:16px; padding:15px 16px; margin:4px 0 14px; }
   .wake .wq{ font-size:15px; font-weight:800; }
@@ -192,8 +247,20 @@
 
   /* 결정한 카드 = "옷장에서 꺼낼 것" 체크리스트로 변신 (08 막힘⑤)
      스캔할 땐 사진이 주인공, 옷장 앞에선 아이템이 주인공 */
-  .look.picked{ box-shadow:0 0 0 2px var(--heart), 0 8px 22px rgba(224,122,122,.18); }
+  .look.picked{ box-shadow:0 0 0 2px var(--accent), 0 8px 22px rgba(106,143,191,.18); }
   .look.faded{ opacity:.55; }
+  /* 이름 옆 '정했다' 파란 체크 배지 */
+  .pickmark{ display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px;
+    border-radius:50%; background:var(--accent); color:#fff; font-size:11px; font-weight:800; flex-shrink:0; }
+  /* 결정 후 안 고른 2장 = 사진만 작게, 밑에 나란히. 누르면 그걸로 갈아탄다 */
+  .minirow{ display:flex; gap:10px; margin-bottom:16px; }
+  .mini{ flex:1 1 0; min-width:0; background:var(--card); border:none; border-radius:16px; overflow:hidden;
+    padding:0; cursor:pointer; font-family:inherit; text-align:left; box-shadow:0 6px 18px rgba(50,65,90,.08);
+    opacity:.55; transition:opacity .15s; }   /* 안 고른 건 살짝 흐리게 (저번 .faded처럼) */
+  .mini:hover, .mini:active{ opacity:1; }
+  .mini img{ width:100%; aspect-ratio:3/4; object-fit:cover; display:block; background:#dde3ec; }
+  .mini span{ display:block; padding:9px 11px; font-size:13px; font-weight:700; color:var(--ink);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   /* 3장이 한꺼번에 툭 뜨지 않고 차례로 올라온다 (화면 전환에 쓰는 fade를 그대로 재사용).
      결정을 누르면 3장을 다시 그리는데, 그때까지 스르륵하면 눈이 아프다 → .quiet 이면 안 움직인다.
      fill은 backwards — forwards/both 를 쓰면 끝난 뒤 opacity:1 이 박혀서 .faded(.55)가 안 먹는다 */
@@ -202,7 +269,7 @@
   #looks:not(.quiet) .look:nth-child(3){ animation-delay:.18s; }
   @media (prefers-reduced-motion:reduce){ #looks:not(.quiet) .look{ animation:none; } }
   .pack{ margin-top:12px; padding-top:12px; border-top:1px dashed var(--line); }
-  .pack .pt{ font-size:11.5px; font-weight:800; color:var(--heart); letter-spacing:.2px; margin-bottom:7px; }
+  .pack .pt{ font-size:11.5px; font-weight:800; color:var(--sub); letter-spacing:.2px; margin-bottom:7px; }
   .pack li{ list-style:none; display:flex; gap:8px; align-items:baseline;
     font-size:15px; font-weight:600; color:var(--ink); padding:4px 0; }
   .pack li::before{ content:'□'; color:var(--sub); font-size:13px; }
@@ -220,7 +287,7 @@
     background-size:760px 100%; animation:shim 1.3s infinite linear; border-radius:8px; }
   @media (prefers-reduced-motion:reduce){ .sk{ animation:none; } }
   .skcard{ background:var(--card); border-radius:20px; overflow:hidden; margin-bottom:16px; }
-  .skcard .skph{ width:100%; aspect-ratio:3/4; }
+  .skcard .skph{ width:100%; aspect-ratio:5/8; }
   .skcard .skb{ padding:14px 16px 16px; }
   .skcard .skb i{ display:block; height:13px; margin-bottom:9px; }
 
@@ -291,8 +358,19 @@
   .away h2{ margin:16px 0 10px; }
 
   /* weather tab */
-  .whero{ background:var(--wgrad); color:#fff; border-radius:22px; padding:22px; margin-bottom:18px; }
-  .whero .big{ font-size:40px; font-weight:800; }
+  /* 날씨 탭 — 흰 배경·큰 온도·2×2 지표·안내 배너 (와이어프레임) */
+  .wt-loc2{ font-size:13px; color:var(--sub); font-weight:600; margin:2px 0 16px; }
+  .wt-head{ display:flex; align-items:center; gap:16px; margin-bottom:22px; }
+  .wt-ico{ font-size:52px; line-height:1; flex:none; }
+  .wt-big{ font-size:60px; font-weight:800; line-height:1; letter-spacing:-2px; }
+  .wt-sub{ font-size:14px; color:var(--sub); margin-top:6px; }
+  .wt-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+  .wt-stat{ background:#eef1f7; border-radius:16px; padding:15px 18px; }
+  .wt-stat .k{ font-size:13px; color:var(--sub); font-weight:600; }
+  .wt-stat .v{ font-size:22px; font-weight:800; margin-top:6px; letter-spacing:-.5px; }
+  .wt-info{ display:flex; gap:9px; background:var(--accent2); color:#3f5b82; border-radius:16px;
+    padding:14px 16px; font-size:14px; line-height:1.5; margin-bottom:24px; }
+  .wt-hrlabel{ font-size:13px; color:var(--sub); font-weight:700; margin-bottom:12px; }
   .bars{ display:flex; align-items:flex-end; gap:8px; height:90px; margin:14px 0 6px; }
   .bars .b{ flex:1; background:var(--accent2); border-radius:6px 6px 0 0; position:relative; }
   .bars .b span{ position:absolute; bottom:-20px; left:0; right:0; text-align:center; font-size:10px; color:var(--sub); }
@@ -316,21 +394,22 @@
   .cal-wd{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:6px; }
   .cal-wd span{ text-align:center; font-size:11px; color:var(--sub); font-weight:700; }
   .cal-wd span.sun{ color:#d08a8a; }
+  .cal-wd span.sat{ color:var(--accent); }
   .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
-  .cal-cell{ aspect-ratio:1; border-radius:10px; background:#eef1f7 center/cover no-repeat; position:relative; cursor:pointer; }
+  .cal-cell{ aspect-ratio:3/4; border-radius:12px; background:transparent center/cover no-repeat; position:relative; cursor:pointer; }
   .cal-cell.empty{ background:transparent; cursor:default; }
-  .cal-cell .dn{ position:absolute; top:3px; left:5px; font-size:10.5px; font-weight:700; color:#9aa2b1; }
+  .cal-cell .dn{ position:absolute; top:3px; left:5px; font-size:10.5px; font-weight:700; color:var(--sub); }
   .cal-cell.has .dn{ color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.6); }
   .cal-cell .wc{ position:absolute; top:2px; right:3px; font-size:11px; line-height:1;
     filter:drop-shadow(0 1px 2px rgba(0,0,0,.55)); }
   /* 「입기로 함」과 「입었음」을 눈으로 가른다 — 그 간극이 매칭 품질의 온도계다(08) */
-  .cal-cell.has:not(.worn)::after{ content:''; position:absolute; inset:0; border-radius:10px;
+  .cal-cell.has:not(.worn)::after{ content:''; position:absolute; inset:0; border-radius:12px;
     background:rgba(246,248,251,.22); border:1.5px dashed rgba(255,255,255,.9); }
   .cal-cell.worn .wr{ position:absolute; bottom:2px; right:3px; width:14px; height:14px; border-radius:50%;
     background:var(--heart); color:#fff; font-size:9px; font-weight:800; line-height:14px; text-align:center;
     box-shadow:0 1px 4px rgba(0,0,0,.35); }
   .cal-cell.today{ outline:2px solid var(--accent); outline-offset:-2px; }
-  .cal-cell.sel{ outline:2px solid var(--ink); outline-offset:-2px; }
+  .cal-cell.sel{ outline:2px solid var(--accent); outline-offset:-2px; background-color:var(--accent2); }
   .day-detail{ display:flex; gap:13px; align-items:center; margin-top:18px; background:#fff;
     border:1px solid var(--line); border-radius:16px; padding:12px; min-height:80px; }
   .day-detail img{ width:58px; height:76px; object-fit:cover; border-radius:11px; flex:none; }
@@ -355,12 +434,24 @@
   .demoNote{ font-size:11.5px; color:#9aa2b1; text-align:center; margin-top:14px; }
   .licenseNote{ margin-top:8px; font-size:10.5px; line-height:1.5; opacity:.72; }
   .licenseNote b{ font-weight:700; }
-  /* 동네 고르기 (데모) — 실서비스는 GPS가 자동으로 잡는다 */
-  .locpick{ display:flex; flex-wrap:wrap; gap:7px; margin-top:12px; }
-  .locpick button{ font-family:inherit; font-size:13px; font-weight:700; color:var(--sub);
-    background:#fff; border:1.6px solid var(--line); border-radius:20px; padding:8px 13px; cursor:pointer; }
-  .locpick button.on{ border-color:var(--ink); color:var(--ink); }
-  .locpick button:active{ transform:scale(.97); }
+  /* 동네 고르기 화면 — 검색 + 리스트 */
+  .searchbox{ display:flex; align-items:center; gap:9px; margin-top:18px;
+    background:#f1f3f6; border-radius:14px; padding:13px 16px; }
+  .searchbox svg{ color:var(--sub); flex:none; }
+  .searchbox input{ border:none; background:transparent; outline:none; width:100%;
+    font-family:inherit; font-size:15px; color:var(--ink); }
+  .searchbox input::placeholder{ color:var(--sub); }
+  .donglist{ margin-top:6px; max-height:44vh; overflow-y:auto; }
+  .dongrow{ display:flex; align-items:center; gap:12px; width:100%; text-align:left; cursor:pointer;
+    background:transparent; border:none; border-bottom:1px solid var(--line); padding:17px 4px;
+    font-family:inherit; font-size:16px; font-weight:600; color:var(--ink); }
+  .dongrow .pin{ color:var(--sub); flex:none; display:flex; }
+  .dongrow .nm{ flex:1; }
+  .dongrow .ck{ color:var(--accent); font-weight:800; display:none; }
+  .dongrow.sel{ color:var(--accent); }
+  .dongrow.sel .pin{ color:var(--accent); }
+  .dongrow.sel .ck{ display:inline; }
+  .dongempty{ color:var(--sub); font-size:14px; text-align:center; padding:26px 0; }
   .weatherpick{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:18px; }
   .wp{ background:#fff; border:1.6px solid var(--line); border-radius:16px; padding:16px 12px; cursor:pointer;
     font-family:inherit; text-align:center; transition:.12s; }
@@ -368,20 +459,28 @@
   .wp .e{ font-size:26px; }
   .wp .n{ font-weight:800; font-size:14px; margin-top:6px; }
   .wp .m{ font-size:11.5px; color:var(--sub); margin-top:2px; }
-  .rerollrow{ margin:2px 0 6px; }
+  .actrow{ display:flex; gap:9px; justify-content:center; margin:2px 0 8px; }
+  .actrow .btn{ flex:1 1 0; max-width:190px; margin:0; padding:9px 8px; font-size:15px; text-align:center; background:transparent; }
 
-  /* 달력: 날짜 클릭 → 큰 화면(모달) */
-  .daymodal{ position:fixed; inset:0; background:rgba(22,28,40,.62); backdrop-filter:blur(3px);
-    display:none; align-items:center; justify-content:center; padding:20px; z-index:100; }
-  .daymodal.on{ display:flex; animation:fade .25s ease; }
-  .daymodal-card{ background:#fff; border-radius:22px; overflow:hidden auto; width:100%; max-width:360px;
-    max-height:90vh; position:relative; box-shadow:0 24px 70px rgba(20,30,50,.45); }
-  .daymodal-card img{ width:100%; aspect-ratio:3/4; object-fit:cover; display:block; background:#dde3ec; }
-  .daymodal-x{ position:absolute; top:12px; right:12px; width:34px; height:34px; border-radius:50%;
-    border:none; background:rgba(0,0,0,.42); color:#fff; font-size:15px; cursor:pointer; z-index:2; }
-  .daymodal-body{ padding:16px 18px 20px; }
-  .daymodal-body .dm-date{ font-size:12.5px; color:var(--sub); font-weight:700; }
-  .daymodal-body .dm-name{ font-size:19px; font-weight:800; letter-spacing:-.4px; margin:3px 0 2px; }
+  /* 달력: 날짜 클릭 → 그날 상세페이지(폰 안에서 전체화면) */
+  .daymodal{ position:absolute; inset:0; background:#fff; display:none;
+    flex-direction:column; z-index:100; }
+  .daymodal.on{ display:flex; animation:slidein .22s ease; }
+  @keyframes slidein{ from{opacity:0; transform:translateX(14px);} to{opacity:1; transform:none;} }
+  .daymodal-card{ display:flex; flex-direction:column; flex:1; overflow-y:auto; padding:18px 22px 28px; }
+  .dd-head{ display:flex; align-items:center; gap:4px; margin-bottom:12px; }
+  .dd-back{ background:none; border:none; font-family:inherit; cursor:pointer; color:var(--ink);
+    font-size:26px; line-height:1; padding:2px 10px 2px 0; }
+  .dd-head h2{ font-size:20px; font-weight:800; letter-spacing:-.4px; }
+  .dd-weather{ display:flex; align-items:center; gap:7px; color:var(--sub);
+    font-size:14px; font-weight:600; margin-bottom:16px; }
+  .dd-weather .we{ font-size:15px; }
+  .dd-photo{ margin-top:0; min-height:340px; border:1.5px solid var(--line); }   /* 코디 사진엔 점선보다 실선 */
+  .dd-photo .dz-img{ max-height:420px; width:100%; object-fit:cover; }
+  .dd-name-row{ display:flex; align-items:center; gap:9px; margin-top:20px; }
+  .dd-name{ font-size:20px; font-weight:800; letter-spacing:-.4px; }
+  .wornchip.done{ color:#2e7d4f; background:#e8f5ec; }
+  .wornchip.undone{ color:var(--sub); background:#eef1f7; }   /* pending 클래스는 캘린더 버튼(.pending)과 충돌 → 안 씀 */
 
   /* 참고사진 칩(오늘 화면에서 사진 추가 시) */
   #refchip:not(:empty){ margin:0 0 12px; }
@@ -403,13 +502,10 @@
 
   <!-- 1. SPLASH -->
   <section class="screen on" id="s-splash">
-    <div class="scene">
-      <div class="rain" id="splash-rain"></div>
-      <div class="otter" id="splash-otter"></div>
-      <div class="water"></div>
-    </div>
+    <div class="spacer" style="flex:1.2"></div>
     <div class="logo">rain<b>ism</b></div>
-    <div class="tag">오늘 뭐 입지, 내가 대신 골라줄게요.</div>
+    <div class="tag">오늘 뭐 입지,<br>내가 대신 골라줄게요.</div>
+    <div class="tagsub">날씨에 맞춰 내 취향대로,<br>아침마다 탭 한 번이면 끝나요.</div>
     <div class="spacer"></div>
     <button class="btn" onclick="go('s-gender')">시작하기</button>
     <p class="demoNote">포트폴리오 데모 · 실제 날씨/계정 없이 흐름만 보여줘요</p>
@@ -417,15 +513,24 @@
       실서비스에서는 라이선스 이미지(크라우드픽 확장 라이선스 · 크리에이터 계약)로 교체됩니다.</p>
   </section>
 
-  <!-- 2. GENDER -->
+  <!-- 2. GENDER + AGE (한 화면으로 합침) -->
   <section class="screen" id="s-gender">
     <button class="backb" onclick="back()" aria-label="뒤로">← 뒤로</button>
-    <h2>먼저, 어떤 옷을 찾으세요?</h2>
-    <p class="sub">지금 rainism은 여성 데일리룩부터 시작하고 있어요.</p>
-    <div class="choices">
-      <button class="choice" onclick="pickGender('여성')"><span class="sw" style="background:#f3d6de"></span>여성 옷을 찾아요</button>
-      <button class="choice" onclick="pickGender('남성')"><span class="sw" style="background:#cdd8ea"></span>남성 옷을 찾아요</button>
+    <h2>어떻게 불러드리면 될까요?</h2>
+    <p class="sub">맞는 옷을 고르는 데만 써요</p>
+    <div class="genderrow" id="genderRow">
+      <button class="pick" onclick="pickGender('여성',this)">여성</button>
+      <button class="pick" onclick="pickGender('남성',this)">남성</button>
     </div>
+    <p class="miniq">나이대는요?</p>
+    <div class="choices" id="ageList">
+      <button class="pick" onclick="pickAge('10대',this)">10대<span class="chk">✓</span></button>
+      <button class="pick" onclick="pickAge('20대',this)">20대<span class="chk">✓</span></button>
+      <button class="pick" onclick="pickAge('30대',this)">30대<span class="chk">✓</span></button>
+      <button class="pick" onclick="pickAge('40대 이상',this)">40대 이상<span class="chk">✓</span></button>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn" id="onbNext" onclick="onboardNext()" disabled>다음</button>
   </section>
 
   <!-- gender turn-away -->
@@ -436,20 +541,7 @@
       <p class="sub">지금 rainism은 20–30대 <b>여성</b> 데일리룩만 골라드릴 수 있어요.<br>남자분들 코디도 꼭 준비해서 다시 만나요!</p>
     </div>
     <button class="btn soft" onclick="go('s-gender')">← 돌아가기</button>
-    <button class="btn ghost" onclick="go('s-age')">그래도 구경할래요 →</button>
-  </section>
-
-  <!-- 3. AGE -->
-  <section class="screen" id="s-age">
-    <button class="backb" onclick="back()" aria-label="뒤로">← 뒤로</button>
-    <h2>나이대를 알려주세요</h2>
-    <p class="sub">지금은 20–30대 데일리룩에 집중하고 있어요.</p>
-    <div class="choices">
-      <button class="choice" onclick="pickAge('10대')"><span class="sw" style="background:#e6e0f2"></span>10대</button>
-      <button class="choice" onclick="pickAge('20대')"><span class="sw" style="background:#d6e4f3"></span>20대</button>
-      <button class="choice" onclick="pickAge('30대')"><span class="sw" style="background:#d3ece4"></span>30대</button>
-      <button class="choice" onclick="pickAge('40대 이상')"><span class="sw" style="background:#efe2d2"></span>40대 이상</button>
-    </div>
+    <button class="btn ghost" onclick="go('s-q1')">그래도 구경할래요 →</button>
   </section>
 
   <!-- age turn-away -->
@@ -459,7 +551,7 @@
       <h2 id="away-age-t">앗, 조금만 기다려 주세요</h2>
       <p class="sub" id="away-age-p"></p>
     </div>
-    <button class="btn soft" onclick="go('s-age')">← 돌아가기</button>
+    <button class="btn soft" onclick="go('s-gender')">← 돌아가기</button>
     <button class="btn ghost" onclick="go('s-q1')">그래도 구경할래요 →</button>
   </section>
 
@@ -468,13 +560,14 @@
     <button class="backb" onclick="back()" aria-label="뒤로">← 뒤로</button>
     <div class="progress"><i class="done"></i><i></i><i></i></div>
     <h2>어떤 게 제일 나 같아요?</h2>
-    <p class="sub">정답 없어요. 눈이 먼저 가는 걸로 골라요.</p>
-    <div class="moodgrid">
-      <button onclick="pickQuiz('mood','미니멀')"><img src="./proto_img/03.jpg" alt="미니멀"><b>미니멀</b></button>
-      <button onclick="pickQuiz('mood','러블리')"><img src="./proto_img/13.jpg" alt="러블리"><b>러블리</b></button>
-      <button onclick="pickQuiz('mood','캐주얼')"><img src="./proto_img/16.jpg" alt="캐주얼"><b>캐주얼</b></button>
-      <button onclick="pickQuiz('mood','시크')"><img src="./proto_img/14.jpg" alt="시크"><b>시크</b></button>
+    <div class="moodgrid" id="moodGrid">
+      <button onclick="pickMood('미니멀',this)"><img src="./proto_img/03.jpg" alt="미니멀"><b>미니멀<span class="chk">✓</span></b></button>
+      <button onclick="pickMood('러블리',this)"><img src="./proto_img/13.jpg" alt="러블리"><b>러블리<span class="chk">✓</span></b></button>
+      <button onclick="pickMood('캐주얼',this)"><img src="./proto_img/16.jpg" alt="캐주얼"><b>캐주얼<span class="chk">✓</span></b></button>
+      <button onclick="pickMood('시크',this)"><img src="./proto_img/14.jpg" alt="시크"><b>시크<span class="chk">✓</span></b></button>
     </div>
+    <div class="spacer"></div>
+    <button class="btn" id="moodNext" onclick="go('s-q2')" disabled>다음</button>
   </section>
 
   <!-- 5. QUIZ 2 COLOR -->
@@ -482,13 +575,14 @@
     <button class="backb" onclick="back()" aria-label="뒤로">← 뒤로</button>
     <div class="progress"><i class="done"></i><i class="done"></i><i></i></div>
     <h2>손이 자주 가는 색은?</h2>
-    <p class="sub">옷장에서 제일 많은 톤으로 골라요.</p>
     <div class="choices">
-      <button class="choice" onclick="pickQuiz('color','뉴트럴')"><span class="sw" style="background:#e7e2d8"></span>뉴트럴 · 화이트/베이지/그레이</button>
-      <button class="choice" onclick="pickQuiz('color','다크')"><span class="sw" style="background:#3a3d44"></span>다크 · 블랙/네이비</button>
-      <button class="choice" onclick="pickQuiz('color','쿨톤')"><span class="sw" style="background:#7fa8d0"></span>쿨톤 포인트 · 블루/청록</button>
-      <button class="choice" onclick="pickQuiz('color','웜톤')"><span class="sw" style="background:#d8a86a"></span>웜톤 포인트 · 옐로/브라운</button>
+      <button class="choice" onclick="pickColor('뉴트럴',this)"><span class="sws"><span style="background:#efe9dc"></span><span style="background:#cbbda3"></span><span style="background:#8b8272"></span></span>뉴트럴<span class="chk">✓</span></button>
+      <button class="choice" onclick="pickColor('다크',this)"><span class="sws"><span style="background:#23262c"></span><span style="background:#3a3d44"></span><span style="background:#565b64"></span></span>다크<span class="chk">✓</span></button>
+      <button class="choice" onclick="pickColor('쿨톤',this)"><span class="sws"><span style="background:#9fbde0"></span><span style="background:#7fa8d0"></span><span style="background:#cfe0f2"></span></span>쿨톤 포인트<span class="chk">✓</span></button>
+      <button class="choice" onclick="pickColor('웜톤',this)"><span class="sws"><span style="background:#d3a570"></span><span style="background:#c48a4a"></span><span style="background:#eaddc4"></span></span>웜톤 포인트<span class="chk">✓</span></button>
     </div>
+    <div class="spacer"></div>
+    <button class="btn" id="colorNext" onclick="go('s-q3')" disabled>다음</button>
   </section>
 
   <!-- 6. QUIZ 3 TPO -->
@@ -496,32 +590,36 @@
     <button class="backb" onclick="back()" aria-label="뒤로">← 뒤로</button>
     <div class="progress"><i class="done"></i><i class="done"></i><i class="done"></i></div>
     <h2>요즘 옷 입고 가는 곳은?</h2>
-    <p class="sub">가장 자주 가는 데로 골라요.</p>
     <div class="choices">
-      <button class="choice" onclick="pickQuiz('tpo','학교·일상')"><span class="sw" style="background:#dfe7f0"></span>학교·일상</button>
-      <button class="choice" onclick="pickQuiz('tpo','출근·미팅')"><span class="sw" style="background:#e3ddf0"></span>출근·미팅</button>
-      <button class="choice" onclick="pickQuiz('tpo','약속·데이트')"><span class="sw" style="background:#f3dde3"></span>약속·데이트</button>
-      <button class="choice" onclick="pickQuiz('tpo','동네·가볍게')"><span class="sw" style="background:#dcece2"></span>동네·가볍게</button>
+      <button class="choice" onclick="pickTpo('학교·일상',this)"><span class="emo">🎓</span>학교·일상<span class="chk">✓</span></button>
+      <button class="choice" onclick="pickTpo('출근·미팅',this)"><span class="emo">💼</span>출근·미팅<span class="chk">✓</span></button>
+      <button class="choice" onclick="pickTpo('약속·데이트',this)"><span class="emo">☕</span>약속·데이트<span class="chk">✓</span></button>
+      <button class="choice" onclick="pickTpo('동네·가볍게',this)"><span class="emo">🏠</span>동네·가볍게<span class="chk">✓</span></button>
     </div>
+    <div class="spacer"></div>
+    <button class="btn" id="tpoNext" onclick="finishQuiz()" disabled>완료</button>
   </section>
 
   <!-- 7. PHOTO (optional) -->
   <section class="screen" id="s-photo">
     <button class="backb" onclick="back()" aria-label="뒤로">← 뒤로</button>
-    <h2>참고하고 싶은 사진 있어요?</h2>
-    <p class="sub">있으면 그 분위기로, 없어도 취향만으로 충분해요.</p>
-    <label class="choice" style="justify-content:center; border-style:dashed; margin-top:22px; cursor:pointer;">
+    <h2>닮고 싶은 사진이 있나요?</h2>
+    <p class="sub">올리면 그 사진 분위기로 골라드려요. 안 올려도 돼요.</p>
+    <label class="dropzone">
       <input type="file" accept="image/*" style="display:none" onchange="onPhoto(this)">
-      + 사진 올리기 (선택)
+      <div class="dz-empty" id="dzEmpty">
+        <svg class="dz-ic" width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        <div class="dz-t">눌러서 사진 올리기</div>
+        <div class="dz-sub">or <u>browse files</u></div>
+      </div>
+      <img id="photoImg" class="dz-img" style="display:none" alt="올린 참고 사진">
     </label>
-    <div id="photoPrev" style="display:none; margin-top:14px; text-align:center;">
-      <img id="photoImg" style="max-width:60%; border-radius:14px;">
-      <p class="sub" id="clipStatus" style="margin-top:10px; line-height:1.5;"></p>
-    </div>
+    <p class="sub" id="clipStatus" style="margin-top:10px; line-height:1.5;"></p>
+    <p class="privnote">🔒 사진은 언제든 삭제할 수 있고, 추천에만 써요</p>
     <div id="photoErr"></div>
     <div class="spacer"></div>
-    <button class="btn" onclick="afterPhoto()">사진 없이 취향으로 볼래요</button>
-    <button class="btn ghost" id="photoNext" style="display:none" onclick="afterPhoto()">이 사진으로 계속하기 →</button>
+    <button class="btn" id="photoNext" onclick="photoContinue()">📷 이 사진처럼 골라줘</button>
+    <button class="btn ghost" onclick="afterPhoto()">사진 없이 취향으로 볼래요</button>
   </section>
 
   <!-- CONSENT (PIPA · RG-1) -->
@@ -548,39 +646,35 @@
     <button class="btn" onclick="acceptConsent()">동의하고 시작하기</button>
   </section>
 
-  <!-- LOCATION (위치 권한 거부 시 대체 경로 · FR-8) -->
+  <!-- LOCATION — 동네 고르기 (날씨 읽을 동네 · 위치 거부 시 대체 경로도 겸함 FR-8) -->
   <section class="screen" id="s-location">
+    <button class="backb" onclick="back()" aria-label="뒤로">← 뒤로</button>
     <h2>동네를 골라주세요</h2>
-    <p class="sub">위치를 못 받았어요. 괜찮아요 — 직접 고르면 돼요.</p>
-    <div class="choices" id="locList"></div>
+    <p class="sub" id="dong-sub">날씨를 읽어서 코디를 고르는 데만 써요</p>
+    <div class="searchbox">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="dongSearch" type="text" placeholder="동네 이름으로 검색" autocomplete="off" oninput="renderDong(this.value)">
+    </div>
+    <div class="donglist" id="dongList"></div>
+    <div class="spacer"></div>
+    <button class="btn" onclick="go('s-weather')">이 동네로 할게요</button>
   </section>
 
   <!-- 8. WEATHER PICK (demo stand-in for live API) -->
   <section class="screen" id="s-weather">
     <h2>오늘 날씨를 골라볼까요?</h2>
-    <p class="sub" id="w-sub">진짜 앱은 <b>GPS로 동네를, 기상청에서 날씨를</b> 자동으로 읽어와요.<br>데모라 직접 바꿔보며 코디가 어떻게 달라지는지 볼 수 있어요.</p>
-    <div class="locpick" id="locpick"></div>
+    <p class="sub" id="w-sub">진짜 앱은 기상청에서 자동으로 읽어와요. 데모라 직접 골라봐요.</p>
     <div class="weatherpick" id="weatherpick"></div>
   </section>
 
   <!-- 9. RESULT (core tab) -->
   <section class="screen" id="s-result">
-    <div class="rhead">
-      <div>
-        <div style="font-size:12px;color:var(--sub);font-weight:700" id="r-date">오늘 · 관악구</div>
-        <h2 id="r-title">비 오는 오늘, 입을 만한 3가지</h2>
-      </div>
-      <button class="resetlink" onclick="resetAll()">↻ 처음부터</button>
-    </div>
     <div class="nightbar" id="nightBar" style="display:none">
       <span style="font-size:19px">🌙</span>
-      <div><b>지금은 밤이에요 — 내일 아침 코디를 골라뒀어요</b>
-        <span>자기 전에 정해두면, 아침엔 확인만 하면 돼요</span></div>
+      <div><b>지금은 밤이에요</b>
+        <span>내일 아침 코디를 골라뒀어요</span></div>
+      <button class="nx" onclick="this.closest('.nightbar').style.display='none'" aria-label="닫기">✕</button>
     </div>
-    <div class="wbadge" id="r-weather">☂ 비 · 체감 24°</div>
-    <div class="statebar off" id="offBar" style="display:none">📴 오프라인이에요 · 마지막으로 받은 날씨로 골랐어요</div>
-    <div class="statebar warn" id="cacheBar" style="display:none"></div>
-    <div class="statebar warn" id="thinBar" style="display:none"></div>
     <div class="yday" id="ydayAsk" style="display:none">
       <img id="yd-img" alt="어제 코디">
       <div class="yt"><b>어제 이거 입었어요?</b><span>알려주면 기록에 ✓로 남겨둘게요</span></div>
@@ -590,6 +684,15 @@
       </div>
       <button class="yx" onclick="answerWorn(null)">✕</button>
     </div>
+    <div class="rtop">
+      <div class="wbadge" id="r-weather">☂ 비 · 체감 24°</div>
+      <div class="rdate" id="r-date">7월 14일 화 · 서교동</div>
+    </div>
+    <h2 id="r-title">비 오는 오늘,
+입을 만한 3가지</h2>
+    <div class="statebar off" id="offBar" style="display:none">📴 오프라인이에요 · 마지막으로 받은 날씨로 골랐어요</div>
+    <div class="statebar warn" id="cacheBar" style="display:none"></div>
+    <div class="statebar warn" id="thinBar" style="display:none"></div>
     <div class="tasteline" id="r-taste"></div>
     <div id="refchip"></div>
     <div id="looks"></div>
@@ -601,9 +704,12 @@
         <button class="wgo" id="wakeGo" onclick="enableWake()">알림 받을래요</button>
       </div>
     </div>
-    <div class="rerollrow"><button class="btn soft" id="rerollBtn" onclick="reroll()">🔄 다른 거 보여줘</button></div>
-    <label class="btn soft" style="cursor:pointer;margin-bottom:6px;text-align:center"><input type="file" accept="image/*" style="display:none" onchange="onResultPhoto(this)">📷 이 사진처럼 골라줘</label>
+    <div class="actrow">
+      <button class="btn soft outline" id="rerollBtn" onclick="reroll()">🔄 다른 거 보여줘</button>
+      <label class="btn soft" style="cursor:pointer"><input type="file" accept="image/*" style="display:none" onchange="onResultPhoto(this)">📷 이 사진처럼</label>
+    </div>
     <button class="btn ghost" onclick="go('s-weather')">날씨 바꿔서 다시 보기</button>
+    <button class="btn ghost" onclick="resetAll()">↻ 처음부터</button>
   </section>
 
   <!-- INSTALL · 위젯 · 알림 (D1으로 돌아오게 만드는 유일한 장치) -->
@@ -613,7 +719,7 @@
 
     <div class="lockscreen">
       <div class="lstime" id="ls-time">7:00</div>
-      <div class="lsdate">화요일, 7월 14일</div>
+      <div class="lsdate" id="ls-date">화요일, 7월 14일</div>
       <div class="lswidget">
         <img id="ls-img" alt="">
         <div>
@@ -637,22 +743,27 @@
 
   <!-- 10. WEATHER TAB -->
   <section class="screen" id="s-weathertab">
-    <h2 style="margin-bottom:16px">날씨</h2>
-    <div class="whero">
-      <div style="font-size:13px;opacity:.9" id="wt-loc">오늘 · 관악구</div>
-      <div class="big" id="wt-temp">체감 24°</div>
-      <div id="wt-desc" style="opacity:.95">☂ 비 · 종일 습해요</div>
+    <div class="wt-loc2" id="wt-loc">📍 마포구 서교동 · 7월 14일 화</div>
+    <div class="wt-head">
+      <div class="wt-ico" id="wt-ico">🌧️</div>
+      <div>
+        <div class="wt-big" id="wt-temp">23°</div>
+        <div class="wt-sub" id="wt-desc">체감온도 · 비</div>
+      </div>
     </div>
-    <div class="card2"><div class="k">오늘 한 줄</div><div class="v" id="wt-line">체감 24도, 종일 비 소식이에요. 젖어도 티 안 나는 옷과 우산을 챙기세요.</div></div>
-    <div class="k" style="font-size:12px;color:var(--sub);font-weight:700;margin:6px 2px 0">시간별 강수</div>
+    <div class="wt-grid">
+      <div class="wt-stat"><div class="k">강수확률</div><div class="v" id="wt-pop">80%</div></div>
+      <div class="wt-stat"><div class="k">강수량</div><div class="v" id="wt-mm">3~10mm</div></div>
+      <div class="wt-stat"><div class="k">습도</div><div class="v" id="wt-humid">78%</div></div>
+      <div class="wt-stat"><div class="k">일교차</div><div class="v" id="wt-gap">4°</div></div>
+    </div>
+    <div class="wt-info"><span>ℹ️</span><span id="wt-line">체감 23도, 종일 비 소식이에요.</span></div>
+    <div class="wt-hrlabel">시간별</div>
     <div class="bars" id="wt-bars"></div>
-    <div class="card2" style="margin-top:22px"><div class="k">내일은?</div><div class="v" id="wt-tomorrow">내일 아침도 흐림, 늦게 갤 예정이에요.</div></div>
   </section>
 
   <!-- SAVED SHEET (코디 캘린더) -->
   <section class="screen" id="s-saved">
-    <div class="rhead"><h2>코디 기록</h2></div>
-    <p class="sub">나만 봐요. 어디에도 공유되지 않아요.</p>
     <div id="calbody"></div>
   </section>
 
@@ -673,19 +784,30 @@
     <button id="tab-calendar" onclick="switchTab('calendar')"><span class="ic">📅</span>기록</button>
   </nav>
 
-  <!-- 달력 날짜 클릭 → 큰 화면 -->
-  <div class="daymodal" id="dayModal" onclick="closeDayModal()">
-    <div class="daymodal-card" onclick="event.stopPropagation()">
-      <button class="daymodal-x" onclick="closeDayModal()">✕</button>
-      <img id="dm-img" alt="코디">
-      <div class="daymodal-body">
-        <div class="dm-date" id="dm-date"></div>
-        <div class="dm-name" id="dm-name"></div>
-        <div class="chips" id="dm-chips"></div>
-        <div class="items" id="dm-items"></div>
-        <div class="reason" id="dm-reason" style="margin-top:10px"></div>
-        <button class="heart" id="dm-worn" style="margin-top:14px"></button>
+  <!-- 달력 날짜 클릭 → 그날 상세페이지 -->
+  <div class="daymodal" id="dayModal">
+    <div class="daymodal-card">
+      <div class="dd-head">
+        <button class="dd-back" onclick="closeDayModal()" aria-label="뒤로">‹</button>
+        <h2 id="dm-date"></h2>
       </div>
+      <div class="dd-weather" id="dm-weather"></div>
+      <label class="dropzone dd-photo">
+        <input type="file" accept="image/*" style="display:none" onchange="onDayPhoto(this)">
+        <div class="dz-empty" id="dm-dzEmpty">
+          <svg class="dz-ic" width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          <div class="dz-t">그날 고른 코디 사진</div>
+          <div class="dz-sub">or <u>browse files</u></div>
+        </div>
+        <img id="dm-photo" class="dz-img" style="display:none" alt="그날 고른 코디 사진">
+      </label>
+      <div class="dd-name-row">
+        <span class="dd-name" id="dm-name"></span>
+        <span id="dm-worn-badge"></span>
+      </div>
+      <div class="chips" id="dm-chips"></div>
+      <div class="spacer"></div>
+      <button class="btn soft" id="dm-worn" style="margin-top:14px"></button>
     </div>
   </div>
 
@@ -811,17 +933,17 @@ LOOKS.forEach(l=> l.img='./proto_img/'+String(l.id).padStart(2,'0')+'.jpg');
 
 /* ---------- 날씨 시나리오 (데모 · 실제 앱은 기상청 자동) ---------- */
 const WEATHER=[
- {key:'jangma', e:'🌧️', n:'장마 · 체감 23°', m:'비 오는 따뜻한 날', temp:'warm', rain:true, badge:'☂ 비 · 체감 23°', title:'비 오는 오늘, 입을 만한 3가지', line:'체감 23도, 종일 비 소식이에요. 젖어도 티 안 나는 옷과 우산을 챙기세요.', tomorrow:'내일도 오전까지 비, 오후에 그쳐요.', pop:[70,80,90,80,60,40]},
- {key:'hot', e:'☀️', n:'무더위 · 체감 31°', m:'맑고 더운 날', temp:'hot', rain:false, badge:'☀ 맑음 · 체감 31°', title:'무더운 오늘, 시원하게 입을 3가지', line:'체감 31도, 한여름 더위예요. 얇고 통풍 잘 되는 소재로 시원하게.', tomorrow:'내일도 맑고 더워요. 자외선 조심!', pop:[0,0,10,10,0,0]},
- {key:'coolrain', e:'🌦️', n:'선선한 비 · 체감 20°', m:'비 오고 선선한 날', temp:'cool', rain:true, badge:'☂ 비 · 체감 20°', title:'선선한 비, 걸치기 좋은 3가지', line:'체감 20도, 비 오고 선선해요. 얇은 겉옷 하나면 딱 좋아요.', tomorrow:'내일 아침 쌀쌀, 낮에 풀려요.', pop:[60,70,60,50,50,40]},
- {key:'warmsun', e:'🌤️', n:'맑고 따뜻 · 체감 26°', m:'화창한 데일리', temp:'warm', rain:false, badge:'🌤 맑음 · 체감 26°', title:'화창한 오늘, 입을 만한 3가지', line:'체감 26도, 화창해요. 가벼운 데일리룩 하나면 충분해요.', tomorrow:'내일도 맑아요. 나들이 좋은 날!', pop:[0,10,0,20,10,0]},
+ {key:'jangma', e:'🌧️', n:'장마 · 체감 23°', m:'비 오는 따뜻한 날', temp:'warm', rain:true, badge:'☂ 비 · 체감 23°', title:'비 오는 오늘,\n입을 만한 3가지', line:'체감 23도, 종일 비 소식이에요. 젖어도 티 안 나는 옷과 우산을 챙기세요.', tomorrow:'내일도 오전까지 비, 오후에 그쳐요.', pop:[70,80,90,80,60,40], mm:'3~10mm', humid:'78%', gap:'4°'},
+ {key:'hot', e:'☀️', n:'무더위 · 체감 31°', m:'맑고 더운 날', temp:'hot', rain:false, badge:'☀ 맑음 · 체감 31°', title:'무더운 오늘,\n시원하게 입을 3가지', line:'체감 31도, 한여름 더위예요. 얇고 통풍 잘 되는 소재로 시원하게.', tomorrow:'내일도 맑고 더워요. 자외선 조심!', pop:[0,0,10,10,0,0], mm:'0mm', humid:'55%', gap:'8°'},
+ {key:'coolrain', e:'🌦️', n:'선선한 비 · 체감 20°', m:'비 오고 선선한 날', temp:'cool', rain:true, badge:'☂ 비 · 체감 20°', title:'선선한 비,\n걸치기 좋은 3가지', line:'체감 20도, 비 오고 선선해요. 얇은 겉옷 하나면 딱 좋아요.', tomorrow:'내일 아침 쌀쌀, 낮에 풀려요.', pop:[60,70,60,50,50,40], mm:'2~6mm', humid:'80%', gap:'5°'},
+ {key:'warmsun', e:'🌤️', n:'맑고 따뜻 · 체감 26°', m:'화창한 데일리', temp:'warm', rain:false, badge:'🌤 맑음 · 체감 26°', title:'화창한 오늘,\n입을 만한 3가지', line:'체감 26도, 화창해요. 가벼운 데일리룩 하나면 충분해요.', tomorrow:'내일도 맑아요. 나들이 좋은 날!', pop:[0,10,0,20,10,0], mm:'0mm', humid:'60%', gap:'7°'},
 ];
 
 /* ---------- 상태 ---------- */
 /* saved 배열은 없앴다 — '오늘 뭘 골랐나'를 배열과 달력(diary)이 따로 들고 있어서 어긋났다.
    (2장 고르면 카드는 둘 다 '입기로 했어요'인데 달력엔 1장만 남았다)
    이제 정본은 달력 한 곳뿐이다. 하루 = 코디 한 벌. */
-const state={ gender:null, age:null, mood:null, color:null, tpo:null, photo:false, weather:WEATHER[0], diary:{}, shown:{}, selectedDay:null, calOff:0, usedReroll:false, batch:0, booted:false, consent:false, loc:'관악구', authed:true,   /* loc=데모 기본 동네(실서비스는 GPS가 잡는다) */ wakeTime:'07:00', wakeOn:false,
+const state={ name:'', gender:null, age:null, mood:null, color:null, tpo:null, photo:false, weather:WEATHER[0], diary:{}, shown:{}, selectedDay:null, calOff:0, usedReroll:false, batch:0, booted:false, consent:false, loc:'마포구 서교동', authed:true,   /* loc=데모 기본 동네(실서비스는 GPS가 잡는다) */ wakeTime:'07:00', wakeOn:false,
   refPhotoUrl:null, refEmb:null, libEmb:null, clipOn:false };   /* refEmb=올린 사진의 분위기 좌표 · libEmb=라이브러리 39장 좌표 · clipOn=진짜 AI 매칭 작동 중 · shown={룩id:마지막으로 보여준 날} */
 const TODAY=new Date();
 const dkeyOf=d=> d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
@@ -836,6 +958,13 @@ function isNight(){
   const h=new Date().getHours();
   return (h>=17 || h<4);                                   // 17시~새벽4시 = 밤 → '내일 아침' 코디
 }
+/* 실제 오늘 날짜·요일로 표시한다 (하드코딩 '7월 14일 화' 였던 것 대체) */
+const WD=['일','월','화','수','목','금','토'];
+function fmtDateShort(d){ return (d.getMonth()+1)+'월 '+d.getDate()+'일 '+WD[d.getDay()]; }        // "7월 15일 수"
+function fmtDateLong(d){ return WD[d.getDay()]+'요일, '+(d.getMonth()+1)+'월 '+d.getDate()+'일'; } // "수요일, 7월 15일"
+function shownDate(){ const d=new Date(TODAY); if(isNight()) d.setDate(d.getDate()+1); return d; } // 밤이면 내일(=코디 대상일)
+/* 결과화면 상단: "오늘 날짜 요일 · 고른 동네" */
+function resultDateLabel(){ return fmtDateShort(shownDate())+' · '+state.loc.split(' ').pop(); }
 const dayWord=()=> isNight() ? '내일' : '오늘';
 const targetKey=()=> isNight() ? tmrwKey() : todayKey();
 function fmtKey(key){ const p=key.split('-'); return p[1]+'월 '+p[2]+'일'; }
@@ -909,32 +1038,70 @@ function trackImpression(picks){
 }
 
 /* ---------- 동의 · 위치 (예외: 권한 거부 = 실패가 아니라 다른 입력 경로) ---------- */
-const DONG=['관악구','마포구','성동구','강남구','노원구'];
-function acceptConsent(){
-  state.consent=true;
-  if(SIM.geo==='deny'){ renderLoc(); go('s-location'); return; }   // 권한 거부 → 직접 고르기(J1). 막다른 길 아님
-  go('s-q1');                                                       // 허용 → GPS가 잡은 동네로 (데모 기본값)
-}
+/* 실제 동네 목록 — 검색이 이 목록에서 걸러준다. 서울 25개 구 + 6대 광역시 대표 동.
+   ⚠️ 프로토타입에선 고른 동네가 '화면에 뜨는 이름'만 바꾼다 — 그 동네의 실제 날씨를 부르진 않는다
+   (날씨는 데모 선택 · §9-1). 실서비스에선 이 동네가 기상청 API 좌표로 이어진다. */
+const DONG=[
+  // 서울 (구 동)
+  '종로구 청운동','종로구 삼청동','종로구 부암동','종로구 평창동','종로구 가회동','종로구 이화동','종로구 혜화동','종로구 창신동','종로구 숭인동','종로구 사직동','종로구 무악동',
+  '중구 명동','중구 회현동','중구 필동','중구 장충동','중구 신당동','중구 황학동','중구 을지로동','중구 소공동','중구 광희동','중구 중림동','중구 약수동',
+  '용산구 이태원동','용산구 한남동','용산구 이촌동','용산구 후암동','용산구 청파동','용산구 원효로동','용산구 효창동','용산구 용문동','용산구 한강로동','용산구 서빙고동','용산구 보광동','용산구 남영동',
+  '성동구 성수동','성동구 왕십리동','성동구 금호동','성동구 옥수동','성동구 행당동','성동구 마장동','성동구 응봉동','성동구 사근동','성동구 용답동','성동구 송정동',
+  '광진구 자양동','광진구 구의동','광진구 광장동','광진구 화양동','광진구 능동','광진구 중곡동','광진구 군자동',
+  '동대문구 청량리동','동대문구 회기동','동대문구 이문동','동대문구 휘경동','동대문구 전농동','동대문구 답십리동','동대문구 장안동','동대문구 제기동','동대문구 용신동',
+  '중랑구 면목동','중랑구 상봉동','중랑구 중화동','중랑구 묵동','중랑구 망우동','중랑구 신내동',
+  '성북구 성북동','성북구 삼선동','성북구 돈암동','성북구 안암동','성북구 보문동','성북구 정릉동','성북구 길음동','성북구 종암동','성북구 장위동','성북구 석관동','성북구 월곡동','성북구 동선동',
+  '강북구 미아동','강북구 번동','강북구 수유동','강북구 우이동','강북구 인수동',
+  '도봉구 쌍문동','도봉구 방학동','도봉구 창동','도봉구 도봉동',
+  '노원구 월계동','노원구 공릉동','노원구 하계동','노원구 중계동','노원구 상계동',
+  '은평구 불광동','은평구 응암동','은평구 역촌동','은평구 녹번동','은평구 갈현동','은평구 구산동','은평구 대조동','은평구 신사동','은평구 증산동','은평구 수색동','은평구 진관동',
+  '서대문구 신촌동','서대문구 연희동','서대문구 홍제동','서대문구 홍은동','서대문구 북아현동','서대문구 남가좌동','서대문구 북가좌동','서대문구 천연동','서대문구 충현동',
+  '마포구 서교동','마포구 합정동','마포구 망원동','마포구 연남동','마포구 상암동','마포구 공덕동','마포구 아현동','마포구 도화동','마포구 용강동','마포구 대흥동','마포구 염리동','마포구 신수동','마포구 성산동','마포구 상수동','마포구 서강동',
+  '양천구 목동','양천구 신월동','양천구 신정동',
+  '강서구 화곡동','강서구 가양동','강서구 등촌동','강서구 염창동','강서구 발산동','강서구 방화동','강서구 공항동','강서구 우장산동',
+  '구로구 신도림동','구로구 구로동','구로구 고척동','구로구 개봉동','구로구 오류동','구로구 가리봉동','구로구 항동',
+  '금천구 가산동','금천구 독산동','금천구 시흥동',
+  '영등포구 여의도동','영등포구 영등포동','영등포구 당산동','영등포구 문래동','영등포구 양평동','영등포구 신길동','영등포구 대림동','영등포구 도림동',
+  '동작구 노량진동','동작구 상도동','동작구 사당동','동작구 흑석동','동작구 대방동','동작구 신대방동',
+  '관악구 신림동','관악구 봉천동','관악구 남현동','관악구 대학동','관악구 낙성대동',
+  '서초구 서초동','서초구 반포동','서초구 방배동','서초구 잠원동','서초구 양재동','서초구 내곡동','서초구 우면동',
+  '강남구 역삼동','강남구 삼성동','강남구 대치동','강남구 청담동','강남구 압구정동','강남구 신사동','강남구 논현동','강남구 도곡동','강남구 개포동','강남구 세곡동','강남구 일원동','강남구 수서동',
+  '송파구 잠실동','송파구 방이동','송파구 송파동','송파구 석촌동','송파구 문정동','송파구 가락동','송파구 오금동','송파구 거여동','송파구 마천동','송파구 풍납동','송파구 삼전동','송파구 장지동',
+  '강동구 천호동','강동구 성내동','강동구 길동','강동구 둔촌동','강동구 암사동','강동구 명일동','강동구 고덕동','강동구 상일동','강동구 강일동',
+  // 부산
+  '부산 해운대구 우동','부산 해운대구 좌동','부산 해운대구 중동','부산 해운대구 반여동','부산 부산진구 부전동','부산 부산진구 전포동','부산 동래구 온천동','부산 수영구 광안동','부산 수영구 남천동','부산 남구 대연동','부산 중구 남포동','부산 중구 광복동','부산 사하구 하단동','부산 금정구 장전동','부산 연제구 연산동',
+  // 대구
+  '대구 중구 삼덕동','대구 중구 대봉동','대구 수성구 범어동','대구 수성구 만촌동','대구 수성구 두산동','대구 달서구 상인동','대구 달서구 월성동','대구 달서구 이곡동','대구 북구 산격동','대구 북구 침산동','대구 동구 신천동','대구 남구 대명동','대구 서구 내당동',
+  // 인천
+  '인천 남동구 구월동','인천 남동구 논현동','인천 연수구 송도동','인천 연수구 연수동','인천 부평구 부평동','인천 미추홀구 주안동','인천 미추홀구 용현동','인천 서구 청라동','인천 서구 검단동','인천 중구 신포동','인천 계양구 계산동',
+  // 광주
+  '광주 동구 충장동','광주 동구 지산동','광주 서구 화정동','광주 서구 치평동','광주 남구 봉선동','광주 북구 운암동','광주 북구 용봉동','광주 광산구 수완동','광주 광산구 첨단동',
+  // 대전
+  '대전 서구 둔산동','대전 서구 관저동','대전 유성구 봉명동','대전 유성구 노은동','대전 유성구 지족동','대전 중구 은행동','대전 중구 태평동','대전 동구 가양동','대전 대덕구 법동',
+  // 울산
+  '울산 남구 삼산동','울산 남구 달동','울산 남구 무거동','울산 중구 성남동','울산 중구 우정동','울산 동구 방어동','울산 북구 화봉동'
+];
+function acceptConsent(){ state.consent=true; go('s-q1'); }   // 동네는 이제 뒤(사진 다음) 동네 화면에서 고른다
 /* 동네를 바꾸는 자리는 한 곳뿐이다 — 여기서 바꾸고, 동네를 쓰는 화면을 전부 다시 그린다.
    예전엔 state.loc에 넣기만 하고 어디서도 안 읽어서, 동네를 골라도 화면은 계속 '서울'이었다. */
-function setLoc(d){ state.loc=d; persist(); renderLocPick(); paintLoc(); }
+function setLoc(d){ state.loc=d; persist(); paintLoc();
+  const s=document.getElementById('dongSearch'); renderDong(s?s.value:''); }
 /* 동네가 뜨는 곳: 오늘 탭 머리 · 날씨 탭 머리 */
 function paintLoc(){
   const r=document.getElementById('r-date'), w=document.getElementById('wt-loc');
-  if(r) r.textContent=(isNight()?'내일 아침':'오늘')+' · '+state.loc;
-  if(w) w.textContent='오늘 · '+state.loc;
+  if(r) r.textContent=resultDateLabel();
+  if(w) w.textContent='📍 '+state.loc+' · '+fmtDateShort(shownDate());
 }
-/* 위치 권한 거부 시의 대체 경로(J1) */
-function renderLoc(){
-  document.getElementById('locList').innerHTML=DONG.map(d=>
-    `<button class="choice" onclick="pickLoc('${d}')"><span class="sw" style="background:#dfe7f0"></span>서울 · ${d}</button>`).join('');
-}
-function pickLoc(d){ setLoc(d); toast(d+' 날씨로 골라드릴게요'); go('s-q1'); }
-/* 데모: 날씨와 마찬가지로 동네도 직접 고른다. 실서비스는 GPS가 자동으로 잡는다. */
-function renderLocPick(){
-  const el=document.getElementById('locpick'); if(!el) return;
-  el.innerHTML='<span style="font-size:12px;color:var(--sub);font-weight:700;align-self:center;margin-right:3px">📍 서울</span>'
-    + DONG.map(d=>`<button class="${state.loc===d?'on':''}" onclick="setLoc('${d}')">${d}</button>`).join('');
+/* 동네 리스트 — 검색어로 거른다(빈 검색 = 전부). 고른 동네엔 체크. */
+const DONG_PIN='<span class="pin"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>';
+function renderDong(q=''){
+  const el=document.getElementById('dongList'); if(!el) return;
+  const key=(q||'').replace(/\s/g,'');
+  if(!key){ el.innerHTML='<div class="dongempty">동네 이름을 검색해보세요<br><span style="font-size:12.5px">예: 서교동 · 해운대 · 둔산동</span></div>'; return; }
+  const list=DONG.filter(d=>d.replace(/\s/g,'').includes(key)).slice(0,60);   // 결과가 많아도 60개까지만
+  el.innerHTML = list.length
+    ? list.map(d=>`<button class="dongrow ${state.loc===d?'sel':''}" onclick="setLoc('${d}')">${DONG_PIN}<span class="nm">${d}</span><span class="ck">✓</span></button>`).join('')
+    : '<div class="dongempty">그런 동네를 못 찾았어요.</div>';
 }
 
 /* ================= 상황 시뮬레이터 (데모 전용 · 앱 화면엔 없음) ================= */
@@ -1020,7 +1187,7 @@ function renderMetrics(){
 }
 
 /* ---------- 내비 ---------- */
-const ONB=['s-splash','s-gender','s-age','s-q1','s-q2','s-q3','s-photo'];
+const ONB=['s-splash','s-gender','s-q1','s-q2','s-q3','s-photo'];
 let hist=[];
 function back(){
   const prev=hist.pop();
@@ -1046,25 +1213,63 @@ function go(id){
 function toast(t){ const el=document.getElementById('toast'); el.textContent=t; el.classList.add('on'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('on'),1900); }
 
 /* ---------- 스크리닝 ---------- */
-function pickGender(g){ state.gender=g; g==='여성' ? go('s-age') : go('s-away-gender'); }
-function pickAge(a){
+function pickGender(g,el){                                   // 선택만 — 진행은 '다음'에서
+  state.gender=g;
+  document.querySelectorAll('#genderRow .pick').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel'); refreshNext();
+}
+function pickAge(a,el){
   state.age=a;
-  if(a==='20대'||a==='30대'){ go('s-consent'); return; }   // 수집 전 동의(PIPA · RG-1)
-  const t=document.getElementById('away-age-t'), p=document.getElementById('away-age-p');
-  if(a==='10대'){ t.textContent='앗, 조금만 기다려 주세요'; p.innerHTML='지금은 20–30대 데일리룩부터 시작하고 있어요.<br>더 많은 분들을 위해 곧 준비할게요!'; }
+  document.querySelectorAll('#ageList .pick').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel'); refreshNext();
+}
+function refreshNext(){ document.getElementById('onbNext').disabled = !(state.gender && state.age); }
+function onboardNext(){
+  if(!state.gender || !state.age) return;
+  if(state.gender!=='여성'){ go('s-away-gender'); return; }          // 남성 → 안내
+  if(state.age==='20대'||state.age==='30대'){ go('s-consent'); return; }  // 수집 전 동의(PIPA · RG-1)
+  const t=document.getElementById('away-age-t'), p=document.getElementById('away-age-p');   // 10대·40대 이상 → 안내
+  if(state.age==='10대'){ t.textContent='앗, 조금만 기다려 주세요'; p.innerHTML='지금은 20–30대 데일리룩부터 시작하고 있어요.<br>더 많은 분들을 위해 곧 준비할게요!'; }
   else { t.textContent='앗, 지금은 20–30대에 집중하고 있어요'; p.innerHTML='더 다양한 연령대는 다음 시즌에 준비할게요.<br>그때 꼭 다시 찾아와 주세요!'; }
   go('s-away-age');
 }
 
 /* ---------- 퀴즈 ---------- */
-function pickQuiz(k,v){
-  state[k]=v;
-  if(k==='mood') go('s-q2');
-  else if(k==='color') go('s-q3');
-  else { track('퀴즈_완료', {무드:state.mood, 색:state.color, TPO:v}); go('s-photo'); }   // ② 퍼널
+/* 무드는 고르고 → '다음'으로 확정한다(옆 성별/나이 화면과 같은 방식). 나머지 퀴즈는 탭 즉시 넘어감 */
+function pickMood(v,btn){
+  state.mood=v;
+  document.querySelectorAll('#moodGrid button').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  document.getElementById('moodNext').disabled=false;
+}
+/* 색 = 무드 화면과 동일하게: 고르면 선택 표시 → '다음' 활성화(바로 안 넘어감) */
+function pickColor(v,btn){
+  state.color=v;
+  document.querySelectorAll('#s-q2 .choice').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  document.getElementById('colorNext').disabled=false;
+}
+/* TPO = 마지막 퀴즈. 고르면 선택 표시 → '완료' 활성화 */
+function pickTpo(v,btn){
+  state.tpo=v;
+  document.querySelectorAll('#s-q3 .choice').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  document.getElementById('tpoNext').disabled=false;
+}
+function finishQuiz(){
+  track('퀴즈_완료', {무드:state.mood, 색:state.color, TPO:state.tpo});   // ② 퍼널
+  go('s-photo');
 }
 /* ---------- 참고사진 → 진짜 임베딩(CLIP) ---------- */
 function setStatus(id,html){ const e=id&&document.getElementById(id); if(e) e.innerHTML=html; }
+function showPhoto(on){                             // 올린 사진을 드롭존 안에 보여줄지
+  document.getElementById('photoImg').style.display = on ? 'block' : 'none';
+  document.getElementById('dzEmpty').style.display  = on ? 'none'  : 'flex';
+}
+function photoContinue(){                           // 파란 버튼: 사진 있으면 그걸로, 없으면 먼저 고르게 (거짓 주장 안 함 §9-1)
+  if(!state.photo){ document.querySelector('#s-photo input[type=file]').click(); return; }
+  afterPhoto();
+}
 
 /* 사진을 실제로 놓아준다. 참조만 null로 바꾸면 브라우저는 사진을 계속 붙들고 있다.
    화면이 "빼면 바로 사라져요"라고 말하므로, 말한 대로 한다(§9-1). */
@@ -1078,7 +1283,7 @@ async function applyRefPhoto(file, statusId){
   state.photo=true;
   state.refPhotoUrl=URL.createObjectURL(file);
   const pi=document.getElementById('photoImg');
-  if(pi){ pi.src=state.refPhotoUrl; document.getElementById('photoPrev').style.display='block'; }
+  if(pi){ pi.src=state.refPhotoUrl; showPhoto(true); }
 
   if(!window.CLIP){                              // file:// 더블클릭 또는 오프라인
     state.clipOn=false; state.refEmb=null;
@@ -1112,7 +1317,6 @@ async function applyRefPhoto(file, statusId){
 async function onPhoto(inp){
   if(!inp.files||!inp.files[0])return;
   const f=inp.files[0];
-  document.getElementById('photoNext').style.display='none';
   document.getElementById('photoErr').innerHTML='';
 
   if(f.size > 12*1024*1024){                    // 용량 초과 — 유저에게 에러를 떠넘기지 않는다
@@ -1121,7 +1325,7 @@ async function onPhoto(inp){
   if(SIM.ai==='block'){                          // 모더레이션 차단(FR-5) — 막다른 길 금지
     releaseRefPhoto();                           // 차단된 사진은 붙들고 있지 않는다
     track('참고사진', {결과:'차단'});
-    document.getElementById('photoPrev').style.display='none';
+    showPhoto(false);
     document.getElementById('photoErr').innerHTML=
       `<div class="photoerr">이 사진은 쓸 수 없어요. 코디가 잘 보이는 사진으로 올려주세요.
         <div class="pe2">
@@ -1134,23 +1338,25 @@ async function onPhoto(inp){
     releaseRefPhoto();
     state.photo=true; state.refPhotoUrl=URL.createObjectURL(f);
     const pi=document.getElementById('photoImg');
-    pi.src=state.refPhotoUrl; document.getElementById('photoPrev').style.display='block';
+    pi.src=state.refPhotoUrl; showPhoto(true);
     setStatus('clipStatus','⚠️ 사진을 못 읽었어요 — <b>취향으로 골라드릴게요.</b> 추천은 그대로 나와요.');
-    document.getElementById('photoNext').style.display='block';
     return;
   }
   await applyRefPhoto(f,'clipStatus');
-  document.getElementById('photoNext').style.display='block';
 }
 /* 기상청이 죽고 캐시도 없으면 → 날씨를 유저에게 묻는다(빈손 금지 · FR-14) */
 function afterPhoto(){
-  if(SIM.kma==='down'){
+  if(SIM.kma==='down'){                                 // 기상청 죽으면 날씨 화면에서 직접 묻는다(FR-14)
     document.querySelector('#s-weather h2').textContent='지금 밖이 어때요?';
     document.querySelector('#s-weather p.sub').innerHTML=
       '날씨를 못 받아왔어요. <b>대신 알려주시면</b> 그에 맞게 골라드릴게요.';
-    go('s-weather'); return;
   }
-  go('s-weather');   // (데모: 실서비스는 여기서 기상청 자동)
+  const ds=document.getElementById('dong-sub');         // 위치 거부면 동네 화면 안내를 바꾼다(FR-8)
+  if(ds) ds.textContent = SIM.geo==='deny'
+    ? '위치를 못 받았어요. 직접 골라주세요.'
+    : '날씨를 읽어서 코디를 고르는 데만 써요';
+  renderDong();
+  go('s-location');                                     // 사진 → 동네 → (이 동네로 할게요) → 날씨
 }
 
 /* ---------- 날씨 선택 ---------- */
@@ -1314,7 +1520,7 @@ function weatherPhrase(l,w,shift=0){
   if(l.safe) c.push('무난해서 실패가 없어요');
   return pick(c, l, shift);
 }
-function reasonFor(l,w,shift=0){ return `${moodPhrase(l,shift)}, ${weatherPhrase(l,w,shift)}.`; }
+function reasonFor(l,w,shift=0){ return `${moodPhrase(l,shift)} · ${weatherPhrase(l,w,shift)}`; }
 
 /* 3장이 나란히 놓이므로 문장이 같으면 안 된다 — 겹치면 다음 후보로 밀어 유일하게 만든다. */
 function reasonsFor(picks,w){
@@ -1327,6 +1533,8 @@ function reasonsFor(picks,w){
 }
 /* 아이콘: 내 취향과 맞으면 하트, 아니면 체크 */
 function reasonIcon(l){ return (l && l.mood===state.mood) ? '♡' : '✓'; }
+/* 카드 제목은 짧게 — 비 오는 날이면 '레인 미니멀', 맑으면 '미니멀 데일리'. 옷 목록은 결정 후 pack에 나온다 */
+function shortName(l){ return state.weather.rain ? '레인 '+l.mood : l.mood+' 데일리'; }
 
 /* ---------- 결과 렌더 ---------- */
 let currentPicks=[];
@@ -1334,13 +1542,11 @@ function renderResult(){
   const w=state.weather;
   const night=isNight();
   document.getElementById('nightBar').style.display = night?'flex':'none';
-  document.getElementById('r-date').textContent = (night?'내일 아침':'오늘')+' · '+state.loc;
-  document.getElementById('r-title').textContent = night
-    ? '내일 아침, 입을 만한 3가지'
-    : w.title;
+  document.getElementById('r-date').textContent = resultDateLabel();
+  document.getElementById('r-title').textContent = night ? '내일 아침,\n입을 만한 3가지' : w.title;
   document.getElementById('r-weather').textContent = (night?'내일 아침 · ':'')+w.badge;
   renderWake();
-  document.getElementById('r-taste').innerHTML=`<b>${state.mood||'내'}</b> × ${state.color||'취향'} 취향, 오늘 <b>${w.n.split('·')[0].trim()}</b> 날씨에 맞춰 골랐어요.`;
+  document.getElementById('r-taste').innerHTML='';   // 취향×날씨 줄은 뺐다 — 사진 넣었을 때만 아래에서 채운다
   const pool=hardFilter(w);
   if(pool.length===0){ go('s-fallback'); return; }        // 강수는 못 푼다 → 폴백(온도 완화)
   const picks=recommend(0) || ensureSafe(mmrPick(pool,Math.min(3,pool.length),0),pool);
@@ -1400,10 +1606,15 @@ function toggleWorn(key){
   toast(e.worn ? '입었어요로 기록했어요 ✓' : '안 입은 걸로 바꿨어요');
 }
 function paintWornBtn(key){
-  const e=state.diary[key], b=document.getElementById('dm-worn'); if(!e||!b) return;
+  const e=state.diary[key], b=document.getElementById('dm-worn'),
+        badge=document.getElementById('dm-worn-badge'); if(!e||!b) return;
   const on = e.worn===true;
-  b.className = 'heart'+(on?' saved':'');
-  b.innerHTML = on ? '✓ 입었어요' : '이거 입었어요?';
+  if(badge){
+    badge.className = 'wornchip '+(on?'done':'undone');
+    badge.textContent = on ? '✓ 입었어요' : (e.worn===false ? '안 입었어요' : '아직 몰라요');
+  }
+  b.className = 'btn soft';
+  b.textContent = on ? '안 입었어요로 바꿀래요' : '입었어요로 바꿀래요';
   b.onclick = ()=>toggleWorn(key);
 }
 function drawLooks(picks){
@@ -1411,24 +1622,41 @@ function drawLooks(picks){
   const chosen  = pickedId();                         // 오늘 고른 한 벌 (없으면 undefined)
   const decided = picks.some(l=>l.id===chosen);       // 지금 보이는 3장 중에 그게 있나
   const reasons = reasonsFor(picks, state.weather);   // 3장 문장이 서로 겹치지 않게 한 번에 생성
-  document.getElementById('looks').innerHTML=picks.map((l,i)=>{
-    const saved=(l.id===chosen);
-    /* 결정 전 = 사진이 주인공. 아이템 목록은 아예 안 보여준다 —
-       고르는 순간엔 읽을 게 많을수록 결정이 느려진다(선택 과부하). 사진과 한 줄 이유면 충분.
-       결정 후 = 아이템이 주인공 — 8:10, 옷장 앞에서 읽는 건 사진이 아니라 이 목록이다(08 막힘⑤) */
-    const pack = saved
-      ? `<div class="pack"><div class="pt">옷장에서 꺼낼 것</div><ul>${
-          l.items.split('·').map(i=>`<li>${i.trim()}</li>`).join('')}</ul></div>`
-      : '';
-    return `<div class="look ${saved?'picked':''} ${decided&&!saved?'faded':''}">
+
+  /* 결정 후 = 고른 코디만 큰 카드(사진+옷장 체크리스트, 버튼 없음). '입기로 했어요'는
+     버튼이 아니라 토스트(알람)로 뜬다. 안 고른 2장은 밑에 작은 사진 카드로 나란히 —
+     눌러서 갈아탈 수 있다(하루 한 벌: 다른 걸 누르면 교체). */
+  if(decided){
+    const sel = picks.find(l=>l.id===chosen);
+    const si  = picks.indexOf(sel);
+    const others = picks.filter(l=>l.id!==chosen);
+    const pack = `<div class="pack"><div class="pt">옷장에서 꺼낼 것</div><ul>${
+        sel.items.split('·').map(x=>`<li>${x.trim()}</li>`).join('')}</ul></div>`;
+    document.getElementById('looks').innerHTML =
+      `<div class="look picked">
+        <img class="ph" src="${sel.img}" alt="${sel.name}">
+        <div class="body">
+          <div class="lname">${shortName(sel)} <span class="pickmark">✓</span>${sel.safe?' <span class="safechip">무난해요</span>':''}</div>
+          <div class="reason"><span class="i">${reasonIcon(sel)}</span><span>${reasons[si]}</span></div>
+          ${pack}
+        </div></div>
+      <div class="minirow">${others.map(l=>
+        `<button class="mini" onclick="toggleSave(${l.id},this)">
+          <img src="${l.img}" alt="${l.name}"><span>${shortName(l)}</span>
+        </button>`).join('')}</div>`;
+    return;
+  }
+
+  /* 결정 전 = 3장 그대로. 사진이 주인공(아이템 목록은 안 보여준다 — 고르는 순간 읽을 게
+     많으면 결정이 느려진다). 각 카드에 '이거 입을래' 버튼, 첫 장 = 파란 CTA */
+  document.getElementById('looks').innerHTML=picks.map((l,i)=>
+    `<div class="look">
       <img class="ph" src="${l.img}" alt="${l.name}">
       <div class="body">
-        <div class="lname">${l.name} ${l.safe?'<span class="safechip">무난해요</span>':''}</div>
+        <div class="lname">${shortName(l)}${l.safe?' <span class="safechip">무난해요</span>':''}</div>
         <div class="reason"><span class="i">${reasonIcon(l)}</span><span>${reasons[i]}</span></div>
-        ${pack}
-        <button class="heart ${saved?'saved':''}" onclick="toggleSave(${l.id},this)">${saveLabel(saved)}</button>
-      </div></div>`;
-  }).join('');
+        <button class="heart ${i===0?'primary':''}" onclick="toggleSave(${l.id},this)">${saveLabel(false)}</button>
+      </div></div>`).join('');
 }
 /* 로딩 = 스켈레톤. 스피너는 "도는데 언제 끝날지 모름"이라 아침에 최악이다. */
 function drawSkeleton(n){
@@ -1481,7 +1709,6 @@ function renderMeta(){
   const w=state.weather;
   document.getElementById('r-title').textContent=w.title;
   document.getElementById('r-weather').textContent=w.badge;
-  document.getElementById('r-taste').innerHTML=`<b>${state.mood||'내'}</b> × ${state.color||'취향'} 취향, 오늘 날씨에 맞춰 골랐어요.`;
 }
 /* ---------- 오늘 화면에서 참고사진 추가(온보딩 밖) ---------- */
 async function onResultPhoto(inp){
@@ -1557,6 +1784,8 @@ function testNotify(){
 }
 function fillInstall(){
   const w=state.weather, l=currentPicks[0];
+  const tm=new Date(TODAY); tm.setDate(tm.getDate()+1);       // 잠금화면은 '내일 아침' 미리보기
+  document.getElementById('ls-date').textContent=fmtDateLong(tm);
   document.getElementById('ls-time').textContent=state.wakeTime.replace(/^0/,'');
   document.getElementById('st-time').textContent=state.wakeTime;
   document.getElementById('ls-line').textContent=w.badge+' — 오늘 이거 어때요?';
@@ -1564,7 +1793,7 @@ function fillInstall(){
 }
 
 /* ---------- 저장(=결정) ---------- */
-function saveLabel(saved){ return saved ? '♥ '+dayWord()+' 입기로 했어요' : '🤍 '+dayWord()+' 이거 입을래'; }
+function saveLabel(saved){ return saved ? dayWord()+' 입기로 했어요' : dayWord()+' 이거 입을래'; }
 let pendingSave=null;
 function openLogin(id){ pendingSave=id; document.getElementById('loginSheet').classList.add('on'); }
 function closeLogin(){ document.getElementById('loginSheet').classList.remove('on'); pendingSave=null; }
@@ -1596,8 +1825,8 @@ function toggleSave(id,btn){
        여러 벌을 담게 두면 달력 한 칸에 뭘 넣을지 정할 수 없고, 사실상 찜 목록이 생겨
        "찜한 것"과 "입은 것"이 갈라진다 — 만들지 않기로 한 것이다. */
     state.diary[key]={look:id, w:state.weather.key};
-    toast(cur!=null ? '이걸로 바꿨어요 ♥ · 옷장에서 꺼낼 것을 다시 적었어요'
-                    : dayWord()+' 이걸로 정했어요 ♥ · 옷장에서 꺼낼 것을 적어뒀어요');
+    toast(cur!=null ? '이걸로 바꿨어요 · 옷장에서 꺼낼 것을 다시 적었어요'
+                    : dayWord()+' 입기로 했어요 · 옷장에서 꺼낼 것을 적어뒀어요');
   }
   drawLooks(currentPicks);                                 // 결정 카드 = 체크리스트로 변신
   persist();
@@ -1636,24 +1865,24 @@ function renderSaved(){
          <span>👕</span><span>아직 안 알려준 날이 ${pend.length}일 있어요 · 톡 눌러서 알려주기</span></button>`
     : '') + calHead(y,m);
 
-  h+='<div class="cal-wd">'+wd.map((w,i)=>`<span class="${i===0?'sun':''}">${w}</span>`).join('')+'</div>';
+  h+='<div class="cal-wd">'+wd.map((w,i)=>`<span class="${i===0?'sun':i===6?'sat':''}">${w}</span>`).join('')+'</div>';
   h+='<div class="cal-grid">';
   for(let i=0;i<first;i++) h+='<div class="cal-cell empty"></div>';
   for(let d=1;d<=days;d++){
     const key=y+'-'+(m+1)+'-'+d;
     const ent=state.diary[key], look=ent?LOOKS.find(x=>x.id===ent.look):null;
     const w=ent?WBY[ent.w]:null;
+    const cellImg=ent?(ent.photo||(look?look.img:null)):null;   // 유저가 올린 그날 사진 우선
     const isToday=(y===TODAY.getFullYear() && m===TODAY.getMonth() && d===TODAY.getDate());
     const worn=ent&&ent.worn===true;
     h+=`<div class="cal-cell ${look?'has':''} ${worn?'worn':''} ${isToday?'today':''}" data-key="${key}" `+
-       (look?`style="background-image:url('${look.img}')"`:'')+
+       (cellImg?`style="background-image:url('${cellImg}')"`:'')+
        ` onclick="clickDay('${key}')"><span class="dn">${d}</span>`+
        (w?`<span class="wc">${w.e}</span>`:'')+
        (worn?`<span class="wr">✓</span>`:'')+`</div>`;
   }
   h+='</div>';
-  h+=`<div class="day-detail" id="daydetail"></div>`;
-  h+=`<div class="thin" style="text-align:center">점선 = 입기로만 함 &nbsp;·&nbsp; ✓ = 실제로 입음</div>`;
+  h+=`<div class="thin" style="text-align:center">한 칸 = 하루 한 벌 &nbsp;·&nbsp; 날씨와 함께 기록돼요</div>`;
   document.getElementById('calbody').innerHTML=h;
   selectDay(state.selectedDay && state.diary[state.selectedDay]!==undefined ? state.selectedDay : todayKey());
 }
@@ -1689,22 +1918,43 @@ function selectDay(key){
 }
 function clickDay(key){
   selectDay(key);
-  if(state.diary[key]) openDayModal(key);
-  else toast('이 날은 담은 코디가 없어요 🙂');
+  if(state.diary[key]) openDayModal(key);   // 빈 날은 아무것도 안 함(상세페이지 별도 예정)
 }
 function openDayModal(key){
   const ent=state.diary[key]; if(!ent) return;
   const l=LOOKS.find(x=>x.id===ent.look), w=WBY[ent.w];
-  document.getElementById('dm-img').src=l.img;
-  document.getElementById('dm-date').textContent=fmtKey(key)+(w?' · '+w.badge:'');
+  const d=keyToDate(key);
+  document.getElementById('dm-date').textContent=fmtKey(key)+' '+WD[d.getDay()]+'요일';   // "7월 14일 화요일"
+  // 날씨 줄: badge("☂ 비 · 체감 23°")에서 이모지만 떼고 "이날은 …였어요"로
+  document.getElementById('dm-weather').innerHTML =
+    w ? `<span class="we">${w.e}</span><span>이날은 ${w.badge.replace(/^[^\s]+\s+/,'')}였어요</span>` : '';
   document.getElementById('dm-name').textContent=l.name;
-  document.getElementById('dm-chips').innerHTML=`<span class="chip">${l.mood}</span><span class="chip">${l.color}</span>`+(w?`<span class="chip">${w.rain?'비 OK':'맑음'}</span>`:'');
-  document.getElementById('dm-items').textContent=l.items;
-  document.getElementById('dm-reason').innerHTML=`<span class="i">${reasonIcon(l)}</span><span>${reasonFor(l,w)}</span>`;
+  document.getElementById('dm-chips').innerHTML=`<span class="chip">${l.mood}</span><span class="chip">${l.color}</span>`
+    +(state.tpo?`<span class="chip">${state.tpo}</span>`:'');   // 유저가 온보딩에서 고른 곳(학교·일상 등)
+  paintDayPhoto(key);        // 유저가 올린 그날 사진(있으면) / 없으면 빈 드롭존
   paintWornBtn(key);
   document.getElementById('dayModal').classList.add('on');
 }
 function closeDayModal(){ document.getElementById('dayModal').classList.remove('on'); }
+/* 그날 코디 사진: 기본은 그날 고른 코디 사진(l.img). 유저가 직접 올린 게 있으면 그걸 우선. */
+function paintDayPhoto(key){
+  const ent=state.diary[key]; if(!ent) return;
+  const l=LOOKS.find(x=>x.id===ent.look);
+  const src = ent.photo || (l?l.img:null);
+  const img=document.getElementById('dm-photo'), empty=document.getElementById('dm-dzEmpty');
+  if(src){ img.src=src; img.style.display='block'; empty.style.display='none'; }
+  else { img.style.display='none'; empty.style.display='flex'; }   // 둘 다 없을 때만 빈 드롭존
+}
+/* 사진을 dataURL로 읽어 diary에 저장 → persist가 그대로 localStorage에 담는다(새로고침에도 남음).
+   용량 넘치면 persist가 조용히 실패해도 이번 세션 화면엔 뜬다. */
+function onDayPhoto(inp){
+  const f=inp.files&&inp.files[0], key=state.selectedDay, ent=state.diary[key];
+  if(!f||!ent) return;
+  const r=new FileReader();
+  r.onload=()=>{ ent.photo=r.result; persist(); paintDayPhoto(key); renderSaved(); toast('그날 코디 사진을 담았어요 📷'); };
+  r.readAsDataURL(f);
+  inp.value='';   // 같은 파일 다시 골라도 onchange 뜨게
+}
 
 /* ---------- 탭 ---------- */
 function switchTab(t){
@@ -1717,14 +1967,19 @@ function switchTab(t){
 }
 function renderWeatherTab(){
   const w=state.weather;
-  paintLoc();                                    // 날씨 탭 머리도 고른 동네를 따라간다
-  document.getElementById('wt-temp').textContent=w.badge.replace(/^[^체]*/,'');
-  document.getElementById('wt-desc').textContent=w.e+' '+w.m;
+  paintLoc();                                    // 머리 = 고른 동네 · 날짜
+  document.getElementById('wt-ico').textContent=w.e;
+  document.getElementById('wt-temp').textContent=(w.badge.match(/\d+/)||['23'])[0]+'°';
+  document.getElementById('wt-desc').textContent='체감온도 · '+(w.rain?'비':'맑음');
+  document.getElementById('wt-pop').textContent=Math.max(...w.pop)+'%';
+  document.getElementById('wt-mm').textContent=w.mm;
+  document.getElementById('wt-humid').textContent=w.humid;
+  document.getElementById('wt-gap').textContent=w.gap;
   document.getElementById('wt-line').textContent=w.line;
-  document.getElementById('wt-tomorrow').textContent=w.tomorrow;
   const hrs=['9시','12시','15시','18시','21시','24시'];
+  const peak=Math.max(...w.pop);
   document.getElementById('wt-bars').innerHTML=w.pop.map((p,i)=>
-    `<div class="b" style="height:${Math.max(6,p)}%;background:${p>40?'var(--rain)':'var(--accent2)'}"><em>${p}%</em><span>${hrs[i]}</span></div>`).join('');
+    `<div class="b" style="height:${Math.max(6,p)}%;background:${p===peak&&p>0?'var(--rain)':'var(--accent2)'}"><em>${p}%</em><span>${hrs[i]}</span></div>`).join('');
 }
 
 addEventListener('online', ()=>drawStateBars(currentPicks.length));
@@ -1738,46 +1993,82 @@ addEventListener('offline', ()=>drawStateBars(currentPicks.length));
    품에 안고 있는 건 '오늘 골라둔 한 벌'(하루 한 벌 = AGENTS.md §5).
    ───────────────────────────────────────────────────────────── */
 const OTTER_PAL = {
-  D:'#5b4234',  // 외곽선
+  D:'#5b4234',  // 외곽선(진한 갈색)
   B:'#c08d63',  // 털
-  b:'#8f6244',  // 앞발·잠긴 등 (그늘진 털)
-  c:'#e2c3a2',  // 배 (밝은 털)
-  C:'#f7e6d6',  // 얼굴·배·앞발(크림)
-  E:'#3d2f26',  // 눈
+  b:'#8f6244',  // 그늘진 털
+  c:'#e2c3a2',  // 밝은 배
+  C:'#f7e6d6',  // 얼굴(크림)
+  E:'#2f2a26',  // 눈
   W:'#ffffff',  // 눈 반짝
   N:'#6d4c3a',  // 코
   P:'#eba493',  // 볼터치
-  R:'#e8907f',  // 품에 안은 옷 — 상의
-  A:'#7ba0cf'   // 품에 안은 옷 — 하의
+  p:'#f2d7c7',  // 발바닥
+  A:'#4a7fd0',  // 파란 티셔츠
+  a:'#36609f',  // 티셔츠 그늘
+  M:'#9bc0ee'   // 티셔츠 하이라이트
 };
 /* 누워서 배를 위로 하고 떠 있는 옆모습 — 실제 수달 사진에서 가져온 특징 4가지:
-   ① 뒷발(물갈퀴)이 물 밖으로 삐죽  ② 크림색 얼굴 + 수염  ③ 앞발로 배 위에 뭘 안고 있음
+   ① 뒷발(물갈퀴)이 물 밖으로 삐죽  ② 크림색 얼굴 + 수염  ③ 앞발 두 개를 배 위에 모으고 있음
    ④ 등은 물에 잠겨 어둡다.  이 실루엣이 없으면 수달이 아니라 곰이 된다(한 번 그렇게 됐다) */
 const OTTER = [
-  '..............................................',
-  '..............................................',
-  '..............................................',
-  '.....DDD...DD...................DDDDD.........',
-  '....DBBBD.DBBD................DDCCCCCDD.......',
-  '....DbBBbDBbBBb..............BBCCCCCCCBB......',
-  '...DBbBBbDBbBBb.............BBBCCCCCCCBBB.....',
-  '...DBbBBbDBbBBb.............DBBCCCCCCCBBD.....',
-  '...DBbBBbBBbBBb............DCCCWECCCWECCCD....',
-  '...DBBBBBBBBBBD..DDDDD.....DCCCEECCCEECCCD....',
-  '...DBBBBBBBBBBDDDBBBBBDDDDDDCCCEECCCEECCCD....',
-  '...DBBBBBBBBBBBBRRRRRRRRBBBBCCCCCCCCCCCCCDDDD.',
-  '...DBBBBBBBBBBbBRRRRRRRRBbbBCCCCCNNNCCCCCD....',
-  '...DBBBBBBBBBbbbRRRRRRRRbbbbBPPCCCNCCCPPD.....',
-  '....DBBBBBcccbbbRRRRRRRRbbbbcCCCCNCNCCCCDDDD..',
-  '...DBBBBcccccbbbAAAAAAAAbbbbccCCCCNCCCCD......',
-  '...DBBBBcccccbbbAAAAAAAAcbbcccccCCCCCDD.......',
-  '....DBBBccccccbcAAAAAAAAcccccccccBDDD.........',
-  '.....DBBBBcccccccccccccccccccccBBD............',
-  '......DbbbbbbbbbbbbbbbbbbbbbbbbbD.............',
-  '.......DDDbbbbbbbbbbbbbbbbbbbDDD..............',
-  '..........DDDDDDDbbbbbDDDDDDD.................',
-  '.................DDDDD........................',
-  '..............................................'
+  '..............................................................',
+  '..............................................................',
+  '..............................................................',
+  '..................DDD.........DDD.........DDD.................',
+  '................DDDBDDD..DDDDDDBDDDDDD..DDDBDDD...............',
+  '................DBBBBBDDDDBBBBBBBBBBBDDDDBBBBBD...............',
+  '...............DDBBbBBDDBBBBBBBBBBBBBBBDDBBbBBDD..............',
+  '...............DBBbbbBBBBBBBBBBBBBBBBBBBBBbbbBBD..............',
+  '...............DDBBbBBBBBBBBBBBBBBBBBBBBBBBbBBDD..............',
+  '................DBBBBBBBBBBBBBBBBBBBBBBBBBBBBBD...............',
+  '................DDDBBBBBBBBBBBBCBBBBBBBBBBBBDDD...............',
+  '.................DBBBBBBBBCCCCCCCCCCCBBBBBBBBD................',
+  '................DDBBBBBBCCCCCCCCCCCCCCCBBBBBBDD...............',
+  '................DBBBBBBCCCCCCCCCCCCCCCCCBBBBBBD...............',
+  '................DBBBBBCCCECCCCCCCCCCCECCCBBBBBD...............',
+  '................DBBBBCCCEEECCCCCCCCCEEECCCBBBBD...............',
+  '...............DDBBBBCCEEEWECCCCCCCEEEWECCBBBBDD..............',
+  '...............DBBBBCCCEEEEECCCCCCCEEEEECCCBBBBD..............',
+  '...............DDBBBCCEEEEEEECCCCCEEEEEEECCBBBDD..............',
+  '................DBBBCCCEEWEECCCCCCCEEWEECCCBBBD...............',
+  '................DBBCCCCEEEEECCCCCCCEEEEECCCCBBD...............',
+  '................DBBBCPCCEEECCCCNCCCCEEECCPCBBBD...............',
+  '................DDBPPPPPCECCCCNNNCCCCECPPPPPBDD...............',
+  '.................DPPPPPPPCCCCNNNNNCCCCPPPPPPPD................',
+  '.................DDPPPPPCCCCCCNNNCCCCCCPPPPPDD................',
+  '..................DDBPCCCCCCCCCbCCCCCCCCCPBDD.................',
+  '...................DDBCCCCCCCCCCCCCCCCCCCBDD..................',
+  '....................DDBCCCCCCCCCCCCCCCCCBDD...................',
+  '...................DDBBBCCCCCCCCCCCCCCCBBBDD..................',
+  '..................DDBBBBBBCCCCCCCCCCCBBBBBBDD.................',
+  '.................DDBBBBBBBBBcccccccBBBBBBBBBDD................',
+  '................DDBBBBBBAAAAcccccccAAAABBBBBBDD...............',
+  '...............DDBBBcBBBAAAAcccccccAAAABBBcBBBDD..............',
+  '...............DBBBcccBBAAAAcccccccAAAABBcccBBBD..............',
+  '..............DDBBcccccBBAAAAAAAAAAAAABBcccccBBDD.............',
+  '..............DBBBBcccBBAAMMMMMMMMMMMAABBcccBBBBD.............',
+  '..............DBBBBBcBBBAAMMMMMMMMMMMAABBBcBBBBBD.............',
+  '..............DBBBBBbBBAAAAAAAAAAAAAAAAABBbBBBBBD.............',
+  '..............DBBBBcBcccAAAAAAAAAAAAAAAcccBcBBBBD.............',
+  '.............DDBBBBBBcccAAAAAAAAAAAAAAAcccBBBBBBDD............',
+  '.............DBBBBBBBBccAaAAAAAAAAAAAAAccBBBBBBBBD............',
+  '.............DBBBBBBBBBcAAAAAAAAAAAAAaAcBBBBBBBBBD............',
+  '.............DBBBBpBBBBcAAAAAAAAAAAAAAAcBBBBpBBBBD............',
+  '.............DBBBpppBBBcAAAAAAAAAAAAAAAcBBBpppBBBD............',
+  '............DDBBpppppBBcccccccccccccccccBBpppppBBDD...........',
+  '............DBBBpppppBBBcccccccccccccccBBBpppppBBBD...........',
+  '............DDBpppppppBcccccccccccccccccBpppppppBDD...........',
+  '.............DBBpppppBBcccccccccccccccccBBpppppBBD............',
+  '.............DBBpppppBBcccccccccccccccccBBpppppBBD............',
+  '.............DBBBpppBBBcccccccccccccccccBBBpppBBBD............',
+  '.............DDBBBpBBBcccccccccccccccccccBBBpBBBDD............',
+  '..............DDBBBBBBcccccccccccccccccccBBBBBBDD.............',
+  '...............DDDBDDBBBcccccccccccccccBBBDDBDDD..............',
+  '.................DDDDDDBBBcccccccccccBBBDDDDDD................',
+  '......................DDDBBBBBBcBBBBBBDDD.....................',
+  '........................DDDDDDDBDDDDDDD.......................',
+  '..............................DDD.............................',
+  '..............................................................',
 ];
 /* 격자를 SVG 네모로 찍어낸다. crispEdges라 확대해도 도트가 뭉개지지 않는다 */
 function renderOtter(){
@@ -1790,7 +2081,7 @@ function renderOtter(){
     });
   });
   box.innerHTML=`<svg viewBox="0 0 ${w} ${h}" shape-rendering="crispEdges"
-    role="img" aria-label="비를 반기는 수달이 오늘 입을 옷 한 벌을 안고 물에 떠 있다">${px.join('')}</svg>`;
+    role="img" aria-label="수달이 앞발을 배 위에 모으고 물에 떠 있다">${px.join('')}</svg>`;
 }
 /* 빗줄기 — 위치·속도만 흩어놓는다 */
 function renderSplashRain(){
@@ -1806,7 +2097,7 @@ renderOtter();
 renderSplashRain();
 renderSim();
 renderWeatherPick();
-renderLocPick();
+renderDong();
 seedDiary();
 trackVisit();          // ① 퍼널 시작 + 북극성(D1) 계산
 (function boot(){

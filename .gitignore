@@ -7,3 +7,11 @@
 # 파이썬
 __pycache__/
 *.pyc
+
+# Node / Next.js (지금은 없지만 실서비스 대비 방어적으로)
+node_modules/
+.next/
+
+# 환경변수·비밀 — 절대 커밋 금지
+.env
+.env.*

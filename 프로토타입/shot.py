@@ -17,19 +17,25 @@ OUT = HERE / "shots"; OUT.mkdir(exist_ok=True)
 URL = "file://" + str((HERE / "rainism_prototype_v1.html").resolve())
 
 # 화면 이름 → 거기까지 가는 클릭 순서 (온보딩을 매번 통과해야 도달함)
-QUIZ = ["#s-q1 .moodgrid button:nth-child(4)", "#s-q2 .choices .choice:nth-child(2)",
-        "#s-q3 .choices .choice:nth-child(1)", "#s-photo .btn:not(.ghost)"]
-START = ["#s-splash .btn", "#s-gender .choices .choice:nth-child(1)",
-         "#s-age .choices .choice:nth-child(2)"]
+QUIZ = ["#s-q1 .moodgrid button:nth-child(4)", "#moodNext",   # 무드도 '선택 → 다음' 패턴
+        "#s-q2 .choices .choice:nth-child(2)", "#colorNext",  # 색도 '선택 → 다음' 패턴
+        "#s-q3 .choices .choice:nth-child(1)", "#tpoNext",    # TPO도 '선택 → 완료' 패턴
+        "#s-photo .btn.ghost"]  # 사진 없이 진행 = ghost 버튼 → 동네 화면으로
+START = ["#s-splash .btn", "#genderRow .pick:nth-child(1)",
+         "#ageList .pick:nth-child(2)", "#onbNext"]   # 여성 → 20대 → 다음 (성별·나이 합친 화면)
 CONSENT = ["#s-consent .btn"]
-TO_RESULT = START + CONSENT + QUIZ + [".weatherpick button:nth-child(1)"]
+DONG = ["#s-location .btn"]   # 이 동네로 할게요 → 날씨 화면
+TO_RESULT = START + CONSENT + QUIZ + DONG + [".weatherpick button:nth-child(1)"]
 
 SCREENS = {
     "시작":   [],
+    "성별나이": ["#s-splash .btn"],
     "동의":   START,
     "무드":   START + CONSENT,
-    "사진":   START + CONSENT + QUIZ[:3],
-    "날씨선택": START + CONSENT + QUIZ,
+    "색":    START + CONSENT + QUIZ[:3],   # 색 화면 + 한 개 고른(선택 표시) 상태
+    "사진":   START + CONSENT + QUIZ[:6],
+    "동네":   START + CONSENT + QUIZ,          # 사진 다음 = 동네 고르기 화면
+    "날씨선택": START + CONSENT + QUIZ + DONG,
     "오늘":   TO_RESULT,
     "결정":   TO_RESULT + [".look:nth-child(1) .heart"],
     "날씨":   TO_RESULT + ["#tab-weather"],
