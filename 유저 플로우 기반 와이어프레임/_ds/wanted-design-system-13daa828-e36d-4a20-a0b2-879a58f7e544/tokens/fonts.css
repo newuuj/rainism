@@ -1,0 +1,13 @@
+/* ============================================================
+   Wanted Design System — Webfonts
+   Primary UI face: Pretendard JP (SIL OFL) — the file's dominant
+   font across all components. Wanted Sans (by Wanted Lab, SIL OFL)
+   is used for large brand/display moments. Loaded from jsDelivr CDN.
+   Set font-feature-settings: "ss05" for Korean-optimized shapes.
+   ============================================================ */
+
+/* Pretendard JP — family name: "Pretendard JP" */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-jp.min.css");
+
+/* Wanted Sans (variable) — family name: "Wanted Sans Variable" */
+@import url("https://cdn.jsdelivr.net/gh/wanteddev/wanted-sans@v1.0.1/packages/wanted-sans/fonts/webfonts/variable/split/WantedSansVariable.min.css");

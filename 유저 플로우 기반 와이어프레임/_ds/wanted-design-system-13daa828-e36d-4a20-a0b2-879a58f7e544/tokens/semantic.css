@@ -1,0 +1,74 @@
+/* ============================================================
+   Wanted Design System — Spacing, radius, elevation & motion
+   Spacing is a 4px-based ramp. Radii and shadows are transcribed
+   from the source file (shadow alphas: 0.06 / 0.07 / 0.08 / 0.10 / 0.12).
+   ============================================================ */
+
+:root {
+  /* Spacing ramp (4px base) */
+  --space-0: 0px;
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 6px;
+  --space-4: 8px;
+  --space-5: 10px;
+  --space-6: 12px;
+  --space-7: 16px;
+  --space-8: 20px;
+  --space-9: 24px;
+  --space-10: 32px;
+  --space-11: 40px;
+  --space-12: 48px;
+  --space-13: 64px;
+  --space-14: 80px;
+
+  /* Corner radii */
+  --radius-2: 2px;
+  --radius-4: 4px;
+  --radius-6: 6px;
+  --radius-8: 8px;
+  --radius-10: 10px;
+  --radius-12: 12px;
+  --radius-14: 14px;
+  --radius-16: 16px;
+  --radius-20: 20px;
+  --radius-24: 24px;
+  --radius-full: 9999px;
+
+  /* Elevation — layered shadows on near-black at low alpha */
+  --shadow-emphasize: 0 0 1px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-normal: 0 1px 4px rgba(23,23,23,0.06), 0 0 1px rgba(23,23,23,0.07);
+  --shadow-strong: 0 2px 8px rgba(23,23,23,0.10), 0 0 1px rgba(23,23,23,0.08);
+  --shadow-heavy: 0 6px 24px rgba(0,0,0,0.12), 0 0 1px rgba(0,0,0,0.08);
+  --shadow-overlay: 0 12px 40px rgba(0,0,0,0.16), 0 0 1px rgba(0,0,0,0.08);
+
+  /* Motion — Wanted UI favours short, soft ease-out transitions */
+  --duration-fast: 120ms; /* @kind other */
+  --duration-normal: 200ms; /* @kind other */
+  --duration-slow: 320ms; /* @kind other */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1); /* @kind other */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* @kind other */
+
+  /* Focus ring */
+  --focus-ring: 0 0 0 3px rgba(51,102,255,0.28);
+}
+
+/* Base document defaults so any card/page picks up the brand face */
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font-primary);
+  color: var(--label-normal);
+  background: var(--background-normal-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+a { color: var(--primary-normal); text-decoration: none; }
+a:hover { color: var(--primary-strong); }
+
+/* Shared keyframes */
+@keyframes wds-spin { to { transform: rotate(360deg); } }
+@keyframes wds-toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes wds-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes wds-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@keyframes wds-sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes wds-menu-in { from { opacity: 0; transform: translateY(-4px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }

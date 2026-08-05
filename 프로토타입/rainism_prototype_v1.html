@@ -160,7 +160,7 @@
   .tasteline b{ color:var(--accent); }
   .look{ background:var(--card); border-radius:20px; overflow:hidden; margin-bottom:16px;
     box-shadow:0 6px 18px rgba(50,65,90,.08); }
-  .look .ph{ width:100%; aspect-ratio:5/8; object-fit:cover; display:block; background:#dde3ec; }
+.look .ph{ width:100%; aspect-ratio:1/1; object-fit:cover; display:block; background:#dde3ec; }
   .look .body{ padding:14px 16px 16px; }
   .look .lname{ font-size:16.5px; font-weight:800; letter-spacing:-.3px; display:flex; align-items:center; gap:8px; }
   .safechip{ font-size:10.5px; font-weight:800; color:var(--safe); background:var(--safebg);
@@ -194,13 +194,10 @@
     padding:3px 8px; border-radius:20px; margin-left:6px; }
 
   /* 밤 모드 · 알람 · 설치 */
-  .nightbar{ position:relative; display:flex; align-items:center; gap:9px; background:#2f3646; color:#fff;
-    border-radius:14px; padding:11px 13px; margin:7px 0 12px; font-size:13px; }
+  .nightbar{ display:flex; align-items:center; gap:9px; background:#2f3646; color:#fff;
+    border-radius:14px; padding:11px 13px; margin-bottom:12px; font-size:13px; }
   .nightbar b{ font-weight:800; }
   .nightbar span{ opacity:.75; display:block; font-size:11.5px; }
-  .nightbar .nx{ position:absolute; top:-7px; right:-7px; width:20px; height:20px;
-    border-radius:50%; border:1px solid var(--line); background:#fff; color:var(--sub);
-    font-size:10px; line-height:1; cursor:pointer; padding:0; font-family:inherit; }
 
   .wake{ background:#fff; border:1.5px solid var(--line); border-radius:16px; padding:15px 16px; margin:4px 0 14px; }
   .wake .wq{ font-size:15px; font-weight:800; }
@@ -247,20 +244,8 @@
 
   /* 결정한 카드 = "옷장에서 꺼낼 것" 체크리스트로 변신 (08 막힘⑤)
      스캔할 땐 사진이 주인공, 옷장 앞에선 아이템이 주인공 */
-  .look.picked{ box-shadow:0 0 0 2px var(--accent), 0 8px 22px rgba(106,143,191,.18); }
+  .look.picked{ box-shadow:0 0 0 2px var(--heart), 0 8px 22px rgba(224,122,122,.18); }
   .look.faded{ opacity:.55; }
-  /* 이름 옆 '정했다' 파란 체크 배지 */
-  .pickmark{ display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px;
-    border-radius:50%; background:var(--accent); color:#fff; font-size:11px; font-weight:800; flex-shrink:0; }
-  /* 결정 후 안 고른 2장 = 사진만 작게, 밑에 나란히. 누르면 그걸로 갈아탄다 */
-  .minirow{ display:flex; gap:10px; margin-bottom:16px; }
-  .mini{ flex:1 1 0; min-width:0; background:var(--card); border:none; border-radius:16px; overflow:hidden;
-    padding:0; cursor:pointer; font-family:inherit; text-align:left; box-shadow:0 6px 18px rgba(50,65,90,.08);
-    opacity:.55; transition:opacity .15s; }   /* 안 고른 건 살짝 흐리게 (저번 .faded처럼) */
-  .mini:hover, .mini:active{ opacity:1; }
-  .mini img{ width:100%; aspect-ratio:3/4; object-fit:cover; display:block; background:#dde3ec; }
-  .mini span{ display:block; padding:9px 11px; font-size:13px; font-weight:700; color:var(--ink);
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   /* 3장이 한꺼번에 툭 뜨지 않고 차례로 올라온다 (화면 전환에 쓰는 fade를 그대로 재사용).
      결정을 누르면 3장을 다시 그리는데, 그때까지 스르륵하면 눈이 아프다 → .quiet 이면 안 움직인다.
      fill은 backwards — forwards/both 를 쓰면 끝난 뒤 opacity:1 이 박혀서 .faded(.55)가 안 먹는다 */
@@ -287,7 +272,7 @@
     background-size:760px 100%; animation:shim 1.3s infinite linear; border-radius:8px; }
   @media (prefers-reduced-motion:reduce){ .sk{ animation:none; } }
   .skcard{ background:var(--card); border-radius:20px; overflow:hidden; margin-bottom:16px; }
-  .skcard .skph{ width:100%; aspect-ratio:5/8; }
+  .skcard .skph{ width:100%; aspect-ratio:1/1; }
   .skcard .skb{ padding:14px 16px 16px; }
   .skcard .skb i{ display:block; height:13px; margin-bottom:9px; }
 
@@ -396,14 +381,14 @@
   .cal-wd span.sun{ color:#d08a8a; }
   .cal-wd span.sat{ color:var(--accent); }
   .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
-  .cal-cell{ aspect-ratio:3/4; border-radius:12px; background:transparent center/cover no-repeat; position:relative; cursor:pointer; }
+  .cal-cell{ aspect-ratio:1; border-radius:10px; background:transparent center/cover no-repeat; position:relative; cursor:pointer; }
   .cal-cell.empty{ background:transparent; cursor:default; }
   .cal-cell .dn{ position:absolute; top:3px; left:5px; font-size:10.5px; font-weight:700; color:var(--sub); }
   .cal-cell.has .dn{ color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.6); }
   .cal-cell .wc{ position:absolute; top:2px; right:3px; font-size:11px; line-height:1;
     filter:drop-shadow(0 1px 2px rgba(0,0,0,.55)); }
   /* 「입기로 함」과 「입었음」을 눈으로 가른다 — 그 간극이 매칭 품질의 온도계다(08) */
-  .cal-cell.has:not(.worn)::after{ content:''; position:absolute; inset:0; border-radius:12px;
+  .cal-cell.has:not(.worn)::after{ content:''; position:absolute; inset:0; border-radius:10px;
     background:rgba(246,248,251,.22); border:1.5px dashed rgba(255,255,255,.9); }
   .cal-cell.worn .wr{ position:absolute; bottom:2px; right:3px; width:14px; height:14px; border-radius:50%;
     background:var(--heart); color:#fff; font-size:9px; font-weight:800; line-height:14px; text-align:center;
@@ -441,7 +426,7 @@
   .searchbox input{ border:none; background:transparent; outline:none; width:100%;
     font-family:inherit; font-size:15px; color:var(--ink); }
   .searchbox input::placeholder{ color:var(--sub); }
-  .donglist{ margin-top:6px; max-height:44vh; overflow-y:auto; }
+  .donglist{ margin-top:6px; }
   .dongrow{ display:flex; align-items:center; gap:12px; width:100%; text-align:left; cursor:pointer;
     background:transparent; border:none; border-bottom:1px solid var(--line); padding:17px 4px;
     font-family:inherit; font-size:16px; font-weight:600; color:var(--ink); }
@@ -462,25 +447,18 @@
   .actrow{ display:flex; gap:9px; justify-content:center; margin:2px 0 8px; }
   .actrow .btn{ flex:1 1 0; max-width:190px; margin:0; padding:9px 8px; font-size:15px; text-align:center; background:transparent; }
 
-  /* 달력: 날짜 클릭 → 그날 상세페이지(폰 안에서 전체화면) */
-  .daymodal{ position:absolute; inset:0; background:#fff; display:none;
-    flex-direction:column; z-index:100; }
-  .daymodal.on{ display:flex; animation:slidein .22s ease; }
-  @keyframes slidein{ from{opacity:0; transform:translateX(14px);} to{opacity:1; transform:none;} }
-  .daymodal-card{ display:flex; flex-direction:column; flex:1; overflow-y:auto; padding:18px 22px 28px; }
-  .dd-head{ display:flex; align-items:center; gap:4px; margin-bottom:12px; }
-  .dd-back{ background:none; border:none; font-family:inherit; cursor:pointer; color:var(--ink);
-    font-size:26px; line-height:1; padding:2px 10px 2px 0; }
-  .dd-head h2{ font-size:20px; font-weight:800; letter-spacing:-.4px; }
-  .dd-weather{ display:flex; align-items:center; gap:7px; color:var(--sub);
-    font-size:14px; font-weight:600; margin-bottom:16px; }
-  .dd-weather .we{ font-size:15px; }
-  .dd-photo{ margin-top:0; min-height:340px; border:1.5px solid var(--line); }   /* 코디 사진엔 점선보다 실선 */
-  .dd-photo .dz-img{ max-height:420px; width:100%; object-fit:cover; }
-  .dd-name-row{ display:flex; align-items:center; gap:9px; margin-top:20px; }
-  .dd-name{ font-size:20px; font-weight:800; letter-spacing:-.4px; }
-  .wornchip.done{ color:#2e7d4f; background:#e8f5ec; }
-  .wornchip.undone{ color:var(--sub); background:#eef1f7; }   /* pending 클래스는 캘린더 버튼(.pending)과 충돌 → 안 씀 */
+  /* 달력: 날짜 클릭 → 큰 화면(모달) */
+  .daymodal{ position:fixed; inset:0; background:rgba(22,28,40,.62); backdrop-filter:blur(3px);
+    display:none; align-items:center; justify-content:center; padding:20px; z-index:100; }
+  .daymodal.on{ display:flex; animation:fade .25s ease; }
+  .daymodal-card{ background:#fff; border-radius:22px; overflow:hidden auto; width:100%; max-width:360px;
+    max-height:90vh; position:relative; box-shadow:0 24px 70px rgba(20,30,50,.45); }
+  .daymodal-card img{ width:100%; aspect-ratio:3/4; object-fit:cover; display:block; background:#dde3ec; }
+  .daymodal-x{ position:absolute; top:12px; right:12px; width:34px; height:34px; border-radius:50%;
+    border:none; background:rgba(0,0,0,.42); color:#fff; font-size:15px; cursor:pointer; z-index:2; }
+  .daymodal-body{ padding:16px 18px 20px; }
+  .daymodal-body .dm-date{ font-size:12.5px; color:var(--sub); font-weight:700; }
+  .daymodal-body .dm-name{ font-size:19px; font-weight:800; letter-spacing:-.4px; margin:3px 0 2px; }
 
   /* 참고사진 칩(오늘 화면에서 사진 추가 시) */
   #refchip:not(:empty){ margin:0 0 12px; }
@@ -669,12 +647,20 @@
 
   <!-- 9. RESULT (core tab) -->
   <section class="screen" id="s-result">
+    <div class="rtop">
+      <div class="wbadge" id="r-weather">☂ 비 · 체감 24°</div>
+      <div class="rdate" id="r-date">7월 14일 화 · 서교동</div>
+    </div>
+    <h2 id="r-title">비 오는 오늘,
+입을 만한 3가지</h2>
     <div class="nightbar" id="nightBar" style="display:none">
       <span style="font-size:19px">🌙</span>
-      <div><b>지금은 밤이에요</b>
-        <span>내일 아침 코디를 골라뒀어요</span></div>
-      <button class="nx" onclick="this.closest('.nightbar').style.display='none'" aria-label="닫기">✕</button>
+      <div><b>지금은 밤이에요 — 내일 아침 코디를 골라뒀어요</b>
+        <span>자기 전에 정해두면, 아침엔 확인만 하면 돼요</span></div>
     </div>
+    <div class="statebar off" id="offBar" style="display:none">📴 오프라인이에요 · 마지막으로 받은 날씨로 골랐어요</div>
+    <div class="statebar warn" id="cacheBar" style="display:none"></div>
+    <div class="statebar warn" id="thinBar" style="display:none"></div>
     <div class="yday" id="ydayAsk" style="display:none">
       <img id="yd-img" alt="어제 코디">
       <div class="yt"><b>어제 이거 입었어요?</b><span>알려주면 기록에 ✓로 남겨둘게요</span></div>
@@ -684,15 +670,6 @@
       </div>
       <button class="yx" onclick="answerWorn(null)">✕</button>
     </div>
-    <div class="rtop">
-      <div class="wbadge" id="r-weather">☂ 비 · 체감 24°</div>
-      <div class="rdate" id="r-date">7월 14일 화 · 서교동</div>
-    </div>
-    <h2 id="r-title">비 오는 오늘,
-입을 만한 3가지</h2>
-    <div class="statebar off" id="offBar" style="display:none">📴 오프라인이에요 · 마지막으로 받은 날씨로 골랐어요</div>
-    <div class="statebar warn" id="cacheBar" style="display:none"></div>
-    <div class="statebar warn" id="thinBar" style="display:none"></div>
     <div class="tasteline" id="r-taste"></div>
     <div id="refchip"></div>
     <div id="looks"></div>
@@ -764,6 +741,8 @@
 
   <!-- SAVED SHEET (코디 캘린더) -->
   <section class="screen" id="s-saved">
+    <div class="rhead"><h2>코디 기록</h2></div>
+    <p class="sub">나만 봐요. 어디에도 공유되지 않아요.</p>
     <div id="calbody"></div>
   </section>
 
@@ -784,30 +763,19 @@
     <button id="tab-calendar" onclick="switchTab('calendar')"><span class="ic">📅</span>기록</button>
   </nav>
 
-  <!-- 달력 날짜 클릭 → 그날 상세페이지 -->
-  <div class="daymodal" id="dayModal">
-    <div class="daymodal-card">
-      <div class="dd-head">
-        <button class="dd-back" onclick="closeDayModal()" aria-label="뒤로">‹</button>
-        <h2 id="dm-date"></h2>
+  <!-- 달력 날짜 클릭 → 큰 화면 -->
+  <div class="daymodal" id="dayModal" onclick="closeDayModal()">
+    <div class="daymodal-card" onclick="event.stopPropagation()">
+      <button class="daymodal-x" onclick="closeDayModal()">✕</button>
+      <img id="dm-img" alt="코디">
+      <div class="daymodal-body">
+        <div class="dm-date" id="dm-date"></div>
+        <div class="dm-name" id="dm-name"></div>
+        <div class="chips" id="dm-chips"></div>
+        <div class="items" id="dm-items"></div>
+        <div class="reason" id="dm-reason" style="margin-top:10px"></div>
+        <button class="heart" id="dm-worn" style="margin-top:14px"></button>
       </div>
-      <div class="dd-weather" id="dm-weather"></div>
-      <label class="dropzone dd-photo">
-        <input type="file" accept="image/*" style="display:none" onchange="onDayPhoto(this)">
-        <div class="dz-empty" id="dm-dzEmpty">
-          <svg class="dz-ic" width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-          <div class="dz-t">그날 고른 코디 사진</div>
-          <div class="dz-sub">or <u>browse files</u></div>
-        </div>
-        <img id="dm-photo" class="dz-img" style="display:none" alt="그날 고른 코디 사진">
-      </label>
-      <div class="dd-name-row">
-        <span class="dd-name" id="dm-name"></span>
-        <span id="dm-worn-badge"></span>
-      </div>
-      <div class="chips" id="dm-chips"></div>
-      <div class="spacer"></div>
-      <button class="btn soft" id="dm-worn" style="margin-top:14px"></button>
     </div>
   </div>
 
@@ -1038,49 +1006,7 @@ function trackImpression(picks){
 }
 
 /* ---------- 동의 · 위치 (예외: 권한 거부 = 실패가 아니라 다른 입력 경로) ---------- */
-/* 실제 동네 목록 — 검색이 이 목록에서 걸러준다. 서울 25개 구 + 6대 광역시 대표 동.
-   ⚠️ 프로토타입에선 고른 동네가 '화면에 뜨는 이름'만 바꾼다 — 그 동네의 실제 날씨를 부르진 않는다
-   (날씨는 데모 선택 · §9-1). 실서비스에선 이 동네가 기상청 API 좌표로 이어진다. */
-const DONG=[
-  // 서울 (구 동)
-  '종로구 청운동','종로구 삼청동','종로구 부암동','종로구 평창동','종로구 가회동','종로구 이화동','종로구 혜화동','종로구 창신동','종로구 숭인동','종로구 사직동','종로구 무악동',
-  '중구 명동','중구 회현동','중구 필동','중구 장충동','중구 신당동','중구 황학동','중구 을지로동','중구 소공동','중구 광희동','중구 중림동','중구 약수동',
-  '용산구 이태원동','용산구 한남동','용산구 이촌동','용산구 후암동','용산구 청파동','용산구 원효로동','용산구 효창동','용산구 용문동','용산구 한강로동','용산구 서빙고동','용산구 보광동','용산구 남영동',
-  '성동구 성수동','성동구 왕십리동','성동구 금호동','성동구 옥수동','성동구 행당동','성동구 마장동','성동구 응봉동','성동구 사근동','성동구 용답동','성동구 송정동',
-  '광진구 자양동','광진구 구의동','광진구 광장동','광진구 화양동','광진구 능동','광진구 중곡동','광진구 군자동',
-  '동대문구 청량리동','동대문구 회기동','동대문구 이문동','동대문구 휘경동','동대문구 전농동','동대문구 답십리동','동대문구 장안동','동대문구 제기동','동대문구 용신동',
-  '중랑구 면목동','중랑구 상봉동','중랑구 중화동','중랑구 묵동','중랑구 망우동','중랑구 신내동',
-  '성북구 성북동','성북구 삼선동','성북구 돈암동','성북구 안암동','성북구 보문동','성북구 정릉동','성북구 길음동','성북구 종암동','성북구 장위동','성북구 석관동','성북구 월곡동','성북구 동선동',
-  '강북구 미아동','강북구 번동','강북구 수유동','강북구 우이동','강북구 인수동',
-  '도봉구 쌍문동','도봉구 방학동','도봉구 창동','도봉구 도봉동',
-  '노원구 월계동','노원구 공릉동','노원구 하계동','노원구 중계동','노원구 상계동',
-  '은평구 불광동','은평구 응암동','은평구 역촌동','은평구 녹번동','은평구 갈현동','은평구 구산동','은평구 대조동','은평구 신사동','은평구 증산동','은평구 수색동','은평구 진관동',
-  '서대문구 신촌동','서대문구 연희동','서대문구 홍제동','서대문구 홍은동','서대문구 북아현동','서대문구 남가좌동','서대문구 북가좌동','서대문구 천연동','서대문구 충현동',
-  '마포구 서교동','마포구 합정동','마포구 망원동','마포구 연남동','마포구 상암동','마포구 공덕동','마포구 아현동','마포구 도화동','마포구 용강동','마포구 대흥동','마포구 염리동','마포구 신수동','마포구 성산동','마포구 상수동','마포구 서강동',
-  '양천구 목동','양천구 신월동','양천구 신정동',
-  '강서구 화곡동','강서구 가양동','강서구 등촌동','강서구 염창동','강서구 발산동','강서구 방화동','강서구 공항동','강서구 우장산동',
-  '구로구 신도림동','구로구 구로동','구로구 고척동','구로구 개봉동','구로구 오류동','구로구 가리봉동','구로구 항동',
-  '금천구 가산동','금천구 독산동','금천구 시흥동',
-  '영등포구 여의도동','영등포구 영등포동','영등포구 당산동','영등포구 문래동','영등포구 양평동','영등포구 신길동','영등포구 대림동','영등포구 도림동',
-  '동작구 노량진동','동작구 상도동','동작구 사당동','동작구 흑석동','동작구 대방동','동작구 신대방동',
-  '관악구 신림동','관악구 봉천동','관악구 남현동','관악구 대학동','관악구 낙성대동',
-  '서초구 서초동','서초구 반포동','서초구 방배동','서초구 잠원동','서초구 양재동','서초구 내곡동','서초구 우면동',
-  '강남구 역삼동','강남구 삼성동','강남구 대치동','강남구 청담동','강남구 압구정동','강남구 신사동','강남구 논현동','강남구 도곡동','강남구 개포동','강남구 세곡동','강남구 일원동','강남구 수서동',
-  '송파구 잠실동','송파구 방이동','송파구 송파동','송파구 석촌동','송파구 문정동','송파구 가락동','송파구 오금동','송파구 거여동','송파구 마천동','송파구 풍납동','송파구 삼전동','송파구 장지동',
-  '강동구 천호동','강동구 성내동','강동구 길동','강동구 둔촌동','강동구 암사동','강동구 명일동','강동구 고덕동','강동구 상일동','강동구 강일동',
-  // 부산
-  '부산 해운대구 우동','부산 해운대구 좌동','부산 해운대구 중동','부산 해운대구 반여동','부산 부산진구 부전동','부산 부산진구 전포동','부산 동래구 온천동','부산 수영구 광안동','부산 수영구 남천동','부산 남구 대연동','부산 중구 남포동','부산 중구 광복동','부산 사하구 하단동','부산 금정구 장전동','부산 연제구 연산동',
-  // 대구
-  '대구 중구 삼덕동','대구 중구 대봉동','대구 수성구 범어동','대구 수성구 만촌동','대구 수성구 두산동','대구 달서구 상인동','대구 달서구 월성동','대구 달서구 이곡동','대구 북구 산격동','대구 북구 침산동','대구 동구 신천동','대구 남구 대명동','대구 서구 내당동',
-  // 인천
-  '인천 남동구 구월동','인천 남동구 논현동','인천 연수구 송도동','인천 연수구 연수동','인천 부평구 부평동','인천 미추홀구 주안동','인천 미추홀구 용현동','인천 서구 청라동','인천 서구 검단동','인천 중구 신포동','인천 계양구 계산동',
-  // 광주
-  '광주 동구 충장동','광주 동구 지산동','광주 서구 화정동','광주 서구 치평동','광주 남구 봉선동','광주 북구 운암동','광주 북구 용봉동','광주 광산구 수완동','광주 광산구 첨단동',
-  // 대전
-  '대전 서구 둔산동','대전 서구 관저동','대전 유성구 봉명동','대전 유성구 노은동','대전 유성구 지족동','대전 중구 은행동','대전 중구 태평동','대전 동구 가양동','대전 대덕구 법동',
-  // 울산
-  '울산 남구 삼산동','울산 남구 달동','울산 남구 무거동','울산 중구 성남동','울산 중구 우정동','울산 동구 방어동','울산 북구 화봉동'
-];
+const DONG=['마포구 서교동','서대문구 신촌동','관악구 대학동'];
 function acceptConsent(){ state.consent=true; go('s-q1'); }   // 동네는 이제 뒤(사진 다음) 동네 화면에서 고른다
 /* 동네를 바꾸는 자리는 한 곳뿐이다 — 여기서 바꾸고, 동네를 쓰는 화면을 전부 다시 그린다.
    예전엔 state.loc에 넣기만 하고 어디서도 안 읽어서, 동네를 골라도 화면은 계속 '서울'이었다. */
@@ -1097,8 +1023,7 @@ const DONG_PIN='<span class="pin"><svg width="19" height="19" viewBox="0 0 24 24
 function renderDong(q=''){
   const el=document.getElementById('dongList'); if(!el) return;
   const key=(q||'').replace(/\s/g,'');
-  if(!key){ el.innerHTML='<div class="dongempty">동네 이름을 검색해보세요<br><span style="font-size:12.5px">예: 서교동 · 해운대 · 둔산동</span></div>'; return; }
-  const list=DONG.filter(d=>d.replace(/\s/g,'').includes(key)).slice(0,60);   // 결과가 많아도 60개까지만
+  const list=DONG.filter(d=>d.replace(/\s/g,'').includes(key));
   el.innerHTML = list.length
     ? list.map(d=>`<button class="dongrow ${state.loc===d?'sel':''}" onclick="setLoc('${d}')">${DONG_PIN}<span class="nm">${d}</span><span class="ck">✓</span></button>`).join('')
     : '<div class="dongempty">그런 동네를 못 찾았어요.</div>';
@@ -1606,15 +1531,10 @@ function toggleWorn(key){
   toast(e.worn ? '입었어요로 기록했어요 ✓' : '안 입은 걸로 바꿨어요');
 }
 function paintWornBtn(key){
-  const e=state.diary[key], b=document.getElementById('dm-worn'),
-        badge=document.getElementById('dm-worn-badge'); if(!e||!b) return;
+  const e=state.diary[key], b=document.getElementById('dm-worn'); if(!e||!b) return;
   const on = e.worn===true;
-  if(badge){
-    badge.className = 'wornchip '+(on?'done':'undone');
-    badge.textContent = on ? '✓ 입었어요' : (e.worn===false ? '안 입었어요' : '아직 몰라요');
-  }
-  b.className = 'btn soft';
-  b.textContent = on ? '안 입었어요로 바꿀래요' : '입었어요로 바꿀래요';
+  b.className = 'heart'+(on?' saved':'');
+  b.innerHTML = on ? '✓ 입었어요' : '이거 입었어요?';
   b.onclick = ()=>toggleWorn(key);
 }
 function drawLooks(picks){
@@ -1622,41 +1542,28 @@ function drawLooks(picks){
   const chosen  = pickedId();                         // 오늘 고른 한 벌 (없으면 undefined)
   const decided = picks.some(l=>l.id===chosen);       // 지금 보이는 3장 중에 그게 있나
   const reasons = reasonsFor(picks, state.weather);   // 3장 문장이 서로 겹치지 않게 한 번에 생성
-
-  /* 결정 후 = 고른 코디만 큰 카드(사진+옷장 체크리스트, 버튼 없음). '입기로 했어요'는
-     버튼이 아니라 토스트(알람)로 뜬다. 안 고른 2장은 밑에 작은 사진 카드로 나란히 —
-     눌러서 갈아탈 수 있다(하루 한 벌: 다른 걸 누르면 교체). */
-  if(decided){
-    const sel = picks.find(l=>l.id===chosen);
-    const si  = picks.indexOf(sel);
-    const others = picks.filter(l=>l.id!==chosen);
-    const pack = `<div class="pack"><div class="pt">옷장에서 꺼낼 것</div><ul>${
-        sel.items.split('·').map(x=>`<li>${x.trim()}</li>`).join('')}</ul></div>`;
-    document.getElementById('looks').innerHTML =
-      `<div class="look picked">
-        <img class="ph" src="${sel.img}" alt="${sel.name}">
-        <div class="body">
-          <div class="lname">${shortName(sel)} <span class="pickmark">✓</span>${sel.safe?' <span class="safechip">무난해요</span>':''}</div>
-          <div class="reason"><span class="i">${reasonIcon(sel)}</span><span>${reasons[si]}</span></div>
-          ${pack}
-        </div></div>
-      <div class="minirow">${others.map(l=>
-        `<button class="mini" onclick="toggleSave(${l.id},this)">
-          <img src="${l.img}" alt="${l.name}"><span>${shortName(l)}</span>
-        </button>`).join('')}</div>`;
-    return;
-  }
-
-  /* 결정 전 = 3장 그대로. 사진이 주인공(아이템 목록은 안 보여준다 — 고르는 순간 읽을 게
-     많으면 결정이 느려진다). 각 카드에 '이거 입을래' 버튼, 첫 장 = 파란 CTA */
-  document.getElementById('looks').innerHTML=picks.map((l,i)=>
-    `<div class="look">
+  /* 결정하면 고른 코디를 맨 위로 올린다. 안 고른 2장은 그 밑에 원래 순위 순서로 남는다 */
+  const order = picks.map((l,i)=>i);
+  if(decided) order.sort((a,b)=> (picks[b].id===chosen) - (picks[a].id===chosen));
+  document.getElementById('looks').innerHTML=order.map(i=>{
+    const l=picks[i];
+    const saved=(l.id===chosen);
+    /* 결정 전 = 사진이 주인공. 아이템 목록은 아예 안 보여준다 —
+       고르는 순간엔 읽을 게 많을수록 결정이 느려진다(선택 과부하). 사진과 한 줄 이유면 충분.
+       결정 후 = 아이템이 주인공 — 8:10, 옷장 앞에서 읽는 건 사진이 아니라 이 목록이다(08 막힘⑤) */
+    const pack = saved
+      ? `<div class="pack"><div class="pt">옷장에서 꺼낼 것</div><ul>${
+          l.items.split('·').map(i=>`<li>${i.trim()}</li>`).join('')}</ul></div>`
+      : '';
+    return `<div class="look ${saved?'picked':''} ${decided&&!saved?'faded':''}">
       <img class="ph" src="${l.img}" alt="${l.name}">
       <div class="body">
         <div class="lname">${shortName(l)}${l.safe?' <span class="safechip">무난해요</span>':''}</div>
         <div class="reason"><span class="i">${reasonIcon(l)}</span><span>${reasons[i]}</span></div>
-        <button class="heart ${i===0?'primary':''}" onclick="toggleSave(${l.id},this)">${saveLabel(false)}</button>
-      </div></div>`).join('');
+        ${pack}
+        <button class="heart ${saved?'saved':''} ${i===0&&!decided?'primary':''}" onclick="toggleSave(${l.id},this)">${saveLabel(saved)}</button>
+      </div></div>`;
+  }).join('');
 }
 /* 로딩 = 스켈레톤. 스피너는 "도는데 언제 끝날지 모름"이라 아침에 최악이다. */
 function drawSkeleton(n){
@@ -1825,8 +1732,8 @@ function toggleSave(id,btn){
        여러 벌을 담게 두면 달력 한 칸에 뭘 넣을지 정할 수 없고, 사실상 찜 목록이 생겨
        "찜한 것"과 "입은 것"이 갈라진다 — 만들지 않기로 한 것이다. */
     state.diary[key]={look:id, w:state.weather.key};
-    toast(cur!=null ? '이걸로 바꿨어요 · 옷장에서 꺼낼 것을 다시 적었어요'
-                    : dayWord()+' 입기로 했어요 · 옷장에서 꺼낼 것을 적어뒀어요');
+    toast(cur!=null ? '이걸로 바꿨어요 ♥ · 옷장에서 꺼낼 것을 다시 적었어요'
+                    : dayWord()+' 이걸로 정했어요 ♥ · 옷장에서 꺼낼 것을 적어뒀어요');
   }
   drawLooks(currentPicks);                                 // 결정 카드 = 체크리스트로 변신
   persist();
@@ -1872,16 +1779,16 @@ function renderSaved(){
     const key=y+'-'+(m+1)+'-'+d;
     const ent=state.diary[key], look=ent?LOOKS.find(x=>x.id===ent.look):null;
     const w=ent?WBY[ent.w]:null;
-    const cellImg=ent?(ent.photo||(look?look.img:null)):null;   // 유저가 올린 그날 사진 우선
     const isToday=(y===TODAY.getFullYear() && m===TODAY.getMonth() && d===TODAY.getDate());
     const worn=ent&&ent.worn===true;
     h+=`<div class="cal-cell ${look?'has':''} ${worn?'worn':''} ${isToday?'today':''}" data-key="${key}" `+
-       (cellImg?`style="background-image:url('${cellImg}')"`:'')+
+       (look?`style="background-image:url('${look.img}')"`:'')+
        ` onclick="clickDay('${key}')"><span class="dn">${d}</span>`+
        (w?`<span class="wc">${w.e}</span>`:'')+
        (worn?`<span class="wr">✓</span>`:'')+`</div>`;
   }
   h+='</div>';
+  h+=`<div class="day-detail" id="daydetail"></div>`;
   h+=`<div class="thin" style="text-align:center">한 칸 = 하루 한 벌 &nbsp;·&nbsp; 날씨와 함께 기록돼요</div>`;
   document.getElementById('calbody').innerHTML=h;
   selectDay(state.selectedDay && state.diary[state.selectedDay]!==undefined ? state.selectedDay : todayKey());
@@ -1918,43 +1825,22 @@ function selectDay(key){
 }
 function clickDay(key){
   selectDay(key);
-  if(state.diary[key]) openDayModal(key);   // 빈 날은 아무것도 안 함(상세페이지 별도 예정)
+  if(state.diary[key]) openDayModal(key);
+  else toast('이 날은 담은 코디가 없어요 🙂');
 }
 function openDayModal(key){
   const ent=state.diary[key]; if(!ent) return;
   const l=LOOKS.find(x=>x.id===ent.look), w=WBY[ent.w];
-  const d=keyToDate(key);
-  document.getElementById('dm-date').textContent=fmtKey(key)+' '+WD[d.getDay()]+'요일';   // "7월 14일 화요일"
-  // 날씨 줄: badge("☂ 비 · 체감 23°")에서 이모지만 떼고 "이날은 …였어요"로
-  document.getElementById('dm-weather').innerHTML =
-    w ? `<span class="we">${w.e}</span><span>이날은 ${w.badge.replace(/^[^\s]+\s+/,'')}였어요</span>` : '';
+  document.getElementById('dm-img').src=l.img;
+  document.getElementById('dm-date').textContent=fmtKey(key)+(w?' · '+w.badge:'');
   document.getElementById('dm-name').textContent=l.name;
-  document.getElementById('dm-chips').innerHTML=`<span class="chip">${l.mood}</span><span class="chip">${l.color}</span>`
-    +(state.tpo?`<span class="chip">${state.tpo}</span>`:'');   // 유저가 온보딩에서 고른 곳(학교·일상 등)
-  paintDayPhoto(key);        // 유저가 올린 그날 사진(있으면) / 없으면 빈 드롭존
+  document.getElementById('dm-chips').innerHTML=`<span class="chip">${l.mood}</span><span class="chip">${l.color}</span>`+(w?`<span class="chip">${w.rain?'비 OK':'맑음'}</span>`:'');
+  document.getElementById('dm-items').textContent=l.items;
+  document.getElementById('dm-reason').innerHTML=`<span class="i">${reasonIcon(l)}</span><span>${reasonFor(l,w)}</span>`;
   paintWornBtn(key);
   document.getElementById('dayModal').classList.add('on');
 }
 function closeDayModal(){ document.getElementById('dayModal').classList.remove('on'); }
-/* 그날 코디 사진: 기본은 그날 고른 코디 사진(l.img). 유저가 직접 올린 게 있으면 그걸 우선. */
-function paintDayPhoto(key){
-  const ent=state.diary[key]; if(!ent) return;
-  const l=LOOKS.find(x=>x.id===ent.look);
-  const src = ent.photo || (l?l.img:null);
-  const img=document.getElementById('dm-photo'), empty=document.getElementById('dm-dzEmpty');
-  if(src){ img.src=src; img.style.display='block'; empty.style.display='none'; }
-  else { img.style.display='none'; empty.style.display='flex'; }   // 둘 다 없을 때만 빈 드롭존
-}
-/* 사진을 dataURL로 읽어 diary에 저장 → persist가 그대로 localStorage에 담는다(새로고침에도 남음).
-   용량 넘치면 persist가 조용히 실패해도 이번 세션 화면엔 뜬다. */
-function onDayPhoto(inp){
-  const f=inp.files&&inp.files[0], key=state.selectedDay, ent=state.diary[key];
-  if(!f||!ent) return;
-  const r=new FileReader();
-  r.onload=()=>{ ent.photo=r.result; persist(); paintDayPhoto(key); renderSaved(); toast('그날 코디 사진을 담았어요 📷'); };
-  r.readAsDataURL(f);
-  inp.value='';   // 같은 파일 다시 골라도 onchange 뜨게
-}
 
 /* ---------- 탭 ---------- */
 function switchTab(t){

@@ -1,0 +1,10 @@
+/* ============================================================
+   Wanted Design System — global stylesheet entry point.
+   Consumers link THIS file. It is an @import manifest only.
+   ============================================================ */
+
+@import "./tokens/fonts.css";
+@import "./tokens/fig-tokens.css";
+@import "./tokens/typography.css";
+@import "./tokens/semantic.css";
+@import "./assets/logos/fig-assets.css";
