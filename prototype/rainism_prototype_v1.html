@@ -441,6 +441,20 @@
   .searchbox input{ border:none; background:transparent; outline:none; width:100%;
     font-family:inherit; font-size:15px; color:var(--ink); }
   .searchbox input::placeholder{ color:var(--sub); }
+  /* 내 위치로 찾기 — 실패해도 아래 검색으로 계속 가면 되므로 조용한 생김새로 둔다 */
+  .gpsbtn{ display:flex; align-items:center; justify-content:center; gap:8px; width:100%;
+    margin-top:16px; padding:15px; border-radius:14px; border:1.5px solid var(--line);
+    background:#fff; font-family:inherit; font-size:15px; font-weight:700; color:var(--ink); cursor:pointer; }
+  .gpsbtn:disabled{ color:var(--sub); cursor:default; }
+  .gpsbtn svg{ flex:none; }
+  .gpsmsg{ margin-top:9px; font-size:13.5px; line-height:1.5; color:var(--sub); }
+  .gpsask{ margin-top:12px; background:#eef2f8; border-radius:14px; padding:14px 15px; }
+  .gpsask .q{ font-size:14.5px; color:var(--ink); }
+  .gpsask .q b{ font-weight:800; }
+  .gpsask .row{ display:flex; gap:8px; margin-top:11px; }
+  .gpsask .row button{ flex:1; padding:11px; border-radius:11px; border:none; cursor:pointer;
+    font-family:inherit; font-size:14px; font-weight:700; background:var(--accent); color:#fff; }
+  .gpsask .row button.no{ background:#fff; color:var(--ink); border:1.5px solid var(--line); }
   .donglist{ margin-top:6px; max-height:44vh; overflow-y:auto; }
   .dongrow{ display:flex; align-items:center; gap:12px; width:100%; text-align:left; cursor:pointer;
     background:transparent; border:none; border-bottom:1px solid var(--line); padding:17px 4px;
@@ -651,6 +665,19 @@
     <button class="backb" onclick="back()" aria-label="뒤로">← 뒤로</button>
     <h2>동네를 골라주세요</h2>
     <p class="sub" id="dong-sub">날씨를 읽어서 코디를 고르는 데만 써요</p>
+    <!-- 위치로 찾기 — 되면 빠르고, 안 되면 아래 검색으로 계속 간다. 거부는 실패가 아니다(FR-8) -->
+    <button class="gpsbtn" id="gpsBtn" onclick="findMyDong()">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+      <span id="gpsBtnLabel">내 위치로 찾기</span>
+    </button>
+    <div class="gpsmsg" id="gpsMsg"></div>
+    <div class="gpsask" id="gpsAsk" hidden>
+      <div class="q"><b id="gpsName"></b> 같아요. 여기 맞아요?</div>
+      <div class="row">
+        <button onclick="acceptGps()">네, 여기예요</button>
+        <button class="no" onclick="rejectGps()">아니요</button>
+      </div>
+    </div>
     <div class="searchbox">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       <input id="dongSearch" type="text" placeholder="동네 이름으로 검색" autocomplete="off" oninput="renderDong(this.value)">
@@ -1049,8 +1076,81 @@ if(!DONG.length) console.warn('[동네] dong_grid.js 를 못 불러왔습니다 
 function acceptConsent(){ state.consent=true; go('s-q1'); }   // 동네는 이제 뒤(사진 다음) 동네 화면에서 고른다
 /* 동네를 바꾸는 자리는 한 곳뿐이다 — 여기서 바꾸고, 동네를 쓰는 화면을 전부 다시 그린다.
    예전엔 state.loc에 넣기만 하고 어디서도 안 읽어서, 동네를 골라도 화면은 계속 '서울'이었다. */
-function setLoc(d){ state.loc=d; persist(); paintLoc();
+function setLoc(d){ state.loc=d; persist(); paintLoc(); paintDongPick();
   const s=document.getElementById('dongSearch'); renderDong(s?s.value:''); }
+/* 고른 동네를 동네 화면에 한 줄로 보여준다. 동네를 바꾸는 자리가 setLoc 한 곳이므로
+   여기서만 갱신하면 GPS로 고르든 검색으로 고르든 표시가 어긋나지 않는다.
+   ('연남동 로 정했어요' 처럼 조사가 깨지지 않게 이름만 적는다) */
+function paintDongPick(){
+  const m=document.getElementById('gpsMsg'); if(m) m.textContent='✓ '+state.loc;
+}
+/* 지금 동네의 기상청 격자번호. 따로 저장하지 않고 이름에서 그때 찾는다 —
+   같은 정보를 두 군데 두면 새로고침·복원에서 어긋난다. */
+function locGrid(){
+  const r=DONG.find(x=>x[0]===state.loc);
+  return r ? {nx:r[3], ny:r[4]} : null;
+}
+
+/* ---------- 내 위치로 동네 찾기 (FR-8) ----------
+   왜 '가장 가까운 동네'로 푸나: 좌표를 동네 이름으로 바꾸려면 보통 지도 API(키·가입·쿼터)가 든다.
+   dong_grid.js 에 전국 동네의 대표 좌표가 있으니 그 중 제일 가까운 것을 고르면 키 없이 끝난다.
+   대신 동네 경계에 서 있으면 옆 동네가 잡힐 수 있다 → 확정하지 않고 한 번 물어본다(원칙 5). */
+function nearestDong(lat, lon){
+  let best=null, bestD=Infinity;
+  for(const d of DONG){
+    const dy=(d[1]-lat)*111, dx=(d[2]-lon)*88;   // 위도 1도≈111km · 경도 1도≈88km(북위 37도)
+    const dist=dy*dy+dx*dx;                      // 순서만 필요하니 제곱근은 안 씌운다
+    if(dist<bestD){ bestD=dist; best=d; }
+  }
+  return best ? {row:best, km:Math.sqrt(bestD)} : null;
+}
+let gpsPick=null;                                // 물어보는 중인 후보 (아직 확정 아님)
+function gpsFail(t){
+  const b=document.getElementById('gpsBtn');
+  b.disabled=false; document.getElementById('gpsBtnLabel').textContent='내 위치로 찾기';
+  document.getElementById('gpsAsk').hidden=true;
+  document.getElementById('gpsMsg').textContent=t;
+}
+function findMyDong(){
+  const btn=document.getElementById('gpsBtn'), msg=document.getElementById('gpsMsg');
+  document.getElementById('gpsAsk').hidden=true;
+  if(SIM.geo==='deny') return gpsFail('위치를 못 받았어요. 아래에서 직접 골라주세요.');
+  if(!navigator.geolocation) return gpsFail('이 브라우저는 위치를 못 써요. 아래에서 직접 골라주세요.');
+  if(!DONG.length) return gpsFail('동네 목록을 못 불러왔어요. 새로고침해 주세요.');
+  btn.disabled=true; document.getElementById('gpsBtnLabel').textContent='찾는 중…'; msg.textContent='';
+  navigator.geolocation.getCurrentPosition(
+    p=>{
+      const hit=nearestDong(p.coords.latitude, p.coords.longitude);
+      btn.disabled=false; document.getElementById('gpsBtnLabel').textContent='내 위치로 찾기';
+      if(!hit) return gpsFail('가까운 동네를 못 찾았어요. 아래에서 직접 골라주세요.');
+      gpsPick=hit.row;
+      document.getElementById('gpsName').textContent=hit.row[0];
+      document.getElementById('gpsAsk').hidden=false;
+      /* 멀리 떨어져 잡히면 그 사실을 숨기지 않는다(원칙 5) — 노트북은 와이파이로 추측해 크게 틀린다 */
+      msg.textContent = hit.km>8 ? '위치가 정확하지 않을 수 있어요(가장 가까운 동네를 골랐어요).' : '';
+      track('위치_찾음', { 거리km:Math.round(hit.km) });
+    },
+    e=>{
+      const 파일로열림 = location.protocol==='file:';
+      gpsFail(e.code===1 ? '위치를 못 받았어요. 아래에서 직접 골라주세요.'
+            : 파일로열림 ? '파일을 더블클릭해 연 화면이라 위치를 못 받았어요. 아래에서 직접 골라주세요.'
+            : '위치를 찾지 못했어요. 아래에서 직접 골라주세요.');
+    },
+    { timeout:8000, maximumAge:600000 }
+  );
+}
+function acceptGps(){
+  if(!gpsPick) return;
+  document.getElementById('gpsAsk').hidden=true;
+  setLoc(gpsPick[0]);            // 표시는 setLoc 안의 paintDongPick 이 맡는다
+  gpsPick=null;
+}
+function rejectGps(){
+  gpsPick=null;
+  document.getElementById('gpsAsk').hidden=true;
+  document.getElementById('gpsMsg').textContent='아래에서 직접 골라주세요.';
+  const s=document.getElementById('dongSearch'); if(s) s.focus();
+}
 /* 동네가 뜨는 곳: 오늘 탭 머리 · 날씨 탭 머리 */
 function paintLoc(){
   const r=document.getElementById('r-date'), w=document.getElementById('wt-loc');
