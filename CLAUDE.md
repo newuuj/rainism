@@ -28,8 +28,8 @@
 이 저장소의 산출물은 **화면**이다. 코드만 읽고 "됐다"고 하지 말 것. **캐스케이드 충돌·요소 겹침·폰트 폴백은 코드에선 안 보인다.**
 
 ```bash
-python3 프로토타입/shot.py 오늘 기록          # 화면 캡쳐 → 프로토타입/shots/
-python3 프로토타입/shot.py 오늘 --sim lib=thin # 손으로는 못 가는 예외 화면
+python3 prototype/shot.py 오늘 기록          # 화면 캡쳐 → prototype/shots/
+python3 prototype/shot.py 오늘 --sim lib=thin # 손으로는 못 가는 예외 화면
 ```
 
 찍은 뒤 **Read 도구로 PNG를 직접 열어 확인**한다. Playwright(1.61 + Chromium)는 이미 설치돼 있다.
@@ -40,7 +40,7 @@ python3 프로토타입/shot.py 오늘 --sim lib=thin # 손으로는 못 가는 
 
 ```bash
 # JS 문법
-python3 -c "import re;s=open('프로토타입/rainism_prototype_v1.html',encoding='utf-8').read();open('/tmp/p.js','w').write('\n'.join(re.findall(r'<script>(.*?)</script>',s,re.S)))" && node --check /tmp/p.js
+python3 -c "import re;s=open('prototype/rainism_prototype_v1.html',encoding='utf-8').read();open('/tmp/p.js','w').write('\n'.join(re.findall(r'<script>(.*?)</script>',s,re.S)))" && node --check /tmp/p.js
 ```
 
 ```bash
