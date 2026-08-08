@@ -1512,12 +1512,21 @@ function weatherPhrase(l,w,shift=0){
   } else if(w.temp==='hot'){
     c.push('한여름에도 시원해요');
     if(l.color!=='다크')    c.push('밝은 톤이라 덜 더워 보여요');
+    if(l.form<=1)          c.push('짧고 가벼워서 덜 더워요');
   } else if(w.temp==='cool'||w.temp==='chilly'){
     c.push('선선한 아침에 딱이에요', '일교차에도 춥지 않아요');
   } else {
+    /* 맑고 따뜻한 날에도 후보를 3개는 만든다 — 하나뿐이면 3장이 전부 같은 문장을 달고
+       그게 딱 "아무 사진에나 붙는 말"로 읽힌다(랜덤처럼 보이는 이유). */
     c.push('오늘 날씨에 잘 맞아요');
+    if(l.form<=1)          c.push('가볍게 걸치고 나가기 좋아요');
+    /* 색이 아니라 '두께'로 말한다 — 하드필터가 체감온도 ±1까지 품으므로
+       l.temp가 오늘과 정확히 같을 때만 '딱 맞는다'고 할 수 있다(AGENTS §9-1). */
+    if(l.temp===w.temp)    c.push('오늘 기온에 딱 맞는 두께예요');
   }
-  if(l.safe) c.push('무난해서 실패가 없어요');
+  /* '무난해서 실패가 없어요'는 여기서 뺐다 — 날씨 근거 자리인데 날씨 얘기가 아니고,
+     비 오는 날 이 문장이 뽑히면 카드에 비 얘기가 통째로 사라진다(2026-08-08 실제로 그랬다).
+     '무난해요'는 이름 옆 safechip이 이미 말해준다. */
   return pick(c, l, shift);
 }
 function reasonFor(l,w,shift=0){ return `${moodPhrase(l,shift)} · ${weatherPhrase(l,w,shift)}`; }
@@ -1546,7 +1555,13 @@ function renderResult(){
   document.getElementById('r-title').textContent = night ? '내일 아침,\n입을 만한 3가지' : w.title;
   document.getElementById('r-weather').textContent = (night?'내일 아침 · ':'')+w.badge;
   renderWake();
-  document.getElementById('r-taste').innerHTML='';   // 취향×날씨 줄은 뺐다 — 사진 넣었을 때만 아래에서 채운다
+  /* 취향 퀴즈가 매일 실제로 쓰인다는 걸 보여준다 — 사진이 없으면 score()=tagScore()라
+     mood·color가 그대로 순위를 정한다(참인 문장, AGENTS §9-1).
+     이 줄이 없으면 퀴즈 답이 반영됐다는 신호가 ♡ 아이콘 하나뿐이라 아무도 모른다.
+     사진을 올린 경우엔 사진 유사도가 주(主)이므로 아래에서 사진 문장으로 덮어쓴다. */
+  document.getElementById('r-taste').innerHTML = state.mood
+    ? `<b>${state.mood}${state.color ? ' · '+state.color : ''}</b> 취향이라 이렇게 골랐어요`
+    : '';
   const pool=hardFilter(w);
   if(pool.length===0){ go('s-fallback'); return; }        // 강수는 못 푼다 → 폴백(온도 완화)
   const picks=recommend(0) || ensureSafe(mmrPick(pool,Math.min(3,pool.length),0),pool);
@@ -1647,14 +1662,16 @@ function drawLooks(picks){
     return;
   }
 
-  /* 결정 전 = 3장 그대로. 사진이 주인공(아이템 목록은 안 보여준다 — 고르는 순간 읽을 게
-     많으면 결정이 느려진다). 각 카드에 '이거 입을래' 버튼, 첫 장 = 파란 CTA */
+  /* 결정 전 = 3장 그대로. 사진이 주인공이되, 구성 아이템을 '한 줄'로 깐다.
+     체크리스트(pack)는 결정 후에만 — 고를 땐 읽을 게 많으면 결정이 느려진다.
+     한 줄만 있어도 사진이 "남의 옷"에서 "내가 재현할 조합"으로 읽힌다. */
   document.getElementById('looks').innerHTML=picks.map((l,i)=>
     `<div class="look">
       <img class="ph" src="${l.img}" alt="${l.name}">
       <div class="body">
         <div class="lname">${shortName(l)}${l.safe?' <span class="safechip">무난해요</span>':''}</div>
         <div class="reason"><span class="i">${reasonIcon(l)}</span><span>${reasons[i]}</span></div>
+        <div class="items">${l.items}</div>
         <button class="heart ${i===0?'primary':''}" onclick="toggleSave(${l.id},this)">${saveLabel(false)}</button>
       </div></div>`).join('');
 }

@@ -26,14 +26,16 @@
 
 **링크: (아직 배포 안 함)**
 
-배포용 파일은 이미 만들어져 있다 — **`prototype/rainism_deploy_single.html`** (3.4MB).
-사진 39장과 폰트를 파일 안에 심어놓은 **한 장짜리 자립 파일**이라, 어디에 올리든 그대로 뜬다.
+**올리는 법:** 저장소를 Vercel(또는 Netlify·GitHub Pages)에 연결하면 끝이다. **빌드 단계도, 준비할 파일도 없다.**
+프로토타입 한 장(`prototype/rainism_prototype_v1.html`)과 사진 39장(`prototype/proto_img/`)이
+저장소에 함께 있어서 그대로 올라간다. 루트 `index.html`은 프로토타입으로 보내는 이동 페이지다.
 
-**올리는 법:** [app.netlify.com/drop](https://app.netlify.com/drop) 에 이 파일을 드래그 → 주소가 바로 나온다.
+*(2026-08-08: 사진을 파일 안에 심은 "한 장짜리 자립 파일" 방식은 폐기했다 — 같은 화면이 파일 3개로 갈라져
+원본만 고치고 배포 화면은 옛날 것으로 남는 사고가 났다.)*
 
 ⚠️ **claude.ai 아티팩트로는 못 올린다.** 아티팩트는 보안정책상 이 프로토타입이 쓰는
 `onclick=` 방식(버튼 동작을 태그 안에 직접 적는 것)을 실행하지 않아서 **버튼이 안 눌린다.**
-일반 웹호스팅(Netlify·Vercel·GitHub Pages)에서는 손 안 대고 그대로 작동하고,
+일반 웹호스팅(Vercel·Netlify·GitHub Pages)에서는 손 안 대고 그대로 작동하고,
 **AI 사진 매칭(CLIP)도 거기서만 켜진다** (외부 접속이 필요해서).
 
 ---
