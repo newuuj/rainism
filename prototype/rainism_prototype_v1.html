@@ -916,8 +916,10 @@
 <script>
 /* ---------- 라이브러리 (제가 사진 39장을 직접 보고 태깅) ---------- */
 /* temp: chilly(17-19) cool(20-22) warm(23-27) hot(28+) / rain=비적합 여부 / safe=안전빵 후보 */
+/* ⚠️ 아래 39개는 '없으면 쓰는 것'이다. 서버(Supabase)에서 받아오면 통째로 갈린다 — loadLibrary() 참고.
+   지우지 말 것: 인터넷이 없거나 서버가 죽어도 화면은 떠야 한다 (더블클릭으로 열리는 게 이 저장소의 전제). */
 const T={chilly:0,cool:1,warm:2,hot:3};
-const LOOKS=[
+let LOOKS=[
  {id:1, mood:'러블리', color:'웜톤', temp:'warm', rain:true, form:2, name:'비 오는 날 크림 블라우스', items:'크림 블라우스 · 화이트 미니스커트 · 레인부츠', safe:false, boots:true},
  {id:2, mood:'캐주얼', color:'뉴트럴', temp:'warm', rain:false, form:1, name:'그레이 톤온톤 캐주얼', items:'그레이 롱슬리브 · 카고 쇼츠 · 스니커즈', safe:true},
  {id:3, mood:'미니멀', color:'다크', temp:'hot', rain:false, form:2, name:'화이트 캐미 × 블랙 와이드', items:'화이트 캐미솔 · 블랙 와이드팬츠 · 플랫', safe:true},
@@ -959,7 +961,46 @@ const LOOKS=[
  {id:39, mood:'러블리', color:'웜톤', temp:'cool', rain:false, form:2, name:'화이트 긴팔 × 연두 티어드 스커트', items:'화이트 롱슬리브 · 연두 티어드 스커트 · 화이트 뮬', safe:false},
  {id:40, mood:'러블리', color:'웜톤', temp:'warm', rain:true, form:2, name:'비 오는 날 크림 셔츠 × 네이비 레인부츠', items:'크림 셔츠 · 화이트 쇼츠 · 네이비 레인부츠', safe:false, boots:true},
 ];
-LOOKS.forEach(l=> l.img='./proto_img/'+String(l.id).padStart(2,'0')+'.jpg');
+const imgOf = l => './proto_img/'+String(l.id).padStart(2,'0')+'.jpg';
+LOOKS.forEach(l=> l.img=imgOf(l));
+
+/* ---------- 라이브러리를 서버에서 받아온다 (Supabase) ----------
+   왜: 코디를 늘리려면 이 HTML을 손으로 고쳐야 했다. 표를 밖으로 뺀다.
+   🚫 실패해도 화면은 안 죽는다 — 못 받으면 위에 박혀 있는 39개를 그대로 쓴다.
+   키는 '공개용(publishable)'이라 브라우저에 있어도 된다. 서버 쪽에서 읽기만 열어놨고
+   쓰기는 막혀 있다(정책 없음 → 401). */
+const LIB_URL = 'https://lzzcypitnswzepdvofqy.supabase.co/rest/v1/library_looks';
+const LIB_KEY = 'sb_publishable_Dvw0Tmg1XINPf3OGlu7mqQ_wVYYfLHE';
+const TBAND   = {28:'hot', 23:'warm', 20:'cool', 17:'chilly'};   // temp_min → 위 T의 키
+let   LIB_SRC = 'builtin';                                        // 'builtin' | 'supabase'
+
+/* 서버 한 줄 → 화면이 쓰는 모양. 모르는 값이 하나라도 있으면 그 줄은 버린다.
+   조용히 틀린 코디를 끼워 넣느니 빼는 게 낫다 — 날씨는 틀리면 안 된다(원칙 2). */
+function toLook(r){
+  const id   = parseInt(String(r.image_path||'').match(/(\d+)\.jpg$/)?.[1] ?? '', 10);
+  const temp = TBAND[r.temp_min];
+  if(!id || !temp || !r.name || !r.mood) return null;
+  return {id, mood:r.mood, color:r.color_primary, temp, rain:!!r.rain_ok, form:r.formality,
+          name:r.name, items:(r.items||[]).join(' · '), safe:!!r.is_safe, boots:!!r.boots};
+}
+
+async function loadLibrary(){
+  if(location.protocol==='file:') return;          // 더블클릭으로 연 경우 — 부르지 않는다
+  try{
+    const ctl=new AbortController(); const t=setTimeout(()=>ctl.abort(), 2500);  // 느리면 안 기다린다
+    const res=await fetch(LIB_URL+'?select=*&active=eq.true',
+                          {headers:{apikey:LIB_KEY}, signal:ctl.signal});
+    clearTimeout(t);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const looks=(await res.json()).map(toLook).filter(Boolean);
+    if(looks.length<3) throw new Error('쓸 수 있는 코디가 '+looks.length+'개뿐');
+    looks.forEach(l=> l.img=imgOf(l));
+    LOOKS=looks; LIB_SRC='supabase';
+    console.log('[rainism] 라이브러리 '+LOOKS.length+'개를 서버에서 받았습니다');
+  }catch(e){
+    console.log('[rainism] 서버에서 못 받아 내장 '+LOOKS.length+'개를 씁니다 —', e.message);
+  }
+}
 
 /* ---------- 날씨 시나리오 (데모 · 실제 앱은 기상청 자동) ---------- */
 const WEATHER=[
@@ -2182,7 +2223,8 @@ renderWeatherPick();
 renderDong();
 seedDiary();
 trackVisit();          // ① 퍼널 시작 + 북극성(D1) 계산
-(function boot(){
+(async function boot(){
+  await loadLibrary();          // 🔴 그리기 전에 받는다. 안 기다리면 재방문 때 옛 목록으로 그려진다
   const saved=loadPersisted();
   if(saved && saved.onboarded){           // 재방문: 온보딩 스킵 → 바로 '오늘'
     state.gender=saved.gender; state.age=saved.age;
