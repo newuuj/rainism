@@ -32,7 +32,7 @@ create table if not exists library_looks (
                                          -- 결정한 뒤 '옷장에서 꺼낼 것' 체크리스트가 된다 (FR-12)
 
   -- ── 취향 태그 (소프트랭킹용 — 틀려도 되는 것) ────────────────
-  mood          text not null,           -- 미니멀 | 러블리 | 캐주얼 | 시크
+  mood          text not null,           -- 고프코어 | 발레코어 | Y2K | 모리룩  (2026-08-16 개편)
   color_primary text not null,           -- 뉴트럴 | 다크 | 쿨톤 | 웜톤
   formality     smallint not null default 2,   -- 격식 0~5. 프로토타입은 1~3만 쓴다
 

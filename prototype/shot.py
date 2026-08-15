@@ -9,37 +9,38 @@
 
 사진은 prototype/shots/ 에 저장됩니다. 그 다음 Claude에게 "shots 폴더 봐줘" 하면 됩니다.
 """
-import sys, pathlib
+import os, sys, pathlib
 from playwright.sync_api import sync_playwright
 
 HERE = pathlib.Path(__file__).parent
 OUT = HERE / "shots"; OUT.mkdir(exist_ok=True)
-URL = "file://" + str((HERE / "rainism_prototype_v1.html").resolve())
+VIEW = {"width": 402, "height": 874}   # iPhone 17 논리 화면 크기(pt). ×2로 찍어 804×1748px
+# 기본은 더블클릭과 같은 file://. 웹서버(http)로 확인할 땐 주소를 넣어준다 — 둘은 동작이 다르다(AGENTS §9-2):
+#   RAINISM_URL=http://localhost:8899/prototype/rainism_prototype_v1.html python3 prototype/shot.py 오늘
+URL = os.environ.get("RAINISM_URL") or ("file://" + str((HERE / "rainism_prototype_v1.html").resolve()))
 
 # 화면 이름 → 거기까지 가는 클릭 순서 (온보딩을 매번 통과해야 도달함)
-QUIZ = ["#s-q1 .moodgrid button:nth-child(4)", "#moodNext",   # 무드도 '선택 → 다음' 패턴
-        "#s-q2 .choices .choice:nth-child(2)", "#colorNext",  # 색도 '선택 → 다음' 패턴
-        "#s-q3 .choices .choice:nth-child(1)", "#tpoNext",    # TPO도 '선택 → 완료' 패턴
-        "#s-photo .btn.ghost"]  # 사진 없이 진행 = ghost 버튼 → 동네 화면으로
-START = ["#s-splash .btn", "#genderRow .pick:nth-child(1)",
-         "#ageList .pick:nth-child(2)", "#onbNext"]   # 여성 → 20대 → 다음 (성별·나이 합친 화면)
-CONSENT = ["#s-consent .btn"]
-DONG = ["#s-location .btn"]   # 이 동네로 할게요 → 날씨 화면
-TO_RESULT = START + CONSENT + QUIZ + DONG + [".weatherpick button:nth-child(1)"]
+QUIZ = ["#s-q1 .moodgrid button:nth-child(4)", "#moodNext",   # 컨셉도 '선택 → 다음' 패턴
+        "#s-q2 .choices .choice:nth-child(2)", "#colorNext"]  # 색이 마지막 질문 → '완료' → 내 옷 화면으로
+# 스플래시엔 버튼이 없다(1.8초 뒤 자동으로 넘어감). 클릭은 화면이 보일 때까지 알아서 기다린다
+CLOSET = ["#closetGrid .cgroup:nth-child(1) .citem:nth-child(1)",   # 퀴즈 다음은 옷장이다 — 몇 개 고르고 넘어간다
+          "#closetGrid .cgroup:nth-child(1) .citem:nth-child(2)",
+          "#closetGrid .cgroup:nth-child(2) .citem:nth-child(1)",
+          "#closetNext"]
+DONG = ["#s-location .btn"]   # 이 동네로 할게요 → 날씨는 자동 → 바로 결과 화면
+TO_RESULT = QUIZ + CLOSET + DONG
 
 SCREENS = {
-    "시작":   [],
-    "성별나이": ["#s-splash .btn"],
-    "동의":   START,
-    "무드":   START + CONSENT,
-    "색":    START + CONSENT + QUIZ[:3],   # 색 화면 + 한 개 고른(선택 표시) 상태
-    "사진":   START + CONSENT + QUIZ[:6],
-    "동네":   START + CONSENT + QUIZ,          # 사진 다음 = 동네 고르기 화면
-    "날씨선택": START + CONSENT + QUIZ + DONG,
+    "시작":   [],                        # 스플래시 — 자동으로 넘어가기 전에 찍힌다
+    "컨셉":   ["#s-q1 h2"],               # 제목 클릭 = 아무 일도 안 하지만 스플래시가 넘어갈 때까지 기다려준다
+    "색":    QUIZ[:3],                    # 색 화면 + 한 개 고른(선택 표시) 상태
+    "옷장":   QUIZ + CLOSET[:3],           # 퀴즈 다음 = 내 옷 고르기 (고른 상태)
+    "동네":   QUIZ + CLOSET,
     "오늘":   TO_RESULT,
     "결정":   TO_RESULT + [".look:nth-child(1) .heart"],
     "날씨":   TO_RESULT + ["#tab-weather"],
     "기록":   TO_RESULT + ["#tab-calendar"],
+    "날씨선택": TO_RESULT + ["#s-result .btn.ghost"],   # 결과에서만 갈 수 있는 데모 화면
 }
 
 def main():
@@ -51,23 +52,37 @@ def main():
 
     with sync_playwright() as pw:
         browser = pw.chromium.launch()
-        page = browser.new_page(viewport={"width": 430, "height": 900}, device_scale_factor=2)
+        page = browser.new_page(viewport=VIEW, device_scale_factor=2)
+        # 매 화면을 '처음 열어본 사람'으로 찍는다. 페이지 스크립트보다 먼저 지워야 한다 —
+        # 열고 나서 지우면 앱이 아직 받아오는 중(라이브러리·날씨)이라 그 뒤에 다시 저장돼 버린다.
+        page.add_init_script("try{localStorage.clear()}catch(e){}")
         for name in names:
             steps = SCREENS.get(name)
             if steps is None:
                 print(f"  ? 모르는 화면: {name} — 가능한 이름: {', '.join(SCREENS)}"); continue
-            page.goto(URL); page.evaluate("localStorage.clear()")
-            page.reload(); page.wait_for_timeout(400)
-            page.evaluate("document.getElementById('simfab').style.display='none'")
+            page.goto(URL); page.wait_for_timeout(400)
+            # 데모 전용 떠다니는 버튼 두 개는 앱 화면이 아니다 — 포트폴리오 사진엔 안 나오게
+            page.evaluate("['simfab','metfab'].forEach(id=>{const e=document.getElementById(id); if(e) e.style.display='none';})")
             for k, v in sims.items():
                 page.evaluate(f"setSim('{k}','{v}')")
             for sel in steps:
                 page.click(sel); page.wait_for_timeout(350)
             page.wait_for_timeout(700)                       # 스켈레톤이 걷힐 때까지
+            if name == "시작":                                # 스플래시는 1.2초면 넘어가 버린다.
+                page.wait_for_selector("#s-q1.on")           # 넘어가는 걸 끝까지 보고 나서
+                page.evaluate("paint('s-splash')")           # 다시 띄워 찍는다(안 그러면 다음 화면이 찍힌다)
             suffix = ("_" + "_".join(f"{k}-{v}" for k, v in sims.items())) if sims else ""
-            path = OUT / f"{name}{suffix}.png"
-            page.screenshot(path=str(path), full_page=True)
-            print(f"  ✓ {path.relative_to(HERE.parent)}")
+            order = list(SCREENS).index(name) + 1          # 파일명 앞 번호 = 유저 플로우 순서(포트폴리오용 정렬)
+            # 긴 화면은 한 장으로 안 찍는다 — 폰 한 대 높이씩 잘라서 여러 컷.
+            # 통짜로 찍으면 세로가 폰 비율을 한참 넘어서 PDF로 인쇄할 때 아래가 잘린다.
+            total = page.evaluate("Math.max(document.body.scrollHeight, document.documentElement.scrollHeight)")
+            cuts = max(1, -(-total // VIEW["height"]))     # 올림 나눗셈
+            for i in range(cuts):
+                page.evaluate(f"window.scrollTo(0,{i * VIEW['height']})")
+                page.wait_for_timeout(250)
+                path = OUT / f"{order:02d}_{name}{suffix}_{i+1}.png"
+                page.screenshot(path=str(path))            # full_page 아님 = 딱 폰 한 화면
+                print(f"  ✓ {path.relative_to(HERE.parent)}")
         browser.close()
 
 if __name__ == "__main__":

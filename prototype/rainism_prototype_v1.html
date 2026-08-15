@@ -52,6 +52,21 @@
 
   /* choice buttons */
   .choices{ display:flex; flex-direction:column; gap:11px; margin-top:22px; }
+
+  /* 내 옷 고르기 — 여러 개 고르는 칩. .choice(하나만 고름)와 달라서 따로 둔다.
+     min-height 46px = 터치 영역 하한(NFR-7). 이 값을 줄이지 말 것 —
+     이 저장소에서 이미 캐스케이드로 64px가 52px까지 깎인 적이 있다. */
+  .cgroup{ margin-top:18px; }
+  .cgroup > b{ display:block; font-size:12.5px; font-weight:800; color:var(--muted);
+    letter-spacing:.02em; margin-bottom:9px; }
+  .cwrap{ display:flex; flex-wrap:wrap; gap:8px; }
+  .citem{ min-height:46px; padding:11px 14px; border-radius:14px; background:#fff;
+    border:1.6px solid var(--line); font-size:14px; font-weight:600; color:var(--ink);
+    cursor:pointer; display:inline-flex; align-items:center; gap:6px; line-height:1.2; }
+  .citem .cmark{ font-size:12px; opacity:0; }         /* 색만으로 구분하지 않는다(NFR-7) */
+  .citem.on{ border-color:var(--accent); background:#eef3fa; color:var(--accent); }
+  .citem.on .cmark{ opacity:1; }
+  #closetCount{ font-size:13px; font-weight:700; color:var(--accent); margin-top:16px; }
   .choice{ text-align:left; background:#fff; border:1.6px solid var(--line); border-radius:16px;
     padding:16px 18px; font-size:16px; font-weight:600; cursor:pointer; font-family:inherit; color:var(--ink);
     display:flex; align-items:center; gap:13px; transition:.12s; }
@@ -74,18 +89,6 @@
     margin-top:22px; box-sizing:border-box; }
   .txtin::placeholder{ color:var(--sub); font-weight:500; }
   .txtin:focus{ outline:none; border-color:var(--accent); }
-  .miniq{ font-size:21px; font-weight:800; color:var(--ink); margin-top:26px; margin-bottom:2px; letter-spacing:-.4px; }  /* 제목 h2와 같은 크기 */
-
-  /* 성별·나이 선택 버튼 (합친 온보딩 화면) */
-  .genderrow{ display:grid; grid-template-columns:1fr 1fr; gap:11px; margin-top:16px; }
-  .pick{ background:#fff; border:1.6px solid var(--line); border-radius:16px;
-    padding:16px 18px; font-size:16px; font-weight:600; cursor:pointer; font-family:inherit; color:var(--ink);
-    display:flex; align-items:center; justify-content:space-between; gap:10px; transition:.12s; }
-  .genderrow .pick{ justify-content:center; }
-  .pick:active{ transform:scale(.99); }
-  .pick.sel{ border-color:var(--accent); background:var(--accent2); color:var(--accent); font-weight:700; }
-  .pick .chk{ display:none; color:var(--accent); font-weight:800; }
-  .pick.sel .chk{ display:inline; }
   .btn:disabled{ opacity:.4; cursor:default; }
 
   /* 참고사진 드롭존 */
@@ -108,6 +111,8 @@
   .moodgrid img{ display:block; width:100%; aspect-ratio:6/7; object-fit:cover;
     border-radius:16px; border:1.6px solid var(--line); transition:border-color .1s, box-shadow .1s; }
   .moodgrid b{ text-align:center; font-size:15px; font-weight:600; color:var(--ink); letter-spacing:-.2px; }
+  /* 컨셉 이름 밑 한 줄 설명 — 이름을 처음 보는 사람이 사진과 연결하도록 */
+  .moodgrid b i{ display:block; font-style:normal; font-size:11.5px; font-weight:600; color:var(--sub); margin-top:2px; }
   .moodgrid .chk{ display:none; color:var(--accent); font-weight:800; margin-left:3px; }
   .moodgrid button.sel img{ border-color:var(--accent); box-shadow:0 0 0 2.5px var(--accent2); }
   .moodgrid button.sel b{ color:var(--accent); font-weight:700; }
@@ -143,6 +148,11 @@
     background:repeating-linear-gradient(90deg,rgba(180,208,232,.88) 0 12px,transparent 12px 24px); }
   .water::after{ content:''; position:absolute; left:0; right:0; top:8px; height:4px;
     background:repeating-linear-gradient(90deg,transparent 0 18px,#eaf2fa 18px 34px); opacity:.8; }
+
+  /* 스플래시는 가운데 정렬 + 바닷물이 화면 맨 밑까지 닿게(섹션 아래 여백을 상쇄) */
+  #s-splash{ text-align:center; }
+  /* 바다는 늘어나게 두지 않는다 — 늘리면 파란 여백만 넓어진다. 높이 고정 + 아래로 밀어붙임 */
+  #s-splash .scene{ flex:none; height:440px; margin-top:auto; margin-bottom:-32px; }
 
   .logo{ font-size:34px; font-weight:900; letter-spacing:-1.2px; margin-top:26px; }
   .logo b{ color:var(--rain); }
@@ -331,13 +341,6 @@
   #metrics .north{ background:#eef6ee; border:1px solid #cfe3cf; border-radius:11px;
     padding:10px 11px; font-size:12px; line-height:1.55; margin-top:4px; }
 
-  /* 사진 에러 — 막다른 길을 만들지 않는다 */
-  .photoerr{ background:#fdecec; color:#9a4a4a; border-radius:13px; padding:12px 13px;
-    font-size:13px; font-weight:600; line-height:1.55; margin-top:14px; }
-  .photoerr .pe2{ display:flex; gap:7px; margin-top:10px; }
-  .photoerr .pe2 button{ flex:1; min-height:44px; border:1.3px solid #eccfcf; background:#fff;
-    color:#9a4a4a; border-radius:10px; font-family:inherit; font-size:12.5px; font-weight:700; cursor:pointer; }
-
   /* 로그인 시트 — 저장하려는 순간에만 뜬다(원칙 3: 보상이 먼저) */
   .sheet{ position:absolute; inset:0; background:rgba(30,36,48,.5); display:none; z-index:60;
     align-items:flex-end; }
@@ -514,80 +517,41 @@
 
 <div id="phone">
 
-  <!-- 1. SPLASH -->
+  <!-- 1. SPLASH — 버튼 없음. 로고 보여주는 동안 코디 목록을 받고 자동으로 넘어간다(boot 참고) -->
   <section class="screen on" id="s-splash">
-    <div class="spacer" style="flex:1.2"></div>
+    <div class="spacer" style="flex:none;height:96px"></div>
     <div class="logo">rain<b>ism</b></div>
-    <div class="tag">오늘 뭐 입지,<br>내가 대신 골라줄게요.</div>
-    <div class="tagsub">날씨에 맞춰 내 취향대로,<br>아침마다 탭 한 번이면 끝나요.</div>
+    <div class="tagsub"><b>날씨와 취향의 매칭</b></div>
+    <div class="scene">
+      <div class="rain" id="splash-rain"></div>
+      <div class="otter" id="splash-otter"></div>
+      <div class="water"></div>
+    </div>
+  </section>
+
+  <!-- 4. QUIZ 1 MOOD — 스플래시 다음 = 첫 화면이라 뒤로가기 없음 -->
+  <section class="screen" id="s-q1">
+    <div class="progress"><i class="done"></i><i></i></div>
+    <h2>어떤 게 제일 나 같아요?</h2>
+    <!-- 컨셉 이름은 몰라도 사진으로 고른다(원칙 4). 이름 밑 설명은 "내가 뭘 고른 거지" 불안을 막는 용도 -->
+    <div class="moodgrid" id="moodGrid">
+      <button onclick="pickMood('고프코어',this)"><img src="./proto_img/04.jpg" alt="고프코어"><b>고프코어<span class="chk">✓</span><i>등산·기능성</i></b></button>
+      <button onclick="pickMood('발레코어',this)"><img src="./proto_img/13.jpg" alt="발레코어"><b>발레코어<span class="chk">✓</span><i>리본·레이스</i></b></button>
+      <button onclick="pickMood('Y2K',this)"><img src="./proto_img/03.jpg" alt="Y2K"><b>Y2K<span class="chk">✓</span><i>크롭·로우라이즈</i></b></button>
+      <button onclick="pickMood('모리룩',this)"><img src="./proto_img/19.jpg" alt="모리룩"><b>모리룩<span class="chk">✓</span><i>린넨·내추럴</i></b></button>
+    </div>
     <div class="spacer"></div>
-    <button class="btn" onclick="go('s-gender')">시작하기</button>
+    <button class="btn" id="moodNext" onclick="go('s-q2')" disabled>다음</button>
+    <!-- 데모 고지 — 스플래시가 1.8초라 읽을 수 없어서 첫 화면으로 옮겼다 -->
     <p class="demoNote">포트폴리오 데모 · 실제 날씨/계정 없이 흐름만 보여줘요</p>
     <p class="demoNote licenseNote">코디 사진은 <b>데모용 참고 이미지</b>입니다.<br>
       실서비스에서는 라이선스 이미지(크라우드픽 확장 라이선스 · 크리에이터 계약)로 교체됩니다.</p>
   </section>
 
-  <!-- 2. GENDER + AGE (한 화면으로 합침) -->
-  <section class="screen" id="s-gender">
-    <button class="backb" onclick="back()" aria-label="뒤로">← 뒤로</button>
-    <h2>어떻게 불러드리면 될까요?</h2>
-    <p class="sub">맞는 옷을 고르는 데만 써요</p>
-    <div class="genderrow" id="genderRow">
-      <button class="pick" onclick="pickGender('여성',this)">여성</button>
-      <button class="pick" onclick="pickGender('남성',this)">남성</button>
-    </div>
-    <p class="miniq">나이대는요?</p>
-    <div class="choices" id="ageList">
-      <button class="pick" onclick="pickAge('10대',this)">10대<span class="chk">✓</span></button>
-      <button class="pick" onclick="pickAge('20대',this)">20대<span class="chk">✓</span></button>
-      <button class="pick" onclick="pickAge('30대',this)">30대<span class="chk">✓</span></button>
-      <button class="pick" onclick="pickAge('40대 이상',this)">40대 이상<span class="chk">✓</span></button>
-    </div>
-    <div class="spacer"></div>
-    <button class="btn" id="onbNext" onclick="onboardNext()" disabled>다음</button>
-  </section>
-
-  <!-- gender turn-away -->
-  <section class="screen" id="s-away-gender">
-    <div class="away">
-      <div class="em">🥲</div>
-      <h2>앗, 아직 남성복은 준비 중이에요</h2>
-      <p class="sub">지금 rainism은 20–30대 <b>여성</b> 데일리룩만 골라드릴 수 있어요.<br>남자분들 코디도 꼭 준비해서 다시 만나요!</p>
-    </div>
-    <button class="btn soft" onclick="go('s-gender')">← 돌아가기</button>
-    <button class="btn ghost" onclick="go('s-q1')">그래도 구경할래요 →</button>
-  </section>
-
-  <!-- age turn-away -->
-  <section class="screen" id="s-away-age">
-    <div class="away">
-      <div class="em">🥲</div>
-      <h2 id="away-age-t">앗, 조금만 기다려 주세요</h2>
-      <p class="sub" id="away-age-p"></p>
-    </div>
-    <button class="btn soft" onclick="go('s-gender')">← 돌아가기</button>
-    <button class="btn ghost" onclick="go('s-q1')">그래도 구경할래요 →</button>
-  </section>
-
-  <!-- 4. QUIZ 1 MOOD -->
-  <section class="screen" id="s-q1">
-    <button class="backb" onclick="back()" aria-label="뒤로">← 뒤로</button>
-    <div class="progress"><i class="done"></i><i></i><i></i></div>
-    <h2>어떤 게 제일 나 같아요?</h2>
-    <div class="moodgrid" id="moodGrid">
-      <button onclick="pickMood('미니멀',this)"><img src="./proto_img/03.jpg" alt="미니멀"><b>미니멀<span class="chk">✓</span></b></button>
-      <button onclick="pickMood('러블리',this)"><img src="./proto_img/13.jpg" alt="러블리"><b>러블리<span class="chk">✓</span></b></button>
-      <button onclick="pickMood('캐주얼',this)"><img src="./proto_img/16.jpg" alt="캐주얼"><b>캐주얼<span class="chk">✓</span></b></button>
-      <button onclick="pickMood('시크',this)"><img src="./proto_img/14.jpg" alt="시크"><b>시크<span class="chk">✓</span></b></button>
-    </div>
-    <div class="spacer"></div>
-    <button class="btn" id="moodNext" onclick="go('s-q2')" disabled>다음</button>
-  </section>
-
   <!-- 5. QUIZ 2 COLOR -->
   <section class="screen" id="s-q2">
     <button class="backb" onclick="back()" aria-label="뒤로">← 뒤로</button>
-    <div class="progress"><i class="done"></i><i class="done"></i><i></i></div>
+    <div class="progress"><i class="done"></i><i class="done"></i></div>
     <h2>손이 자주 가는 색은?</h2>
     <div class="choices">
       <button class="choice" onclick="pickColor('뉴트럴',this)"><span class="sws"><span style="background:#efe9dc"></span><span style="background:#cbbda3"></span><span style="background:#8b8272"></span></span>뉴트럴<span class="chk">✓</span></button>
@@ -596,68 +560,26 @@
       <button class="choice" onclick="pickColor('웜톤',this)"><span class="sws"><span style="background:#d3a570"></span><span style="background:#c48a4a"></span><span style="background:#eaddc4"></span></span>웜톤 포인트<span class="chk">✓</span></button>
     </div>
     <div class="spacer"></div>
-    <button class="btn" id="colorNext" onclick="go('s-q3')" disabled>다음</button>
+    <button class="btn" id="colorNext" onclick="finishQuiz()" disabled>완료</button>
   </section>
+  <!-- 상황(TPO) 질문은 뺐다 (2026-08-16) — 점수 기여가 0.8점으로 제일 약했고, 질문 하나를 줄이는 게
+       원칙 3(보상이 노동보다 먼저)에 맞다. 컨셉 4개가 이미 형식(포멀도)을 어느 정도 가른다. -->
 
-  <!-- 6. QUIZ 3 TPO -->
-  <section class="screen" id="s-q3">
+  <!-- 내 옷 (2026-08-10 결정 · 2026-08-15 온보딩의 마지막 질문이 됨) —
+       가진 옷을 체크하면 그게 들어간 코디를 먼저 보여준다. 참고사진 화면을 뺀 뒤로
+       퀴즈 말고 유저가 주는 유일한 재료라서, 온보딩에서 제일 공들이는 화면이다.
+       🚫 옷을 등록·촬영시키는 게 아니다(그건 여전히 안 한다). 있는 것만 눌러서 표시.
+       건너뛰기가 항상 보인다 — 안 고르면 지금까지와 똑같이 취향만으로 고른다.
+       (참고사진은 온보딩에서 빠졌을 뿐 사라진 게 아니다 — 결과 화면 '📷 이 사진처럼'에 남아 있다) -->
+  <section class="screen" id="s-closet">
     <button class="backb" onclick="back()" aria-label="뒤로">← 뒤로</button>
-    <div class="progress"><i class="done"></i><i class="done"></i><i class="done"></i></div>
-    <h2>요즘 옷 입고 가는 곳은?</h2>
-    <div class="choices">
-      <button class="choice" onclick="pickTpo('학교·일상',this)"><span class="emo">🎓</span>학교·일상<span class="chk">✓</span></button>
-      <button class="choice" onclick="pickTpo('출근·미팅',this)"><span class="emo">💼</span>출근·미팅<span class="chk">✓</span></button>
-      <button class="choice" onclick="pickTpo('약속·데이트',this)"><span class="emo">☕</span>약속·데이트<span class="chk">✓</span></button>
-      <button class="choice" onclick="pickTpo('동네·가볍게',this)"><span class="emo">🏠</span>동네·가볍게<span class="chk">✓</span></button>
-    </div>
+    <h2>가지고 있는 옷을 골라주세요</h2>
+    <p class="sub">가진 옷으로 입을 수 있는 코디를 <b>더 챙겨서</b> 골라드려요. 안 골라도 괜찮아요.</p>
+    <div id="closetGrid"></div>
+    <p class="privnote">👕 몇 개만 골라도 돼요. 나중에 바꿀 수 있어요</p>
     <div class="spacer"></div>
-    <button class="btn" id="tpoNext" onclick="finishQuiz()" disabled>완료</button>
-  </section>
-
-  <!-- 7. PHOTO (optional) -->
-  <section class="screen" id="s-photo">
-    <button class="backb" onclick="back()" aria-label="뒤로">← 뒤로</button>
-    <h2>닮고 싶은 사진이 있나요?</h2>
-    <p class="sub">올리면 그 사진 분위기로 골라드려요. 안 올려도 돼요.</p>
-    <label class="dropzone">
-      <input type="file" accept="image/*" style="display:none" onchange="onPhoto(this)">
-      <div class="dz-empty" id="dzEmpty">
-        <svg class="dz-ic" width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-        <div class="dz-t">눌러서 사진 올리기</div>
-        <div class="dz-sub">or <u>browse files</u></div>
-      </div>
-      <img id="photoImg" class="dz-img" style="display:none" alt="올린 참고 사진">
-    </label>
-    <p class="sub" id="clipStatus" style="margin-top:10px; line-height:1.5;"></p>
-    <p class="privnote">🔒 사진은 언제든 삭제할 수 있고, 추천에만 써요</p>
-    <div id="photoErr"></div>
-    <div class="spacer"></div>
-    <button class="btn" id="photoNext" onclick="photoContinue()">📷 이 사진처럼 골라줘</button>
-    <button class="btn ghost" onclick="afterPhoto()">사진 없이 취향으로 볼래요</button>
-  </section>
-
-  <!-- CONSENT (PIPA · RG-1) -->
-  <section class="screen" id="s-consent">
-    <button class="backb" onclick="back()" aria-label="뒤로">← 뒤로</button>
-    <h2>시작하기 전에</h2>
-    <p class="sub">딱 두 가지만 받아요. 둘 다 <b>코디를 고르는 데만</b> 써요.</p>
-    <div class="choices">
-      <div class="choice" style="cursor:default; align-items:flex-start">
-        <span style="font-size:20px">📍</span>
-        <div><b style="font-size:15px">동네</b>
-          <small>오늘 날씨를 읽으려고요. 정확한 위치는 저장하지 않아요.</small></div>
-      </div>
-      <div class="choice" style="cursor:default; align-items:flex-start">
-        <span style="font-size:20px">📷</span>
-        <!-- ⚠️ "원본은 지워요"라고 쓰여 있었으나 실제로 지우는 코드가 없었다. 게다가 사진 보관 정책은
-             아직 미정(PRD RG-2 🔬)이라 화면이 먼저 확정해버리면 안 된다 → 실제로 하는 일만 남긴다(§9-1) -->
-        <div><b style="font-size:15px">참고 사진 (선택)</b>
-          <small>올릴 때만 받아서 <b>분위기를 읽는 데만</b> 써요. 언제든 ✕로 빼면 바로 사라져요.</small></div>
-      </div>
-    </div>
-    <div class="spacer"></div>
-    <p class="sub" style="font-size:12px; margin-bottom:10px">동의하면 개인정보 처리방침에 동의하는 것으로 봐요.</p>
-    <button class="btn" onclick="acceptConsent()">동의하고 시작하기</button>
+    <button class="btn" id="closetNext" onclick="closetDone()">다 골랐어요</button>
+    <button class="btn ghost" onclick="closetSkip()">건너뛸래요</button>
   </section>
 
   <!-- LOCATION — 동네 고르기 (날씨 읽을 동네 · 위치 거부 시 대체 경로도 겸함 FR-8) -->
@@ -684,13 +606,13 @@
     </div>
     <div class="donglist" id="dongList"></div>
     <div class="spacer"></div>
-    <button class="btn" onclick="go('s-weather')">이 동네로 할게요</button>
+    <button class="btn" onclick="dongDone()">이 동네로 할게요</button>
   </section>
 
   <!-- 8. WEATHER PICK (demo stand-in for live API) -->
   <section class="screen" id="s-weather">
     <h2>오늘 날씨를 골라볼까요?</h2>
-    <p class="sub" id="w-sub">진짜 앱은 기상청에서 자동으로 읽어와요. 데모라 직접 골라봐요.</p>
+    <p class="sub" id="w-sub">지금 동네 날씨는 기상청에서 자동으로 받아와요. 다른 날씨엔 뭘 골라주는지 보려면 눌러보세요.</p>
     <div class="weatherpick" id="weatherpick"></div>
   </section>
 
@@ -735,7 +657,8 @@
       <button class="btn soft outline" id="rerollBtn" onclick="reroll()">🔄 다른 거 보여줘</button>
       <label class="btn soft" style="cursor:pointer"><input type="file" accept="image/*" style="display:none" onchange="onResultPhoto(this)">📷 이 사진처럼</label>
     </div>
-    <button class="btn ghost" onclick="go('s-weather')">날씨 바꿔서 다시 보기</button>
+    <!-- 온보딩에선 날씨를 안 묻는다(동네 고르면 자동). 데모로 4가지 날씨를 보려면 여기로 -->
+    <button class="btn ghost" onclick="go('s-weather')">🌤 다른 날씨로 보기 (데모)</button>
     <button class="btn ghost" onclick="resetAll()">↻ 처음부터</button>
   </section>
 
@@ -920,47 +843,100 @@
    지우지 말 것: 인터넷이 없거나 서버가 죽어도 화면은 떠야 한다 (더블클릭으로 열리는 게 이 저장소의 전제). */
 const T={chilly:0,cool:1,warm:2,hot:3};
 let LOOKS=[
- {id:1, mood:'러블리', color:'웜톤', temp:'warm', rain:true, form:2, name:'비 오는 날 크림 블라우스', items:'크림 블라우스 · 화이트 미니스커트 · 레인부츠', safe:false, boots:true},
- {id:2, mood:'캐주얼', color:'뉴트럴', temp:'warm', rain:false, form:1, name:'그레이 톤온톤 캐주얼', items:'그레이 롱슬리브 · 카고 쇼츠 · 스니커즈', safe:true},
- {id:3, mood:'미니멀', color:'다크', temp:'hot', rain:false, form:2, name:'화이트 캐미 × 블랙 와이드', items:'화이트 캐미솔 · 블랙 와이드팬츠 · 플랫', safe:true},
- {id:4, mood:'캐주얼', color:'쿨톤', temp:'cool', rain:true, form:1, name:'비 오는 날 데님 셔츠 레이어드', items:'데님 셔츠 · 그레이 스웨트 · 쇼츠 · 레인부츠', safe:false, boots:true},
- {id:5, mood:'미니멀', color:'다크', temp:'warm', rain:true, form:2, name:'비 오는 날 미니멀 롱스커트', items:'그레이 티 · 블랙 롱스커트 · 샌들', safe:true},
- {id:6, mood:'캐주얼', color:'웜톤', temp:'hot', rain:false, form:1, name:'브라운 와이드 캐주얼', items:'화이트 티 · 브라운 와이드 · 옐로 스니커즈', safe:false},
- {id:7, mood:'캐주얼', color:'쿨톤', temp:'cool', rain:false, form:1, name:'블루 스트라이프 오버셔츠', items:'스트라이프 오버셔츠 · 화이트 팬츠', safe:false},
- {id:8, mood:'시크', color:'다크', temp:'warm', rain:false, form:2, name:'블랙 톤온톤 미디', items:'크롭 롱슬리브 · 블랙 미디스커트 · 스니커즈', safe:true},
- {id:9, mood:'캐주얼', color:'쿨톤', temp:'hot', rain:false, form:2, name:'청록 티어드 스커트', items:'그레이 탱크 · 청록 티어드 스커트 · 부츠', safe:false},
- {id:10, mood:'캐주얼', color:'쿨톤', temp:'warm', rain:false, form:1, name:'블루 브이넥 × 데님', items:'블루 브이넥 티 · 데님 와이드', safe:false},
- {id:11, mood:'러블리', color:'웜톤', temp:'chilly', rain:true, form:3, name:'서늘한 비, 올리브 가디건', items:'올리브 가디건 · 니트 · 체크 스커트 · 로퍼', safe:false},
- {id:12, mood:'시크', color:'웜톤', temp:'warm', rain:false, form:2, name:'올리브 × 브라운 버뮤다', items:'올리브 가디건 · 화이트 탑 · 브라운 버뮤다 · 부츠', safe:false},
- {id:13, mood:'러블리', color:'쿨톤', temp:'cool', rain:false, form:2, name:'하늘색 가디건 러블리', items:'하늘 가디건 · 레이스 탑 · 러플 스커트', safe:false},
- {id:14, mood:'시크', color:'다크', temp:'warm', rain:false, form:3, name:'블랙 블레이저 × 데님', items:'크롭 블레이저 · 그레이 캐미 · 데님 스트레이트', safe:true},
- {id:15, mood:'시크', color:'쿨톤', temp:'cool', rain:false, form:3, name:'블루 가디건 × 카프리', items:'크롭 가디건 · 탑 · 카프리 레깅스 · 플랫', safe:false},
- {id:16, mood:'캐주얼', color:'뉴트럴', temp:'warm', rain:false, form:1, name:'화이트 롱슬리브 × 배기진', items:'화이트 롱슬리브 · 배기진 · 벨트', safe:true},
- {id:17, mood:'미니멀', color:'다크', temp:'hot', rain:false, form:2, name:'블랙 니트탑 × 와이드 데님', items:'블랙 니트 민소매 · 데님 와이드 · 플립플롭', safe:true},
- {id:18, mood:'캐주얼', color:'웜톤', temp:'hot', rain:false, form:1, name:'옐로 카고 캐주얼', items:'그레이 베이비티 · 옐로 카고', safe:false},
- {id:19, mood:'미니멀', color:'뉴트럴', temp:'cool', rain:false, form:3, name:'크림 톤온톤 미니멀', items:'오버 니트 · 화이트 탑 · 크림 와이드', safe:true},
- {id:20, mood:'시크', color:'뉴트럴', temp:'cool', rain:false, form:2, name:'슬립 드레스 × 후디', items:'네이비 후디 · 화이트 슬립 드레스 · 부츠', safe:false},
- {id:21, mood:'러블리', color:'웜톤', temp:'warm', rain:false, form:2, name:'크림 가디건 × 버뮤다', items:'크림 가디건 · 프린트 캐미 · 버뮤다 · 메리제인', safe:false},
- {id:22, mood:'시크', color:'다크', temp:'chilly', rain:true, form:2, name:'블랙 니트 원피스 × 레인부츠', items:'블랙 니트 원피스 · 레드 스카프 · 레인부츠', safe:false, boots:true},
- {id:23, mood:'시크', color:'다크', temp:'warm', rain:true, form:1, name:'비 오는 날 블랙 셔츠 × 레인부츠', items:'블랙 오버셔츠 · 네이비 쇼츠 · 레인부츠 · 캡', safe:true, boots:true},
- {id:24, mood:'캐주얼', color:'웜톤', temp:'hot', rain:false, form:1, name:'스트릿 니트탑 레이어드', items:'믹스 니트탑 · 쇼츠 · 니삭스 · 스니커즈', safe:false},
- {id:25, mood:'러블리', color:'웜톤', temp:'cool', rain:false, form:2, name:'플로럴 후드 × 튤스커트', items:'플로럴 후드 · 튤 스커트', safe:false},
- {id:26, mood:'캐주얼', color:'쿨톤', temp:'cool', rain:true, form:1, name:'레인재킷 × 레인부츠', items:'블루 레인재킷 · 블랙 쇼츠 · 레인부츠', safe:true, boots:true},
- {id:27, mood:'러블리', color:'뉴트럴', temp:'warm', rain:true, form:2, name:'비 오는 날 퍼프 블라우스', items:'화이트 퍼프 블라우스 · 데님 쇼츠 · 레인부츠', safe:false, boots:true},
- {id:28, mood:'시크', color:'다크', temp:'chilly', rain:true, form:2, name:'그레이 니트 원피스 × 레인부츠', items:'그레이 니트 원피스 · 레드 반다나 · 레인부츠', safe:false, boots:true},
- {id:30, mood:'캐주얼', color:'웜톤', temp:'warm', rain:false, form:1, name:'옐로 베이비티 × 스웻쇼츠', items:'옐로 베이비티 · 네이비 스웻 쇼츠 · 스니커즈', safe:false},
- {id:31, mood:'러블리', color:'웜톤', temp:'warm', rain:true, form:2, name:'여름 비, 자수 블라우스 × 깅엄', items:'화이트 자수 블라우스 · 깅엄 쇼츠 · 레인부츠', safe:false, boots:true},
+ {id:1, mood:'모리룩', color:'웜톤', temp:'warm', rain:true, form:2, name:'비 오는 날 크림 블라우스', items:'크림 블라우스 · 화이트 미니스커트 · 레인부츠', safe:false, boots:true},
+ {id:2, mood:'Y2K', color:'뉴트럴', temp:'warm', rain:false, form:1, name:'그레이 톤온톤 캐주얼', items:'그레이 롱슬리브 · 카고 쇼츠 · 스니커즈', safe:true},
+ {id:3, mood:'Y2K', color:'다크', temp:'hot', rain:false, form:2, name:'화이트 캐미 × 블랙 와이드', items:'화이트 캐미솔 · 블랙 와이드팬츠 · 플랫', safe:true},
+ {id:4, mood:'고프코어', color:'쿨톤', temp:'cool', rain:true, form:1, name:'비 오는 날 데님 셔츠 레이어드', items:'데님 셔츠 · 그레이 스웨트 · 쇼츠 · 레인부츠', safe:false, boots:true},
+ {id:5, mood:'모리룩', color:'다크', temp:'warm', rain:true, form:2, name:'비 오는 날 미니멀 롱스커트', items:'그레이 티 · 블랙 롱스커트 · 샌들', safe:true},
+ {id:6, mood:'고프코어', color:'웜톤', temp:'hot', rain:false, form:1, name:'브라운 와이드 캐주얼', items:'화이트 티 · 브라운 와이드 · 옐로 스니커즈', safe:false},
+ {id:7, mood:'모리룩', color:'쿨톤', temp:'cool', rain:false, form:1, name:'블루 스트라이프 오버셔츠', items:'스트라이프 오버셔츠 · 화이트 팬츠', safe:false},
+ {id:8, mood:'발레코어', color:'다크', temp:'warm', rain:false, form:2, name:'블랙 톤온톤 미디', items:'크롭 롱슬리브 · 블랙 미디스커트 · 스니커즈', safe:true},
+ {id:9, mood:'Y2K', color:'쿨톤', temp:'hot', rain:false, form:2, name:'청록 티어드 스커트', items:'그레이 탱크 · 청록 티어드 스커트 · 부츠', safe:false},
+ {id:10, mood:'모리룩', color:'쿨톤', temp:'warm', rain:false, form:1, name:'블루 브이넥 × 데님', items:'블루 브이넥 티 · 데님 와이드', safe:false},
+ {id:11, mood:'모리룩', color:'웜톤', temp:'chilly', rain:true, form:3, name:'서늘한 비, 올리브 가디건', items:'올리브 가디건 · 니트 · 체크 스커트 · 로퍼', safe:false},
+ {id:12, mood:'Y2K', color:'웜톤', temp:'warm', rain:false, form:2, name:'올리브 × 브라운 버뮤다', items:'올리브 가디건 · 화이트 탑 · 브라운 버뮤다 · 부츠', safe:false},
+ {id:13, mood:'발레코어', color:'쿨톤', temp:'cool', rain:false, form:2, name:'하늘색 가디건 러블리', items:'하늘 가디건 · 레이스 탑 · 러플 스커트', safe:false},
+ {id:14, mood:'Y2K', color:'다크', temp:'warm', rain:false, form:3, name:'블랙 블레이저 × 데님', items:'크롭 블레이저 · 그레이 캐미 · 데님 스트레이트', safe:true},
+ {id:15, mood:'모리룩', color:'쿨톤', temp:'cool', rain:false, form:3, name:'블루 가디건 × 카프리', items:'크롭 가디건 · 탑 · 카프리 레깅스 · 플랫', safe:false},
+ {id:16, mood:'모리룩', color:'뉴트럴', temp:'warm', rain:false, form:1, name:'화이트 롱슬리브 × 배기진', items:'화이트 롱슬리브 · 배기진 · 벨트', safe:true},
+ {id:17, mood:'Y2K', color:'다크', temp:'hot', rain:false, form:2, name:'블랙 니트탑 × 와이드 데님', items:'블랙 니트 민소매 · 데님 와이드 · 플립플롭', safe:true},
+ {id:18, mood:'고프코어', color:'웜톤', temp:'hot', rain:false, form:1, name:'옐로 카고 캐주얼', items:'그레이 베이비티 · 옐로 카고', safe:false},
+ {id:19, mood:'모리룩', color:'뉴트럴', temp:'cool', rain:false, form:3, name:'크림 톤온톤 미니멀', items:'오버 니트 · 화이트 탑 · 크림 와이드', safe:true},
+ {id:20, mood:'발레코어', color:'뉴트럴', temp:'cool', rain:false, form:2, name:'슬립 드레스 × 후디', items:'네이비 후디 · 화이트 슬립 드레스 · 부츠', safe:false},
+ {id:21, mood:'발레코어', color:'웜톤', temp:'warm', rain:false, form:2, name:'크림 가디건 × 버뮤다', items:'크림 가디건 · 프린트 캐미 · 버뮤다 · 메리제인', safe:false},
+ {id:22, mood:'발레코어', color:'다크', temp:'chilly', rain:true, form:2, name:'블랙 니트 원피스 × 레인부츠', items:'블랙 니트 원피스 · 레드 스카프 · 레인부츠', safe:false, boots:true},
+ {id:23, mood:'고프코어', color:'다크', temp:'warm', rain:true, form:1, name:'비 오는 날 블랙 셔츠 × 레인부츠', items:'블랙 오버셔츠 · 네이비 쇼츠 · 레인부츠 · 캡', safe:true, boots:true},
+ {id:24, mood:'Y2K', color:'웜톤', temp:'hot', rain:false, form:1, name:'스트릿 니트탑 레이어드', items:'믹스 니트탑 · 쇼츠 · 니삭스 · 스니커즈', safe:false},
+ {id:25, mood:'발레코어', color:'웜톤', temp:'cool', rain:false, form:2, name:'플로럴 후드 × 튤스커트', items:'플로럴 후드 · 튤 스커트', safe:false},
+ {id:26, mood:'고프코어', color:'쿨톤', temp:'cool', rain:true, form:1, name:'레인재킷 × 레인부츠', items:'블루 레인재킷 · 블랙 쇼츠 · 레인부츠', safe:true, boots:true},
+ {id:27, mood:'모리룩', color:'뉴트럴', temp:'warm', rain:true, form:2, name:'비 오는 날 퍼프 블라우스', items:'화이트 퍼프 블라우스 · 데님 쇼츠 · 레인부츠', safe:false, boots:true},
+ {id:28, mood:'Y2K', color:'다크', temp:'chilly', rain:true, form:2, name:'그레이 니트 원피스 × 레인부츠', items:'그레이 니트 원피스 · 레드 반다나 · 레인부츠', safe:false, boots:true},
+ {id:30, mood:'Y2K', color:'웜톤', temp:'warm', rain:false, form:1, name:'옐로 베이비티 × 스웻쇼츠', items:'옐로 베이비티 · 네이비 스웻 쇼츠 · 스니커즈', safe:false},
+ {id:31, mood:'모리룩', color:'웜톤', temp:'warm', rain:true, form:2, name:'여름 비, 자수 블라우스 × 깅엄', items:'화이트 자수 블라우스 · 깅엄 쇼츠 · 레인부츠', safe:false, boots:true},
  /* 2026-07-13 추가 9장 — 비 오는 날 후보가 얇아서 보강. rain:true는 비 전용(맑은 날엔 안 나옴) */
- {id:32, mood:'캐주얼', color:'쿨톤', temp:'warm', rain:false, form:1, name:'하늘색 롱슬리브 × 차콜 쇼츠', items:'하늘 롱슬리브 · 차콜 쇼츠 · 블랙 부츠', safe:false},
- {id:33, mood:'러블리', color:'웜톤', temp:'warm', rain:true, form:2, name:'비 오는 골목, 크림 블라우스', items:'크림 블라우스 · 연청 데님 · 크림 레인부츠', safe:false, boots:true},
- {id:34, mood:'시크', color:'다크', temp:'cool', rain:true, form:1, name:'올블랙 × 레인부츠', items:'블랙 후디 · 블랙 팬츠 · 블랙 레인부츠', safe:true, boots:true},
- {id:35, mood:'러블리', color:'뉴트럴', temp:'warm', rain:true, form:2, name:'화이트 레이어드 × 핑크 레인부츠', items:'화이트 블라우스 · 화이트 스커트 · 핑크 레인부츠', safe:false, boots:true},
- {id:36, mood:'미니멀', color:'뉴트럴', temp:'warm', rain:true, form:2, name:'버터색 원피스 × 블랙 레인부츠', items:'크림 코튼 원피스 · 블랙 롱 레인부츠', safe:true, boots:true},
- {id:37, mood:'미니멀', color:'다크', temp:'warm', rain:false, form:1, name:'화이트 티 × 블랙 버뮤다', items:'화이트 반팔 티 · 블랙 버뮤다 · 블랙 부츠', safe:true},
- {id:38, mood:'러블리', color:'뉴트럴', temp:'hot', rain:false, form:2, name:'레이스 캐미 × 레이스 버뮤다', items:'화이트 레이스 캐미 · 레이스 버뮤다 · 스니커즈', safe:false},
- {id:39, mood:'러블리', color:'웜톤', temp:'cool', rain:false, form:2, name:'화이트 긴팔 × 연두 티어드 스커트', items:'화이트 롱슬리브 · 연두 티어드 스커트 · 화이트 뮬', safe:false},
- {id:40, mood:'러블리', color:'웜톤', temp:'warm', rain:true, form:2, name:'비 오는 날 크림 셔츠 × 네이비 레인부츠', items:'크림 셔츠 · 화이트 쇼츠 · 네이비 레인부츠', safe:false, boots:true},
+ {id:32, mood:'Y2K', color:'쿨톤', temp:'warm', rain:false, form:1, name:'하늘색 롱슬리브 × 차콜 쇼츠', items:'하늘 롱슬리브 · 차콜 쇼츠 · 블랙 부츠', safe:false},
+ {id:33, mood:'고프코어', color:'웜톤', temp:'warm', rain:true, form:2, name:'비 오는 골목, 크림 블라우스', items:'크림 블라우스 · 연청 데님 · 크림 레인부츠', safe:false, boots:true},
+ {id:34, mood:'고프코어', color:'다크', temp:'cool', rain:true, form:1, name:'올블랙 × 레인부츠', items:'블랙 후디 · 블랙 팬츠 · 블랙 레인부츠', safe:true, boots:true},
+ {id:35, mood:'발레코어', color:'뉴트럴', temp:'warm', rain:true, form:2, name:'화이트 레이어드 × 핑크 레인부츠', items:'화이트 블라우스 · 화이트 스커트 · 핑크 레인부츠', safe:false, boots:true},
+ {id:36, mood:'모리룩', color:'뉴트럴', temp:'warm', rain:true, form:2, name:'버터색 원피스 × 블랙 레인부츠', items:'크림 코튼 원피스 · 블랙 롱 레인부츠', safe:true, boots:true},
+ {id:37, mood:'Y2K', color:'다크', temp:'warm', rain:false, form:1, name:'화이트 티 × 블랙 버뮤다', items:'화이트 반팔 티 · 블랙 버뮤다 · 블랙 부츠', safe:true},
+ {id:38, mood:'발레코어', color:'뉴트럴', temp:'hot', rain:false, form:2, name:'레이스 캐미 × 레이스 버뮤다', items:'화이트 레이스 캐미 · 레이스 버뮤다 · 스니커즈', safe:false},
+ {id:39, mood:'모리룩', color:'웜톤', temp:'cool', rain:false, form:2, name:'화이트 긴팔 × 연두 티어드 스커트', items:'화이트 롱슬리브 · 연두 티어드 스커트 · 화이트 뮬', safe:false},
+ {id:40, mood:'모리룩', color:'웜톤', temp:'warm', rain:true, form:2, name:'비 오는 날 크림 셔츠 × 네이비 레인부츠', items:'크림 셔츠 · 화이트 쇼츠 · 네이비 레인부츠', safe:false, boots:true},
 ];
+/* ---------- 내 옷 (2026-08-10 결정) ----------
+   목록은 지어낸 게 아니라 라이브러리 39장의 구성 아이템에서 뽑았다.
+   (표기 119개 → 종류 22개 → 소품 빼고 21개. 없는 옷을 물어보면 체크가 헛돈다) */
+const CLOSET=[
+  {g:'상의', items:['반팔티','긴팔티','민소매·나시','블라우스','셔츠','니트']},
+  {g:'하의·원피스', items:['반바지','스커트','청바지','와이드팬츠','레깅스','원피스']},
+  {g:'겉옷', items:['가디건','후드·맨투맨','재킷','레인재킷']},
+  {g:'신발', items:['레인부츠','스니커즈','부츠','샌들·슬리퍼','플랫·로퍼']},
+];
+/* 코디의 아이템 글자 → 위 목록의 한 칸. 앞에서부터 먼저 맞는 것을 쓴다.
+   ⚠️ 순서가 중요하다: '레인부츠'가 '부츠'보다 먼저 와야 한다 */
+const ITEMCAT=[
+  ['레인부츠',/레인부츠/], ['레인재킷',/레인재킷/], ['부츠',/부츠/],
+  ['스니커즈',/스니커즈/], ['샌들·슬리퍼',/샌들|뮬|플립플롭/], ['플랫·로퍼',/플랫|로퍼|메리제인/],
+  ['가디건',/가디건/], ['재킷',/블레이저|재킷/], ['셔츠',/셔츠/], ['후드·맨투맨',/후디|후드|스웨트/],
+  ['블라우스',/블라우스/], ['니트',/니트/], ['민소매·나시',/캐미|민소매|탱크|탑$/],
+  ['긴팔티',/롱슬리브/], ['반팔티',/베이비티|반팔|(^|\s)티$/],
+  ['원피스',/원피스|드레스/], ['스커트',/스커트/], ['반바지',/쇼츠|반바지|버뮤다/],
+  ['청바지',/데님|진$/], ['와이드팬츠',/와이드|팬츠|슬랙스|카고/], ['레깅스',/레깅스|카프리/],
+];
+const catOf = t => (ITEMCAT.find(([,re])=>re.test(t))||[null])[0];
+
+function renderCloset(){
+  document.getElementById('closetGrid').innerHTML =
+    CLOSET.map(g=>`<div class="cgroup"><b>${g.g}</b><div class="cwrap">`+
+      g.items.map(it=>`<button class="citem${state.own[it]?' on':''}" onclick="toggleOwn('${it}',this)">`+
+        `${it}<span class="cmark">✓</span></button>`).join('')+
+    `</div></div>`).join('') + `<div id="closetCount"></div>`;
+  updateClosetCount();
+}
+function toggleOwn(it, el){
+  if(state.own[it]) delete state.own[it]; else state.own[it]=1;
+  el.classList.toggle('on', !!state.own[it]);
+  updateClosetCount();
+}
+function updateClosetCount(){
+  const n=Object.keys(state.own).length, el=document.getElementById('closetCount');
+  if(el) el.textContent = n ? `${n}개 골랐어요` : '';
+  // 버튼 문구는 그대로 둔다. 예전에 0개일 때 '아직 안 고를래요'로 바꿨더니
+  // 아래 '건너뛸래요'와 같은 말이 돼서 버튼 두 개가 같은 걸 하는 화면이 됐다.
+}
+/* 이 코디에서 내가 가진 아이템의 비율 (0~1). 아무것도 안 골랐으면 null = 점수에 영향 없음.
+   🚫 하드필터가 아니다. 없는 옷이 섞여 있어도 후보에서 빼지 않는다 —
+      빼면 "결과 없음"이 나고(FR-14 위반), 날씨 말고는 하드필터를 두지 않기로 했다(원칙 2). */
+function ownRatio(l){
+  if(!Object.keys(state.own).length) return null;
+  const cats=String(l.items||'').split('·').map(s=>catOf(s.trim())).filter(Boolean);
+  if(!cats.length) return null;
+  return cats.filter(c=>state.own[c]).length / cats.length;
+}
+function closetDone(){ persist(); afterCloset(); }
+function closetSkip(){ state.own={}; persist(); afterCloset(); }
+
 const imgOf = l => './proto_img/'+String(l.id).padStart(2,'0')+'.jpg';
 LOOKS.forEach(l=> l.img=imgOf(l));
 
@@ -1014,7 +990,7 @@ const WEATHER=[
 /* saved 배열은 없앴다 — '오늘 뭘 골랐나'를 배열과 달력(diary)이 따로 들고 있어서 어긋났다.
    (2장 고르면 카드는 둘 다 '입기로 했어요'인데 달력엔 1장만 남았다)
    이제 정본은 달력 한 곳뿐이다. 하루 = 코디 한 벌. */
-const state={ name:'', gender:null, age:null, mood:null, color:null, tpo:null, photo:false, weather:WEATHER[0], diary:{}, shown:{}, selectedDay:null, calOff:0, usedReroll:false, batch:0, booted:false, consent:false, loc:'마포구 서교동', authed:true,   /* loc=데모 기본 동네(실서비스는 GPS가 잡는다) */ wakeTime:'07:00', wakeOn:false,
+const state={ name:'', gender:null, age:null, mood:null, color:null, tpo:null, photo:false, own:{}, weather:WEATHER[0], weatherManual:false, diary:{}, shown:{}, selectedDay:null, calOff:0, usedReroll:false, batch:0, booted:false, consent:false, loc:'마포구 서교동', authed:true,   /* loc=데모 기본 동네(실서비스는 GPS가 잡는다) */ wakeTime:'07:00', wakeOn:false,
   refPhotoUrl:null, refEmb:null, libEmb:null, clipOn:false };   /* refEmb=올린 사진의 분위기 좌표 · libEmb=라이브러리 39장 좌표 · clipOn=진짜 AI 매칭 작동 중 · shown={룩id:마지막으로 보여준 날} */
 const TODAY=new Date();
 const dkeyOf=d=> d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
@@ -1045,8 +1021,8 @@ const WBY={}; WEATHER.forEach(w=>WBY[w.key]=w);
 const LS='rainism_state_v1';
 function persist(){
   try{ localStorage.setItem(LS, JSON.stringify({
-    onboarded:true, gender:state.gender, age:state.age,
-    mood:state.mood, color:state.color, tpo:state.tpo,
+    onboarded:true,
+    mood:state.mood, color:state.color, own:state.own,
     diary:state.diary, shown:state.shown, loc:state.loc, weatherKey:state.weather.key, wakeTime:state.wakeTime, wakeOn:state.wakeOn
   })); }catch(e){}
 }
@@ -1114,11 +1090,11 @@ function trackImpression(picks){
    ⚠️ 지금은 고른 동네가 '화면에 뜨는 이름'만 바꾼다 — 실제 날씨를 부르진 않는다(날씨는 데모 선택 · §9-1). */
 const DONG = (typeof DONG_GRID !== 'undefined') ? DONG_GRID : [];
 if(!DONG.length) console.warn('[동네] dong_grid.js 를 못 불러왔습니다 — 동네 검색이 비어 보입니다.');
-function acceptConsent(){ state.consent=true; go('s-q1'); }   // 동네는 이제 뒤(사진 다음) 동네 화면에서 고른다
 /* 동네를 바꾸는 자리는 한 곳뿐이다 — 여기서 바꾸고, 동네를 쓰는 화면을 전부 다시 그린다.
    예전엔 state.loc에 넣기만 하고 어디서도 안 읽어서, 동네를 골라도 화면은 계속 '서울'이었다. */
 function setLoc(d){ state.loc=d; persist(); paintLoc(); paintDongPick();
-  const s=document.getElementById('dongSearch'); renderDong(s?s.value:''); }
+  const s=document.getElementById('dongSearch'); renderDong(s?s.value:'');
+  loadWeather(); }   // 동네가 정해진 순간 그 격자의 날씨를 미리 받아둔다 ('완료'에서 안 기다리게)
 /* 고른 동네를 동네 화면에 한 줄로 보여준다. 동네를 바꾸는 자리가 setLoc 한 곳이므로
    여기서만 갱신하면 GPS로 고르든 검색으로 고르든 표시가 어긋나지 않는다.
    ('연남동 로 정했어요' 처럼 조사가 깨지지 않게 이름만 적는다) */
@@ -1228,7 +1204,10 @@ function renderSim(){
 }
 function setSim(k,v){
   SIM[k]=v; renderSim();
-  if(k==='lib'||k==='kma'||k==='time'){ if(document.getElementById('s-result').classList.contains('on')){ state.booted=true; renderResult(); } }
+  const redraw=()=>{ if(document.getElementById('s-result').classList.contains('on')){ state.booted=true; renderResult(); } };
+  // 기상청 상태를 바꿨으면 다시 받아본다 · 밤/아침을 바꿨으면 대상일이 달라져 그날 날씨로 갈아탄다
+  if(k==='kma'||k==='time') loadWeather().then(()=>{ applyLive(); redraw(); });
+  else if(k==='lib') redraw();
   toast('상황을 바꿨어요 · 다시 걸어보세요');
 }
 function toggleSim(){
@@ -1293,7 +1272,7 @@ function renderMetrics(){
 }
 
 /* ---------- 내비 ---------- */
-const ONB=['s-splash','s-gender','s-q1','s-q2','s-q3','s-photo'];
+const ONB=['s-q1','s-q2','s-closet','s-location'];   // 스플래시는 뒤로 갈 곳이 아니다(버튼이 없어 갇힌다)
 let hist=[];
 function back(){
   const prev=hist.pop();
@@ -1318,30 +1297,8 @@ function go(id){
 }
 function toast(t){ const el=document.getElementById('toast'); el.textContent=t; el.classList.add('on'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('on'),1900); }
 
-/* ---------- 스크리닝 ---------- */
-function pickGender(g,el){                                   // 선택만 — 진행은 '다음'에서
-  state.gender=g;
-  document.querySelectorAll('#genderRow .pick').forEach(b=>b.classList.remove('sel'));
-  el.classList.add('sel'); refreshNext();
-}
-function pickAge(a,el){
-  state.age=a;
-  document.querySelectorAll('#ageList .pick').forEach(b=>b.classList.remove('sel'));
-  el.classList.add('sel'); refreshNext();
-}
-function refreshNext(){ document.getElementById('onbNext').disabled = !(state.gender && state.age); }
-function onboardNext(){
-  if(!state.gender || !state.age) return;
-  if(state.gender!=='여성'){ go('s-away-gender'); return; }          // 남성 → 안내
-  if(state.age==='20대'||state.age==='30대'){ go('s-consent'); return; }  // 수집 전 동의(PIPA · RG-1)
-  const t=document.getElementById('away-age-t'), p=document.getElementById('away-age-p');   // 10대·40대 이상 → 안내
-  if(state.age==='10대'){ t.textContent='앗, 조금만 기다려 주세요'; p.innerHTML='지금은 20–30대 데일리룩부터 시작하고 있어요.<br>더 많은 분들을 위해 곧 준비할게요!'; }
-  else { t.textContent='앗, 지금은 20–30대에 집중하고 있어요'; p.innerHTML='더 다양한 연령대는 다음 시즌에 준비할게요.<br>그때 꼭 다시 찾아와 주세요!'; }
-  go('s-away-age');
-}
-
 /* ---------- 퀴즈 ---------- */
-/* 무드는 고르고 → '다음'으로 확정한다(옆 성별/나이 화면과 같은 방식). 나머지 퀴즈는 탭 즉시 넘어감 */
+/* 무드는 고르고 → '다음'으로 확정한다. 나머지 퀴즈도 같은 방식 */
 function pickMood(v,btn){
   state.mood=v;
   document.querySelectorAll('#moodGrid button').forEach(b=>b.classList.remove('sel'));
@@ -1355,27 +1312,13 @@ function pickColor(v,btn){
   btn.classList.add('sel');
   document.getElementById('colorNext').disabled=false;
 }
-/* TPO = 마지막 퀴즈. 고르면 선택 표시 → '완료' 활성화 */
-function pickTpo(v,btn){
-  state.tpo=v;
-  document.querySelectorAll('#s-q3 .choice').forEach(b=>b.classList.remove('sel'));
-  btn.classList.add('sel');
-  document.getElementById('tpoNext').disabled=false;
-}
 function finishQuiz(){
-  track('퀴즈_완료', {무드:state.mood, 색:state.color, TPO:state.tpo});   // ② 퍼널
-  go('s-photo');
+  track('퀴즈_완료', {컨셉:state.mood, 색:state.color});                  // ② 퍼널
+  renderCloset(); go('s-closet');                                        // 퀴즈 다음은 내 옷
 }
-/* ---------- 참고사진 → 진짜 임베딩(CLIP) ---------- */
+/* ---------- 참고사진 → 진짜 임베딩(CLIP) ----------
+   온보딩에서는 빠졌다(2026-08-15). 지금 사진이 들어오는 입구는 결과 화면 '📷 이 사진처럼' 하나뿐. */
 function setStatus(id,html){ const e=id&&document.getElementById(id); if(e) e.innerHTML=html; }
-function showPhoto(on){                             // 올린 사진을 드롭존 안에 보여줄지
-  document.getElementById('photoImg').style.display = on ? 'block' : 'none';
-  document.getElementById('dzEmpty').style.display  = on ? 'none'  : 'flex';
-}
-function photoContinue(){                           // 파란 버튼: 사진 있으면 그걸로, 없으면 먼저 고르게 (거짓 주장 안 함 §9-1)
-  if(!state.photo){ document.querySelector('#s-photo input[type=file]').click(); return; }
-  afterPhoto();
-}
 
 /* 사진을 실제로 놓아준다. 참조만 null로 바꾸면 브라우저는 사진을 계속 붙들고 있다.
    화면이 "빼면 바로 사라져요"라고 말하므로, 말한 대로 한다(§9-1). */
@@ -1388,8 +1331,6 @@ async function applyRefPhoto(file, statusId){
   releaseRefPhoto();                             // 이전 사진은 먼저 놓아준다
   state.photo=true;
   state.refPhotoUrl=URL.createObjectURL(file);
-  const pi=document.getElementById('photoImg');
-  if(pi){ pi.src=state.refPhotoUrl; showPhoto(true); }
 
   if(!window.CLIP){                              // file:// 더블클릭 또는 오프라인
     state.clipOn=false; state.refEmb=null;
@@ -1420,49 +1361,94 @@ async function applyRefPhoto(file, statusId){
   }
 }
 
-async function onPhoto(inp){
-  if(!inp.files||!inp.files[0])return;
-  const f=inp.files[0];
-  document.getElementById('photoErr').innerHTML='';
-
-  if(f.size > 12*1024*1024){                    // 용량 초과 — 유저에게 에러를 떠넘기지 않는다
-    toast('사진이 커서 줄여서 올렸어요');        // (실서비스는 올리기 전 클라이언트 압축 · NFR-5)
-  }
-  if(SIM.ai==='block'){                          // 모더레이션 차단(FR-5) — 막다른 길 금지
-    releaseRefPhoto();                           // 차단된 사진은 붙들고 있지 않는다
-    track('참고사진', {결과:'차단'});
-    showPhoto(false);
-    document.getElementById('photoErr').innerHTML=
-      `<div class="photoerr">이 사진은 쓸 수 없어요. 코디가 잘 보이는 사진으로 올려주세요.
-        <div class="pe2">
-          <button onclick="document.querySelector('#s-photo input[type=file]').click()">다른 사진 올리기</button>
-          <button onclick="afterPhoto()">그냥 취향으로 볼래요</button>
-        </div></div>`;
-    return;
-  }
-  if(SIM.ai==='fail'){                           // AI 장애 → 취향으로 폴백. 폴백하되 말해준다(AP-2)
-    releaseRefPhoto();
-    state.photo=true; state.refPhotoUrl=URL.createObjectURL(f);
-    const pi=document.getElementById('photoImg');
-    pi.src=state.refPhotoUrl; showPhoto(true);
-    setStatus('clipStatus','⚠️ 사진을 못 읽었어요 — <b>취향으로 골라드릴게요.</b> 추천은 그대로 나와요.');
-    return;
-  }
-  await applyRefPhoto(f,'clipStatus');
-}
-/* 기상청이 죽고 캐시도 없으면 → 날씨를 유저에게 묻는다(빈손 금지 · FR-14) */
-function afterPhoto(){
-  if(SIM.kma==='down'){                                 // 기상청 죽으면 날씨 화면에서 직접 묻는다(FR-14)
-    document.querySelector('#s-weather h2').textContent='지금 밖이 어때요?';
-    document.querySelector('#s-weather p.sub').innerHTML=
-      '날씨를 못 받아왔어요. <b>대신 알려주시면</b> 그에 맞게 골라드릴게요.';
-  }
+function afterCloset(){
   const ds=document.getElementById('dong-sub');         // 위치 거부면 동네 화면 안내를 바꾼다(FR-8)
   if(ds) ds.textContent = SIM.geo==='deny'
     ? '위치를 못 받았어요. 직접 골라주세요.'
-    : '날씨를 읽어서 코디를 고르는 데만 써요';
+    : '고르면 그 동네 날씨를 읽어서 코디를 골라드려요';
   renderDong();
-  go('s-location');                                     // 사진 → 동네 → (이 동네로 할게요) → 날씨
+  go('s-location');                                     // 내 옷 → 동네 → 결과
+}
+
+/* 동네를 정하면 끝이다 — 날씨는 그 동네 것으로 자동으로 딸려온다(2026-08-15).
+   기상청 격자번호로 실제 단기예보를 받는다(loadWeather). 못 받으면 예시 날씨로 가되 화면에 밝힌다.
+   기상청이 죽고 캐시도 없으면 → 유저에게 직접 묻는다(빈손 금지 · FR-14). */
+async function dongDone(){
+  if(SIM.kma==='down'){
+    document.querySelector('#s-weather h2').textContent='지금 밖이 어때요?';
+    document.querySelector('#s-weather p.sub').innerHTML=
+      '날씨를 못 받아왔어요. <b>대신 알려주시면</b> 그에 맞게 골라드릴게요.';
+    go('s-weather'); return;
+  }
+  await (weatherReq || loadWeather());       // 동네를 고를 때 걸어둔 요청. 대개 이미 끝나 있다
+  applyLive();
+  showToday();                               // 지금 동네의 날씨로 바로 결과
+}
+
+/* ---------- 진짜 날씨 — 기상청 단기예보 (FR-2) ----------
+   왜 서버를 거치나: 인증키를 이 파일에 넣으면 '소스 보기'로 그대로 새어나간다(공개 저장소).
+   키를 아는 자리는 api/weather.js 하나뿐이고, 여기는 격자번호만 보내고 숫자만 받는다.
+   못 받아오면 위 데모 시나리오로 간다 — 그때는 화면에 '예시 날씨'라고 밝힌다(§9-1 · 빈손 금지 FR-14). */
+let LIVE=null;        // { base, days:{'20260816':{...}} } · 못 받았으면 null
+let weatherReq=null;  // 진행 중인 요청. 동네를 고르는 순간 미리 걸어둬 '완료'에서 안 기다리게 한다
+const ymdKey=d=> d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+function loadWeather(){
+  const g=locGrid();
+  if(SIM.kma!=='ok' || !g){ LIVE=null; return Promise.resolve(); }   // 데모 장애 / 격자를 모르는 동네
+  weatherReq=(async()=>{
+    try{
+      const ctl=new AbortController(); setTimeout(()=>ctl.abort(), 7000);
+      const r=await fetch('/api/weather?nx='+g.nx+'&ny='+g.ny, {signal:ctl.signal});
+      const j=await r.json();
+      if(!r.ok || !j.days) throw new Error(j.msg||j.error||('HTTP '+r.status));
+      LIVE=j;
+      console.log('[rainism] 기상청 날씨를 받았습니다 — '+state.loc+' · 발표 '+j.base);
+    }catch(e){
+      LIVE=null;
+      console.log('[rainism] 기상청을 못 불러와 예시 날씨를 씁니다 —', e.message);
+    }
+  })();
+  return weatherReq;
+}
+/* 받은 숫자 → 화면이 쓰는 날씨 한 장. 서버는 숫자만 주고 '말'은 여기서 만든다(결정론 · FR-13).
+   ⚠️ '체감'이 아니라 '기온'이라고 쓴다 — 체감온도 산출식이 아직 문서에 없다(PRD §8.3 미결 · "임의 식 확정 금지").
+      계산하지 않은 값을 계산한 척 부르지 않는다(§9-1). */
+const SKYWORD={1:'맑음',3:'구름 많음',4:'흐림'};
+function liveWeather(s, dateStr){
+  const sky=SKYWORD[s.sky]||'맑음', short=s.rain?'비':sky;
+  const umbrella=s.maxPop>=30;                    // 확률 30%↑면 우산 얘기를 한다 (PRD §8.3)
+  return {
+    key:'live-'+dateStr, live:true, short,
+    e: s.rain ? (s.mm>=10?'🌧️':'🌦️') : (s.sky>=4?'☁️':s.sky===3?'🌤️':'☀️'),
+    n: short+' · 기온 '+s.temp+'°', m: short,
+    temp: s.band, rain: s.rain,
+    badge: (s.rain?'☂ ':s.sky>=3?'🌤 ':'☀ ')+short+' · 기온 '+s.temp+'°',
+    title: s.rain            ? '비 오는 오늘,\n입을 만한 3가지'
+         : s.band==='hot'    ? '무더운 오늘,\n시원하게 입을 3가지'
+         : s.band==='warm'   ? '화창한 오늘,\n입을 만한 3가지'
+                             : '선선한 오늘,\n걸치기 좋은 3가지',
+    line: '기온 '+s.temp+'도, '+(
+        s.rain    ? '비 소식이에요. 젖어도 티 안 나는 옷과 우산을 챙기세요.'
+      : umbrella  ? sky+'이지만 비 올 확률이 '+s.maxPop+'%예요. 접이우산 하나 챙기면 좋아요.'
+                  : sky+'이에요.')
+      + (s.gap>=8 ? ' 일교차가 '+s.gap+'도라 걸칠 것 하나 챙기세요.' : ''),
+    pop:s.pop, hrs:s.hrs, mm:(s.mm>0?s.mm+'mm':'0mm'),
+    humid:s.humid+'%', gap:(s.gap!=null?s.gap+'°':'—'), tempLabel:'기온',
+  };
+}
+/* 오늘(밤이면 내일) 날씨를 상태에 넣는다. 유저가 데모로 직접 고른 뒤엔 덮어쓰지 않는다. */
+function applyLive(){
+  if(state.weatherManual) return false;
+  const k=ymdKey(shownDate());
+  const s=LIVE && LIVE.days && LIVE.days[k];
+  if(!s) return false;
+  const w=liveWeather(s,k);
+  WBY[w.key]=w;                                   // 달력이 지난 날 날씨를 찾을 때 쓴다
+  state.weather=w;
+  /* 🚫 여기서 persist() 하지 않는다 — persist()는 onboarded:true 를 함께 쓴다.
+     이건 첫 화면(스플래시)에서도 도는 함수라, 저장하면 질문을 하나도 안 한 사람이
+     '온보딩 끝난 사람'이 돼서 다음에 열 때 질문을 건너뛴다. 날씨는 매번 새로 받으므로 저장할 것도 없다. */
+  return true;
 }
 
 /* ---------- 날씨 선택 ---------- */
@@ -1470,14 +1456,17 @@ function renderWeatherPick(){
   document.getElementById('weatherpick').innerHTML=WEATHER.map((w,i)=>
     `<button class="wp" onclick="chooseWeather(${i})"><div class="e">${w.e}</div><div class="n">${w.n}</div><div class="m">${w.m}</div></button>`).join('');
 }
-function chooseWeather(i){ state.weather=WEATHER[i]; state.usedReroll=false; state.batch=0; renderResult(); go('s-result');
+/* 유저가 데모로 직접 고른 날씨. 이걸 누른 뒤엔 기상청 값이 덮어쓰지 않는다(applyLive 참고) */
+function chooseWeather(i){ state.weather=WEATHER[i]; state.weatherManual=true; showToday(); }
+function showToday(){ state.usedReroll=false; state.batch=0; renderResult(); go('s-result');
   ['tab-weather','tab-calendar'].forEach(id=>document.getElementById(id).classList.remove('active'));
   document.getElementById('tab-today').classList.add('active'); persist(); }
 
 /* ---------- 추천 엔진: 하드필터 → 무드 유사도 → MMR → 안전빵 ---------- */
-const MOODSIM={ '미니멀':{'시크':2,'캐주얼':1,'러블리':0}, '시크':{'미니멀':2,'캐주얼':1,'러블리':1},
-  '캐주얼':{'러블리':1,'미니멀':1,'시크':1}, '러블리':{'캐주얼':1,'시크':1,'미니멀':0} };
-const TPOFORM={ '학교·일상':1, '출근·미팅':3, '약속·데이트':2, '동네·가볍게':0 };
+/* 컨셉이 안 맞을 때 얼마나 봐줄지. 붙어 있는 컨셉끼리만 점수를 준다.
+   고프코어↔Y2K = 둘 다 스포티 / 발레코어↔모리룩 = 둘 다 여리여리 / 고프코어↔발레코어 = 정반대(0) */
+const MOODSIM={ '고프코어':{'Y2K':2,'모리룩':1,'발레코어':0}, 'Y2K':{'고프코어':2,'발레코어':1,'모리룩':0},
+  '발레코어':{'모리룩':2,'Y2K':1,'고프코어':0}, '모리룩':{'발레코어':2,'고프코어':1,'Y2K':0} };
 
 const keyToDate=k=>{ const [y,m,d]=k.split('-').map(Number); return new Date(y,m-1,d); };
 /* 아직 "입었는지" 안 물어본 가장 최근 기록. 주말을 건너뛰어도, 밤에 열어도 잡힌다.
@@ -1543,7 +1532,6 @@ function tagScore(l){
   let s=0;
   if(l.mood===state.mood) s+=3; else s+=(MOODSIM[state.mood]&&MOODSIM[state.mood][l.mood])||0;
   if(l.color===state.color) s+=1.5; else if(l.color==='뉴트럴') s+=0.5;
-  const tf=TPOFORM[state.tpo]; if(tf!=null) s+= (1-Math.min(1,Math.abs(l.form-tf)/3))*0.8;
   return s;
 }
 /* 참고사진이 있으면: CLIP 코사인 유사도를 후보풀 안에서 0~1로 정규화해 l._cos 에 심는다 */
@@ -1556,6 +1544,14 @@ function computeCos(pool){
 function score(l){
   // 사진이 있으면 사진 유사도가 주(主), 취향 퀴즈는 보조. 없으면 취향만.
   let s = (l._cos!=null) ? 4*l._cos + 0.5*tagScore(l) : tagScore(l);
+  // 내 옷: 이 코디에서 내가 가진 아이템 비율만큼 올려준다(최대 +3.5).
+  // 안 골랐으면 null 이라 아무 영향이 없다.
+  // ※ 3.5는 에이전트가 재보고 정한 값이다(근거 문서 없음). 실제로 측정한 결과:
+  //    2.5 이하면 취향 점수(무드3+색1.5)에 묻혀 3장이 하나도 안 바뀌었다 —
+  //    그러면 화면의 "가진 옷으로…" 문구가 거짓말이 된다(§9-1).
+  //    6 이상이면 취향을 통째로 뒤집었다. 3.5에서 '취향 2장 + 내 옷 1장'이 된다
+  //    (안전빵 1장과 같은 구조). 라이브러리가 커지면 다시 재야 한다.
+  const own=ownRatio(l); if(own!=null) s += 3.5*own;
   s += (l.id%7)*0.01; // 결정론적 타이브레이크
   return s;
 }
@@ -1666,7 +1662,10 @@ function renderResult(){
      이 줄이 없으면 퀴즈 답이 반영됐다는 신호가 ♡ 아이콘 하나뿐이라 아무도 모른다.
      사진을 올린 경우엔 사진 유사도가 주(主)이므로 아래에서 사진 문장으로 덮어쓴다. */
   document.getElementById('r-taste').innerHTML = state.mood
-    ? `<b>${state.mood}${state.color ? ' · '+state.color : ''}</b> 취향이라 이렇게 골랐어요`
+    /* "~이라 골랐어요"는 거짓이 될 수 있다(§9-1). 비 오는 날 Y2K는 후보가 통째로 탈락해서
+       3장에 Y2K가 한 장도 없을 수 있다. 날씨가 취향을 이긴다는 게 이 제품의 규칙이니
+       문장은 "참고했어요"까지만 — 이건 점수에 실제로 반영되므로 항상 참이다. */
+    ? `<b>${state.mood}${state.color ? ' · '+state.color : ''}</b> 취향을 참고해 오늘 날씨에 맞는 걸로 골랐어요`
     : '';
   const pool=hardFilter(w);
   if(pool.length===0){ go('s-fallback'); return; }        // 강수는 못 푼다 → 폴백(온도 완화)
@@ -1798,10 +1797,14 @@ function drawStateBars(n){
     thin.textContent='☂ 오늘 날씨에 실제로 입을 만한 게 '+n+'장이라, '+n+'장만 보여드려요.'; }
   else thin.style.display='none';
   document.getElementById('offBar').style.display = navigator.onLine ? 'none' : 'flex';
-  // 날씨가 캐시면 언제 값인지 밝힌다 — 숨기지 않는다(원칙 5)
+  /* 지금 쓰는 날씨가 진짜인지 예시인지 밝힌다 — 숨기지 않는다(원칙 5 · §9-1).
+     기상청에서 받아온 날엔 아무 말도 안 붙는다(그게 기본이라서). */
   const cb=document.getElementById('cacheBar');
-  if(SIM.kma==='cache'){ cb.style.display='flex'; cb.textContent='🕒 날씨를 못 받아와서 어제 오후 3시 기준으로 골랐어요'; }
-  else cb.style.display='none';
+  const cbt = SIM.kma==='cache'      ? '🕒 날씨를 못 받아와서 어제 오후 3시 기준으로 골랐어요'
+            : state.weatherManual    ? '🧪 직접 고른 예시 날씨로 보고 있어요 (데모)'
+            : !state.weather.live    ? '🌤 기상청 날씨를 못 받아와서 예시 날씨로 골랐어요'
+            : '';
+  cb.style.display = cbt ? 'flex' : 'none'; cb.textContent = cbt;
 }
 function reroll(){
   if(state.usedReroll){ toast('오늘은 여기까지예요 🙂'); return; }
@@ -1834,8 +1837,20 @@ function renderMeta(){
   document.getElementById('r-weather').textContent=w.badge;
 }
 /* ---------- 오늘 화면에서 참고사진 추가(온보딩 밖) ---------- */
+/* 참고사진이 들어오는 유일한 입구(온보딩 화면이 빠진 뒤로).
+   그래서 사진 화면에 있던 AI 예외 두 가지도 여기서 받는다 — 막다른 길을 만들지 않는다(FR-5·AP-2). */
 async function onResultPhoto(inp){
   if(!inp.files||!inp.files[0]) return;
+  if(SIM.ai==='block'){                            // 모더레이션 차단(FR-5)
+    releaseRefPhoto(); track('참고사진', {결과:'차단'}); renderResult();
+    toast('이 사진은 쓸 수 없어요 · 취향으로 골라드릴게요');
+    return;
+  }
+  if(SIM.ai==='fail'){                             // AI 장애 → 취향으로 폴백. 폴백하되 말해준다(AP-2)
+    releaseRefPhoto(); renderResult();
+    toast('⚠️ 사진을 못 읽었어요 · 취향으로 골랐어요');
+    return;
+  }
   toast('🧠 사진 분위기를 읽는 중… (첫 실행은 20~40초)');
   const ok = await applyRefPhoto(inp.files[0], null);
   renderResult();                                  // 사진 유사도로 3장을 다시 고른다
@@ -1947,7 +1962,9 @@ function toggleSave(id,btn){
     /* 다른 카드를 누르면 '추가'가 아니라 '갈아탄다'.
        여러 벌을 담게 두면 달력 한 칸에 뭘 넣을지 정할 수 없고, 사실상 찜 목록이 생겨
        "찜한 것"과 "입은 것"이 갈라진다 — 만들지 않기로 한 것이다. */
-    state.diary[key]={look:id, w:state.weather.key};
+    /* 날씨는 key만이 아니라 배지·이모지도 같이 남긴다 — 기상청에서 받은 날의 key(live-20260816)는
+       그 세션에만 살아 있어서, key만 두면 다음에 열었을 때 달력의 날씨가 통째로 사라진다. */
+    state.diary[key]={look:id, w:state.weather.key, we:state.weather.e, wb:state.weather.badge};
     toast(cur!=null ? '이걸로 바꿨어요 · 옷장에서 꺼낼 것을 다시 적었어요'
                     : dayWord()+' 입기로 했어요 · 옷장에서 꺼낼 것을 적어뒀어요');
   }
@@ -1956,6 +1973,8 @@ function toggleSave(id,btn){
   if(pickedId()!=null && !navigator.onLine)                // 낙관적 UI: 먼저 담고, 조용히 재시도
     setTimeout(()=>toast('아직 오프라인이에요 · 연결되면 자동으로 올려둘게요'), 1200);
 }
+/* 그날 날씨 한 곳에서만 찾는다 — 데모 시나리오는 key로, 기상청에서 받은 날은 그날 남겨둔 배지로 */
+function entWeather(ent){ return ent ? (WBY[ent.w] || (ent.wb ? {e:ent.we, badge:ent.wb} : null)) : null; }
 function renderSaved(){
   const base=new Date(TODAY.getFullYear(), TODAY.getMonth()+(state.calOff||0), 1);
   const y=base.getFullYear(), m=base.getMonth();
@@ -1994,7 +2013,7 @@ function renderSaved(){
   for(let d=1;d<=days;d++){
     const key=y+'-'+(m+1)+'-'+d;
     const ent=state.diary[key], look=ent?LOOKS.find(x=>x.id===ent.look):null;
-    const w=ent?WBY[ent.w]:null;
+    const w=entWeather(ent);
     const cellImg=ent?(ent.photo||(look?look.img:null)):null;   // 유저가 올린 그날 사진 우선
     const isToday=(y===TODAY.getFullYear() && m===TODAY.getMonth() && d===TODAY.getDate());
     const worn=ent&&ent.worn===true;
@@ -2028,7 +2047,7 @@ function selectDay(key){
   const cell=document.querySelector('.cal-cell[data-key="'+key+'"]'); if(cell) cell.classList.add('sel');
   const ent=state.diary[key], det=document.getElementById('daydetail');
   if(!det) return;
-  if(ent){ const l=LOOKS.find(x=>x.id===ent.look), w=WBY[ent.w];
+  if(ent){ const l=LOOKS.find(x=>x.id===ent.look), w=entWeather(ent);
     const worn=ent.worn===true;
     det.innerHTML=`<img src="${l.img}" alt="${l.name}"><div>
       <div class="ddt">${fmtKey(key)}${w?' · '+w.badge:''}</div>
@@ -2045,7 +2064,7 @@ function clickDay(key){
 }
 function openDayModal(key){
   const ent=state.diary[key]; if(!ent) return;
-  const l=LOOKS.find(x=>x.id===ent.look), w=WBY[ent.w];
+  const l=LOOKS.find(x=>x.id===ent.look), w=entWeather(ent);
   const d=keyToDate(key);
   document.getElementById('dm-date').textContent=fmtKey(key)+' '+WD[d.getDay()]+'요일';   // "7월 14일 화요일"
   // 날씨 줄: badge("☂ 비 · 체감 23°")에서 이모지만 떼고 "이날은 …였어요"로
@@ -2053,7 +2072,7 @@ function openDayModal(key){
     w ? `<span class="we">${w.e}</span><span>이날은 ${w.badge.replace(/^[^\s]+\s+/,'')}였어요</span>` : '';
   document.getElementById('dm-name').textContent=l.name;
   document.getElementById('dm-chips').innerHTML=`<span class="chip">${l.mood}</span><span class="chip">${l.color}</span>`
-    +(state.tpo?`<span class="chip">${state.tpo}</span>`:'');   // 유저가 온보딩에서 고른 곳(학교·일상 등)
+    ;
   paintDayPhoto(key);        // 유저가 올린 그날 사진(있으면) / 없으면 빈 드롭존
   paintWornBtn(key);
   document.getElementById('dayModal').classList.add('on');
@@ -2093,13 +2112,15 @@ function renderWeatherTab(){
   paintLoc();                                    // 머리 = 고른 동네 · 날짜
   document.getElementById('wt-ico').textContent=w.e;
   document.getElementById('wt-temp').textContent=(w.badge.match(/\d+/)||['23'])[0]+'°';
-  document.getElementById('wt-desc').textContent='체감온도 · '+(w.rain?'비':'맑음');
+  /* 기상청에서 받은 날은 '기온 · 흐림'처럼 실제 하늘 상태를 쓴다.
+     계산 안 한 체감온도를 '체감'이라 부르지 않는다(§9-1) */
+  document.getElementById('wt-desc').textContent=(w.tempLabel||'체감온도')+' · '+(w.short||(w.rain?'비':'맑음'));
   document.getElementById('wt-pop').textContent=Math.max(...w.pop)+'%';
   document.getElementById('wt-mm').textContent=w.mm;
   document.getElementById('wt-humid').textContent=w.humid;
   document.getElementById('wt-gap').textContent=w.gap;
   document.getElementById('wt-line').textContent=w.line;
-  const hrs=['9시','12시','15시','18시','21시','24시'];
+  const hrs=w.hrs||['9시','12시','15시','18시','21시','24시'];   // 기상청 값은 남은 시각만 온다
   const peak=Math.max(...w.pop);
   document.getElementById('wt-bars').innerHTML=w.pop.map((p,i)=>
     `<div class="b" style="height:${Math.max(6,p)}%;background:${p===peak&&p>0?'var(--rain)':'var(--accent2)'}"><em>${p}%</em><span>${hrs[i]}</span></div>`).join('');
@@ -2223,22 +2244,31 @@ renderWeatherPick();
 renderDong();
 seedDiary();
 trackVisit();          // ① 퍼널 시작 + 북극성(D1) 계산
+const SPLASH_MS=1200;           // 로고를 보여주는 최소 시간. 실제 로딩은 0.3초라 나머지는 로고를 보여주는 몫
 (async function boot(){
-  await loadLibrary();          // 🔴 그리기 전에 받는다. 안 기다리면 재방문 때 옛 목록으로 그려진다
+  const t0=Date.now();
   const saved=loadPersisted();
+  if(saved && saved.loc) state.loc=saved.loc;   // 격자를 알아야 그 동네 날씨를 부를 수 있다
+  // 🔴 그리기 전에 받는다. 안 기다리면 재방문 때 옛 목록·옛 날씨로 그려진다
+  await Promise.all([loadLibrary(), loadWeather()]);
   if(saved && saved.onboarded){           // 재방문: 온보딩 스킵 → 바로 '오늘'
-    state.gender=saved.gender; state.age=saved.age;
-    state.mood=saved.mood; state.color=saved.color; state.tpo=saved.tpo;
+    state.mood=saved.mood; state.color=saved.color;
+    state.own=saved.own||{};              // 내 옷 — 없으면 빈 칸(=점수에 영향 없음)
     Object.assign(state.diary, saved.diary||{});   // 유저 저장을 데모 시드 위에 덮기
     state.shown=saved.shown||{};                   // 노출 이력도 살려야 어제 본 3장이 오늘 또 안 뜬다
     state.loc=saved.loc||state.loc;
     state.weather=WBY[saved.weatherKey]||WEATHER[0];
+    applyLive();                                   // 기상청에서 받아왔으면 진짜 날씨로 덮는다
     state.wakeTime=saved.wakeTime||'07:00'; state.wakeOn=!!saved.wakeOn;
     renderResult(); go('s-result');
     if(state.wakeOn) scheduleWake();              // 재방문에도 알림은 살아 있다
     ['tab-weather','tab-calendar'].forEach(id=>document.getElementById(id).classList.remove('active'));
     document.getElementById('tab-today').classList.add('active');
+    return;                             // 재방문은 기다리지 않는다 — 목록 받는 시간만 스플래시가 덮는다
   }
+  // 첫 방문: 로고를 최소 시간만큼 보여준 뒤 첫 질문으로. 목록 받는 데 오래 걸렸으면 그만큼 덜 기다린다
+  await new Promise(r=>setTimeout(r, Math.max(0, SPLASH_MS-(Date.now()-t0))));
+  go('s-q1');
 })();
 </script>
 </body>
