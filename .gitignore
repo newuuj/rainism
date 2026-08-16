@@ -21,3 +21,8 @@ node_modules/
 # 환경변수·비밀 — 절대 커밋 금지
 .env
 .env.*
+
+# 핀터레스트에서 받은 핀 기록 — 두 번 받는 걸 막는 용도
+# 사진 원본과 마찬가지로 저장소에 올리지 않는다
+tech/supabase/imported_pins.txt
+tech/supabase/import_*.sql
