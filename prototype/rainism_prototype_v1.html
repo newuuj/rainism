@@ -15,10 +15,13 @@
   }
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   :root{
-    --bg:#eef1f6; --ink:#2b2f38; --sub:#7b8291; --line:#e2e6ee;
-    --card:#ffffff; --accent:#6a8fbf; --accent2:#dfe8f4; --rain:#5b7aa8;
-    --safe:#8bb38b; --safebg:#eef6ee; --heart:#e07a7a;
-    --wgrad:linear-gradient(160deg,#6f8db8,#8aa6c9);
+    /* 분홍 테마 (2026-08-17) — Figma Make 시안에서 뽑은 색.
+       --ink 는 시안의 #8b3a62 보다 어둡게 잡았다. 본문 전체에 쓰이는 색이라
+       연하면 분홍 배경 위에서 대비가 모자란다(NFR-7 접근성) */
+    --bg:#fdf0f6; --ink:#4a2338; --sub:#b0688c; --line:#f6dde8;
+    --card:#ffffff; --accent:#ff6b9d; --accent2:#ffe0ed; --rain:#e0568a;
+    --safe:#8bb38b; --safebg:#eef6ee; --heart:#e0567a;
+    --wgrad:linear-gradient(160deg,#ff8fb8,#ffb0cf);
   }
   html,body{ background:var(--bg); color:var(--ink);
     font-family:'Pretendard',-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;
@@ -26,7 +29,8 @@
   /* 숫자가 세로로 줄맞춤돼야 하는 곳 (체감온도·캘린더 날짜) */
   .whero .big, .cal-cell .dn, .lockscreen .lstime{ font-variant-numeric:tabular-nums; }
   #phone{
-    max-width:430px; margin:0 auto; min-height:100vh; background:#f6f8fb;
+    max-width:430px; margin:0 auto; min-height:100vh;
+    background:linear-gradient(180deg,#fff0f6 0%,#fce4f0 40%,#f8d7ea 100%); background-attachment:fixed;
     position:relative; overflow:hidden; box-shadow:0 0 40px rgba(40,50,70,.12);
     display:flex; flex-direction:column;
   }
@@ -65,7 +69,7 @@
     border:1.6px solid var(--line); font-size:14px; font-weight:600; color:var(--ink);
     cursor:pointer; display:inline-flex; align-items:center; gap:6px; line-height:1.2; }
   .citem .cmark{ font-size:12px; opacity:0; }         /* 색만으로 구분하지 않는다(NFR-7) */
-  .citem.on{ border-color:var(--accent); background:#eef3fa; color:var(--accent); }
+  .citem.on{ border-color:var(--accent); background:#fbedf3; color:var(--accent); }
   .citem.on .cmark{ opacity:1; }
   #closetCount{ font-size:13px; font-weight:700; color:var(--accent); margin-top:16px; }
   .choice{ text-align:left; background:#fff; border:1.6px solid var(--line); border-radius:16px;
@@ -95,22 +99,30 @@
   /* 참고사진 드롭존 */
   .dropzone{ display:flex; flex-direction:column; align-items:center; justify-content:center;
     min-height:230px; margin-top:20px; padding:20px; text-align:center; cursor:pointer;
-    background:#f4f5f7; border:2px dashed #cfd5df; border-radius:18px; transition:.12s; }
+    background:#f7f4f5; border:2px dashed #e0ced5; border-radius:18px; transition:.12s; }
   .dropzone:active{ transform:scale(.995); }
   .dz-empty{ display:flex; flex-direction:column; align-items:center; }
-  .dz-ic{ color:#aab2c0; margin-bottom:14px; }
+  .dz-ic{ color:#c2a8b3; margin-bottom:14px; }
   .dz-t{ color:var(--sub); font-weight:600; font-size:15px; }
-  .dz-sub{ color:#9aa2b1; font-size:13px; margin-top:3px; }
+  .dz-sub{ color:#b398a3; font-size:13px; margin-top:3px; }
   .dz-img{ max-width:100%; max-height:300px; border-radius:12px; }
   .privnote{ display:flex; align-items:center; gap:6px; color:var(--sub); font-size:12.5px; margin-top:10px; }
 
   /* 무드 = 말이 아니라 사진으로 고른다 (취향 미확정 유저는 '시크/미니멀'을 언어로 답 못 함) */
-  .moodgrid{ display:grid; grid-template-columns:1fr 1fr; gap:12px 8px; margin-top:8px; }
-  .moodgrid button{ display:flex; flex-direction:column; gap:7px; padding:0; cursor:pointer;
+  /* 핀터레스트식 — 가로줄을 맞추지 않는다. CSS 다단(columns)이라 사진 높이가 달라도 알아서 쌓인다
+     (2026-08-17). 격자로 딱딱 맞추면 카탈로그처럼 보여서 "고르는 재미"가 죽는다 */
+  .moodgrid{ columns:2; column-gap:8px; margin-top:12px; margin-bottom:20px; }
+  .moodgrid button{ display:block; width:100%; padding:0; margin:0 0 8px; cursor:pointer;
+    break-inside:avoid; -webkit-column-break-inside:avoid;
     background:none; border:none; font-family:inherit; transition:transform .08s; }
   .moodgrid button:active{ transform:scale(.98); }
-  .moodgrid img{ display:block; width:100%; aspect-ratio:6/7; object-fit:cover;
+  .moodgrid img{ display:block; width:100%; object-fit:cover;
     border-radius:16px; border:1.6px solid var(--line); transition:border-color .1s, box-shadow .1s; }
+  /* 높이를 4가지로 돌려가며 준다 — 줄이 어긋나야 핀터레스트처럼 보인다 */
+  .moodgrid button:nth-child(4n+1) img{ aspect-ratio:3/4; }
+  .moodgrid button:nth-child(4n+2) img{ aspect-ratio:4/5; }
+  .moodgrid button:nth-child(4n+3) img{ aspect-ratio:2/3; }
+  .moodgrid button:nth-child(4n)   img{ aspect-ratio:1/1; }
   /* 이름이 없으니 고른 표시는 사진 위 동그라미로 한다 — 글자로 할 자리가 없다 */
   .moodgrid button{ position:relative; }
   .moodgrid .chk{ display:none; position:absolute; top:10px; right:10px; width:26px; height:26px;
@@ -145,49 +157,49 @@
   .splashart{ position:relative; width:100%; max-width:430px; display:block;
     -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 10%,#000 84%,transparent 96%);
     mask-image:linear-gradient(180deg,transparent 0,#000 10%,#000 84%,transparent 96%);
-    animation:splashPop 1.1s cubic-bezier(.34,1.56,.64,1) both, splashBob 2.4s ease-in-out 1.1s infinite; }
-  /* 작게 시작해 살짝 넘겼다 제자리로 = 풍선이 부풀어 오르는 느낌 */
-  @keyframes splashPop{
-    0%{ opacity:0; transform:scale(.55) translateY(40px) rotate(-3deg); }
-    60%{ opacity:1; }
-    100%{ opacity:1; transform:scale(1) translateY(0) rotate(0); } }
-  @keyframes splashBob{ 0%,100%{transform:translateY(0) rotate(0)} 50%{transform:translateY(-14px) rotate(.8deg)} }
-  /* 유리 반짝임 — 로고 위를 반복해서 스윽 지나간다 */
+    animation:splashRise 2.4s cubic-bezier(.22,.61,.36,1) both; }
+  /* 뿌옇게 아래에서 떠오르며 또렷해진다 — 튕기거나 돌리지 않는다(싸구려로 보인다).
+     전체 2.4초 = 스플래시가 떠 있는 시간과 같다. 끝날 때까지 계속 미세하게 움직인다 */
+  @keyframes splashRise{
+    0%{ opacity:0; transform:scale(1.09) translateY(26px); filter:blur(14px); }
+    45%{ opacity:1; filter:blur(0); }
+    100%{ opacity:1; transform:scale(1) translateY(0); filter:blur(0); } }
+  /* 유리 반짝임 — 로고 위를 한 번 길게 지나간다 */
   .splashgloss{ position:absolute; inset:0; pointer-events:none; overflow:hidden; }
-  .splashgloss::after{ content:''; position:absolute; top:-60%; left:-60%; width:45%; height:220%;
-    background:linear-gradient(90deg,transparent,rgba(255,255,255,.8),transparent);
-    transform:rotate(18deg); animation:splashSweep 2.2s ease-in-out .9s infinite; }
-  @keyframes splashSweep{ 0%{left:-60%} 55%,100%{left:130%} }
-  /* 반짝이 — 원본에 있는 별빛을 살려서 깜빡이게 */
+  .splashgloss::after{ content:''; position:absolute; top:-60%; left:-70%; width:38%; height:220%;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);
+    transform:rotate(16deg); animation:splashSweep 1.5s cubic-bezier(.4,0,.5,1) .75s both; }
+  @keyframes splashSweep{ to{ left:135%; } }
+  /* 반짝이 — 원본 별빛 위에서 하나씩 켜졌다 꺼진다 */
   .splashgloss i{ position:absolute; color:#fff; font-style:normal;
-    font-size:22px; line-height:1; text-shadow:0 0 12px rgba(255,255,255,.95);
-    opacity:0; animation:twinkle 1.6s ease-in-out infinite; }
-  @keyframes twinkle{ 0%,100%{opacity:0; transform:scale(.4) rotate(0)} 50%{opacity:1; transform:scale(1.15) rotate(90deg)} }
+    font-size:18px; line-height:1; text-shadow:0 0 14px rgba(255,255,255,.95);
+    opacity:0; animation:twinkle 2.4s ease-in-out infinite; }
+  @keyframes twinkle{ 0%,70%,100%{opacity:0; transform:scale(.5)} 22%{opacity:1; transform:scale(1)} }
 
   /* result */
   .rtop{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
   .rdate{ font-size:12.5px; color:var(--sub); font-weight:600; text-align:right; flex:none; }
   #r-title{ white-space:pre-line; }   /* 제목의 줄바꿈(,\n)을 그대로 보여준다 */
-  .wbadge{ display:inline-flex; align-items:center; gap:7px; background:#e7eefa; color:#3f5b82;
+  .wbadge{ display:inline-flex; align-items:center; gap:7px; background:#fbe6ef; color:#873a5a;
     padding:7px 13px; border-radius:20px; font-size:13px; font-weight:700; }
   .tasteline{ color:var(--sub); font-size:13.5px; margin:10px 0 18px; }
   .tasteline:empty{ display:none; }
   .tasteline b{ color:var(--accent); }
   .look{ background:var(--card); border-radius:20px; overflow:hidden; margin-bottom:16px;
     box-shadow:0 6px 18px rgba(50,65,90,.08); }
-  .look .ph{ width:100%; aspect-ratio:5/8; object-fit:cover; display:block; background:#dde3ec; }
+  .look .ph{ width:100%; aspect-ratio:5/8; object-fit:cover; display:block; background:#eddce3; }
   .look .body{ padding:14px 16px 16px; }
   .look .lname{ font-size:16.5px; font-weight:800; letter-spacing:-.3px; display:flex; align-items:center; gap:8px; }
   .safechip{ font-size:10.5px; font-weight:800; color:var(--safe); background:var(--safebg);
     padding:3px 8px; border-radius:20px; letter-spacing:.2px; white-space:nowrap; }
   .chips{ display:flex; flex-wrap:wrap; gap:6px; margin:9px 0; }
-  .chip{ font-size:11.5px; background:#eef1f7; color:#5b6474; padding:4px 10px; border-radius:20px; font-weight:600; }
+  .chip{ font-size:11.5px; background:#f8edf2; color:#765965; padding:4px 10px; border-radius:20px; font-weight:600; }
   .reason{ font-size:13.5px; color:#556; display:flex; gap:7px; align-items:flex-start; }
   .look .reason{ margin-top:9px; }   /* 태그 칩을 뺀 자리의 여백을 대신 잡아준다 */
   .reason .i{ color:var(--rain); }
   .items{ font-size:12px; color:var(--sub); margin-top:8px; }
   /* 비 오는 날에만 뜨는 신발 한 줄 — 코디 자체가 아니라 '뭘 더하면 되는지' */
-  .raintip{ margin-top:9px; background:#e7eefa; color:#3f5b82; border-radius:9px;
+  .raintip{ margin-top:9px; background:#fbe6ef; color:#873a5a; border-radius:9px;
     padding:7px 10px; font-size:12.5px; font-weight:600; }
   .raintip b{ font-weight:800; }
   .heart{ margin-top:13px; width:100%; border:1.5px solid var(--line); background:#fff; border-radius:13px;
@@ -209,11 +221,11 @@
   .yday .ya button.yes{ background:var(--accent); color:#fff; border-color:var(--accent); }
   .yday .yx{ position:absolute; top:-7px; right:-7px; width:20px; height:20px; border-radius:50%;
     border:1px solid var(--line); background:#fff; color:var(--sub); font-size:10px; cursor:pointer; line-height:1; }
-  .wornchip{ font-size:10.5px; font-weight:800; color:#6a8fbf; background:#e7eefa;
+  .wornchip{ font-size:10.5px; font-weight:800; color:#c5648c; background:#fbe6ef;
     padding:3px 8px; border-radius:20px; margin-left:6px; }
 
   /* 밤 모드 · 알람 · 설치 */
-  .nightbar{ position:relative; display:flex; align-items:center; gap:9px; background:#2f3646; color:#fff;
+  .nightbar{ position:relative; display:flex; align-items:center; gap:9px; background:#482d38; color:#fff;
     border-radius:14px; padding:11px 13px; margin:7px 0 12px; font-size:13px; }
   .nightbar b{ font-weight:800; }
   .nightbar span{ opacity:.75; display:block; font-size:11.5px; }
@@ -233,18 +245,18 @@
   .wake input[type=time]:focus{ outline:none; border-color:var(--accent); }
   .wake input[type=time]::-webkit-calendar-picker-indicator{ display:none; }
   .wake .wgo{ flex:none; width:118px; min-height:48px; border:none; border-radius:15px;
-    background:var(--ink); color:#fff; line-height:1.3;
+    background:var(--accent); color:#fff; line-height:1.3;
     font-family:inherit; font-size:14px; font-weight:700; cursor:pointer; }
   .wake .wgo.on{ background:var(--safebg); color:#4d7a4d; }
 
   /* 잠금화면 위젯 미리보기 (실물 아님 — 네이티브 단계) */
-  .lockscreen{ background:linear-gradient(165deg,#3c4a63,#6d7f9c); border-radius:22px; padding:20px 16px 22px;
+  .lockscreen{ background:linear-gradient(165deg,#66394c,#a06980); border-radius:22px; padding:20px 16px 22px;
     text-align:center; color:#fff; margin:8px 0 6px; }
   .lockscreen .lstime{ font-size:38px; font-weight:300; letter-spacing:-1px; line-height:1.1; }
   .lockscreen .lsdate{ font-size:12px; opacity:.85; margin-bottom:14px; }
   .lswidget{ background:rgba(255,255,255,.94); color:var(--ink); border-radius:16px; padding:11px;
     display:flex; align-items:center; gap:10px; text-align:left; }
-  .lswidget img{ width:40px; height:52px; object-fit:cover; border-radius:9px; flex:none; background:#dde3ec; }
+  .lswidget img{ width:40px; height:52px; object-fit:cover; border-radius:9px; flex:none; background:#eddce3; }
   .lswidget .lw1{ font-size:12.5px; font-weight:800; }
   .lswidget .lw2{ font-size:11px; color:var(--sub); }
   .lsnote{ font-size:11.5px; color:var(--sub); text-align:center; margin-bottom:16px; }
@@ -277,7 +289,7 @@
     padding:0; cursor:pointer; font-family:inherit; text-align:left; box-shadow:0 6px 18px rgba(50,65,90,.08);
     opacity:.55; transition:opacity .15s; }   /* 안 고른 건 살짝 흐리게 (저번 .faded처럼) */
   .mini:hover, .mini:active{ opacity:1; }
-  .mini img{ width:100%; aspect-ratio:3/4; object-fit:cover; display:block; background:#dde3ec; }
+  .mini img{ width:100%; aspect-ratio:3/4; object-fit:cover; display:block; background:#eddce3; }
   .mini span{ display:block; padding:9px 11px; font-size:13px; font-weight:700; color:var(--ink);
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   /* 3장이 한꺼번에 툭 뜨지 않고 차례로 올라온다 (화면 전환에 쓰는 fade를 그대로 재사용).
@@ -297,12 +309,12 @@
   .statebar{ display:flex; align-items:center; gap:7px; border-radius:12px;
     padding:9px 12px; margin:8px 0 2px; font-size:12.5px; font-weight:600; }
   .statebar.warn{ background:#fdf3e7; color:#8a6535; }
-  .statebar.off{ background:#f0f1f4; color:#5b6474; }
+  .statebar.off{ background:rgba(255,255,255,.72); color:#765965; }
   .thin{ font-size:12px; color:var(--sub); font-weight:600; margin:10px 2px 0; }
 
   /* 로딩 = 스켈레톤. 스피너 금지 — 레이아웃이 안 튀어야 한다 */
   @keyframes shim{ 0%{background-position:-380px 0} 100%{background-position:380px 0} }
-  .sk{ background:linear-gradient(90deg,#e8ecf3 25%,#f2f5f9 50%,#e8ecf3 75%);
+  .sk{ background:linear-gradient(90deg,#f4e7ec 25%,#faf1f5 50%,#f4e7ec 75%);
     background-size:760px 100%; animation:shim 1.3s infinite linear; border-radius:8px; }
   @media (prefers-reduced-motion:reduce){ .sk{ animation:none; } }
   .skcard{ background:var(--card); border-radius:20px; overflow:hidden; margin-bottom:16px; }
@@ -322,7 +334,7 @@
 
   /* 상황 시뮬레이터 — 폰 바깥. 앱 화면은 깨끗하게 둔다 */
   #simfab, #metfab{ position:fixed; right:14px; z-index:80; border:none; cursor:pointer;
-    background:#2f3646; color:#fff; border-radius:26px; padding:12px 16px; font-family:inherit;
+    background:#482d38; color:#fff; border-radius:26px; padding:12px 16px; font-family:inherit;
     font-size:13px; font-weight:700; box-shadow:0 6px 20px rgba(30,40,60,.3); }
   #simfab{ bottom:104px; }
   #metfab{ bottom:152px; }
@@ -339,7 +351,7 @@
     border-radius:9px; padding:7px 5px; font-family:inherit; font-size:11.5px; font-weight:700;
     color:var(--sub); cursor:pointer; }
   #sim .simopts button.on{ background:var(--ink); color:#fff; border-color:var(--ink); }
-  #sim .simreset, #metrics .simreset{ width:100%; margin-top:10px; border:1.3px solid var(--line); background:#f6f8fb;
+  #sim .simreset, #metrics .simreset{ width:100%; margin-top:10px; border:1.3px solid var(--line); background:#fbf6f8;
     border-radius:10px; padding:9px; font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; }
   /* 📊 지표 패널 (데모 전용 · 앱 화면엔 없다) */
   #metrics .mk{ font-size:11px; font-weight:800; color:var(--sub); margin:13px 0 4px; }
@@ -377,10 +389,10 @@
   .wt-big{ font-size:60px; font-weight:800; line-height:1; letter-spacing:-2px; }
   .wt-sub{ font-size:14px; color:var(--sub); margin-top:6px; }
   .wt-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
-  .wt-stat{ background:#eef1f7; border-radius:16px; padding:15px 18px; }
+  .wt-stat{ background:rgba(255,255,255,.72); border:1.5px solid rgba(255,192,203,.45); box-shadow:0 2px 10px rgba(255,150,180,.10); border-radius:16px; padding:15px 18px; }
   .wt-stat .k{ font-size:13px; color:var(--sub); font-weight:600; }
   .wt-stat .v{ font-size:22px; font-weight:800; margin-top:6px; letter-spacing:-.5px; }
-  .wt-info{ display:flex; gap:9px; background:var(--accent2); color:#3f5b82; border-radius:16px;
+  .wt-info{ display:flex; gap:9px; background:var(--accent2); color:#873a5a; border-radius:16px;
     padding:14px 16px; font-size:14px; line-height:1.5; margin-bottom:24px; }
   .wt-hrlabel{ font-size:13px; color:var(--sub); font-weight:700; margin-bottom:12px; }
   .bars{ display:flex; align-items:flex-end; gap:8px; height:90px; margin:14px 0 6px; }
@@ -429,7 +441,7 @@
   .day-detail .ddn{ font-size:15.5px; font-weight:800; margin-top:2px; letter-spacing:-.3px; }
   .day-detail .dds{ font-size:12px; color:var(--sub); margin-top:2px; }
   .day-detail .ddempty{ color:var(--sub); font-size:13.5px; text-align:center; width:100%; }
-  .wornchip.pending{ color:var(--sub); background:#eef1f7; }
+  .wornchip.pending{ color:var(--sub); background:#f8edf2; }
 
   /* 밀린 확인 — 낮은 마찰(1탭·선택·비차단, FR-20) */
   .pending{ display:flex; align-items:center; gap:8px; width:100%; text-align:left;
@@ -443,12 +455,12 @@
   .calempty p{ font-size:13.5px; color:var(--sub); line-height:1.6; }
   .calempty .btn{ margin-top:18px; }
 
-  .demoNote{ font-size:11.5px; color:#9aa2b1; text-align:center; margin-top:14px; }
+  .demoNote{ font-size:11.5px; color:#b398a3; text-align:center; margin-top:14px; }
   .licenseNote{ margin-top:8px; font-size:10.5px; line-height:1.5; opacity:.72; }
   .licenseNote b{ font-weight:700; }
   /* 동네 고르기 화면 — 검색 + 리스트 */
   .searchbox{ display:flex; align-items:center; gap:9px; margin-top:18px;
-    background:#f1f3f6; border-radius:14px; padding:13px 16px; }
+    background:rgba(255,255,255,.72); border:1.5px solid rgba(255,192,203,.45); box-shadow:0 2px 10px rgba(255,150,180,.10); border-radius:14px; padding:13px 16px; }
   .searchbox svg{ color:var(--sub); flex:none; }
   .searchbox input{ border:none; background:transparent; outline:none; width:100%;
     font-family:inherit; font-size:15px; color:var(--ink); }
@@ -460,7 +472,7 @@
   .gpsbtn:disabled{ color:var(--sub); cursor:default; }
   .gpsbtn svg{ flex:none; }
   .gpsmsg{ margin-top:9px; font-size:13.5px; line-height:1.5; color:var(--sub); }
-  .gpsask{ margin-top:12px; background:#eef2f8; border-radius:14px; padding:14px 15px; }
+  .gpsask{ margin-top:12px; background:rgba(255,255,255,.72); border:1.5px solid rgba(255,192,203,.45); box-shadow:0 2px 10px rgba(255,150,180,.10); border-radius:14px; padding:14px 15px; }
   .gpsask .q{ font-size:14.5px; color:var(--ink); }
   .gpsask .q b{ font-weight:800; }
   .gpsask .row{ display:flex; gap:8px; margin-top:11px; }
@@ -506,16 +518,16 @@
   .dd-name-row{ display:flex; align-items:center; gap:9px; margin-top:20px; }
   .dd-name{ font-size:20px; font-weight:800; letter-spacing:-.4px; }
   .wornchip.done{ color:#2e7d4f; background:#e8f5ec; }
-  .wornchip.undone{ color:var(--sub); background:#eef1f7; }   /* pending 클래스는 캘린더 버튼(.pending)과 충돌 → 안 씀 */
+  .wornchip.undone{ color:var(--sub); background:#f8edf2; }   /* pending 클래스는 캘린더 버튼(.pending)과 충돌 → 안 씀 */
 
   /* 참고사진 칩(오늘 화면에서 사진 추가 시) */
   #refchip:not(:empty){ margin:0 0 12px; }
   .aichip{ display:inline-block; margin-left:6px; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:700;
            background:#e8f5ec; color:#2e7d4f; border:1px solid #cfe8d8; vertical-align:middle; }
-  .refchip{ display:inline-flex; align-items:center; gap:9px; background:#eef3fb; border:1px solid #dbe6f5;
-    border-radius:30px; padding:6px 10px 6px 6px; font-size:12.5px; color:#3f5b82; font-weight:700; }
+  .refchip{ display:inline-flex; align-items:center; gap:9px; background:#fcedf3; border:1px solid #f7d9e6;
+    border-radius:30px; padding:6px 10px 6px 6px; font-size:12.5px; color:#873a5a; font-weight:700; }
   .refchip img{ width:30px; height:30px; border-radius:50%; object-fit:cover; }
-  .refchip button{ border:none; background:#c9d6ea; color:#3f5b82; width:20px; height:20px; border-radius:50%;
+  .refchip button{ border:none; background:#ecc7d6; color:#873a5a; width:20px; height:20px; border-radius:50%;
     font-size:11px; cursor:pointer; line-height:1; }
   .resetlink{ align-self:flex-start; background:none; border:none; color:var(--sub); font-size:12px;
     font-weight:700; cursor:pointer; padding:4px 2px; white-space:nowrap; }
@@ -542,21 +554,29 @@
   <section class="screen" id="s-q1">
     <div class="progress"><i class="done"></i><i></i></div>
     <h2>어떤 게 제일 나 같아요?</h2>
+    <p class="sub" id="moodHint">마음에 드는 걸 <b>3장까지</b> 고를 수 있어요</p>
     <!-- 🚫 컨셉 이름을 화면에 쓰지 않는다 (2026-08-16). "고프코어"를 아는 사람은 이미 취향이 있는
          사람이라 이 앱이 필요 없다. 이름을 모르는 사람이 사진만 보고 고를 수 있어야 한다(원칙 4).
-         이름은 안에서 점수 매길 때만 쓴다. -->
+         이름은 안에서 점수 매길 때만 쓴다.
+         12장 = 컨셉 4개 × 3장 (2026-08-17). 4장일 땐 그 한 장이 안 예쁘면 컨셉을 통째로 놓쳤다.
+         무드가 안 겹치게 번갈아 놓는다 — 같은 컨셉 3장이 붙어 있으면 고르는 재미가 없다 -->
     <div class="moodgrid nolabel" id="moodGrid">
-      <button onclick="pickMood('고프코어',this)" aria-label="첫 번째 분위기"><img src="./proto_img/04.jpg" alt=""><span class="chk">✓</span></button>
-      <button onclick="pickMood('발레코어',this)" aria-label="두 번째 분위기"><img src="./proto_img/13.jpg" alt=""><span class="chk">✓</span></button>
-      <button onclick="pickMood('Y2K',this)" aria-label="세 번째 분위기"><img src="./proto_img/03.jpg" alt=""><span class="chk">✓</span></button>
-      <button onclick="pickMood('모리룩',this)" aria-label="네 번째 분위기"><img src="./proto_img/19.jpg" alt=""><span class="chk">✓</span></button>
+      <button onclick="pickMood('고프코어',this)" aria-label="분위기 1"><img src="./proto_img/04.jpg" alt=""><span class="chk">✓</span></button>
+      <button onclick="pickMood('발레코어',this)" aria-label="분위기 2"><img src="./proto_img/13.jpg" alt=""><span class="chk">✓</span></button>
+      <button onclick="pickMood('Y2K',this)" aria-label="분위기 3"><img src="./proto_img/03.jpg" alt=""><span class="chk">✓</span></button>
+      <button onclick="pickMood('모리룩',this)" aria-label="분위기 4"><img src="./proto_img/19.jpg" alt=""><span class="chk">✓</span></button>
+      <button onclick="pickMood('고프코어',this)" aria-label="분위기 5"><img src="./proto_img/18.jpg" alt=""><span class="chk">✓</span></button>
+      <button onclick="pickMood('발레코어',this)" aria-label="분위기 6"><img src="./proto_img/21.jpg" alt=""><span class="chk">✓</span></button>
+      <button onclick="pickMood('Y2K',this)" aria-label="분위기 7"><img src="./proto_img/24.jpg" alt=""><span class="chk">✓</span></button>
+      <button onclick="pickMood('모리룩',this)" aria-label="분위기 8"><img src="./proto_img/07.jpg" alt=""><span class="chk">✓</span></button>
+      <button onclick="pickMood('고프코어',this)" aria-label="분위기 9"><img src="./proto_img/26.jpg" alt=""><span class="chk">✓</span></button>
+      <button onclick="pickMood('발레코어',this)" aria-label="분위기 10"><img src="./proto_img/35.jpg" alt=""><span class="chk">✓</span></button>
+      <button onclick="pickMood('Y2K',this)" aria-label="분위기 11"><img src="./proto_img/30.jpg" alt=""><span class="chk">✓</span></button>
+      <button onclick="pickMood('모리룩',this)" aria-label="분위기 12"><img src="./proto_img/36.jpg" alt=""><span class="chk">✓</span></button>
     </div>
-    <div class="spacer"></div>
     <button class="btn" id="moodNext" onclick="finishQuiz()" disabled>다음</button>
-    <!-- 데모 고지 — 스플래시가 1.8초라 읽을 수 없어서 첫 화면으로 옮겼다 -->
-    <p class="demoNote">포트폴리오 데모 · 실제 날씨/계정 없이 흐름만 보여줘요</p>
-    <p class="demoNote licenseNote">코디 사진은 <b>데모용 참고 이미지</b>입니다.<br>
-      실서비스에서는 라이선스 이미지(크라우드픽 확장 라이선스 · 크리에이터 계약)로 교체됩니다.</p>
+    <!-- 데모 고지 2줄은 뺐다 (2026-08-17 유저 요청) — 화면이 지저분해져서.
+         고지 내용은 submission/05_prototype.md 에 그대로 남아 있다 -->
   </section>
 
   <!-- 5. QUIZ 2 COLOR -->
@@ -958,8 +978,8 @@ LOOKS.forEach(l=> l.img=imgOf(l));
    🚫 실패해도 화면은 안 죽는다 — 못 받으면 위에 박혀 있는 39개를 그대로 쓴다.
    키는 '공개용(publishable)'이라 브라우저에 있어도 된다. 서버 쪽에서 읽기만 열어놨고
    쓰기는 막혀 있다(정책 없음 → 401). */
-const LIB_URL = 'https://lzzcypitnswzepdvofqy.supabase.co/rest/v1/library_looks';
-const LIB_KEY = 'sb_publishable_Dvw0Tmg1XINPf3OGlu7mqQ_wVYYfLHE';
+const LIB_URL = 'https://fzmyqsvxitnvfxwqkxsd.supabase.co/rest/v1/library_looks';
+const LIB_KEY = 'sb_publishable_xq22Kx4qAt12NjmQ0u07kg_qZjz308H';
 const TBAND   = {28:'hot', 23:'warm', 20:'cool', 17:'chilly'};   // temp_min → 위 T의 키
 let   LIB_SRC = 'builtin';                                        // 'builtin' | 'supabase'
 
@@ -1003,7 +1023,7 @@ const WEATHER=[
 /* saved 배열은 없앴다 — '오늘 뭘 골랐나'를 배열과 달력(diary)이 따로 들고 있어서 어긋났다.
    (2장 고르면 카드는 둘 다 '입기로 했어요'인데 달력엔 1장만 남았다)
    이제 정본은 달력 한 곳뿐이다. 하루 = 코디 한 벌. */
-const state={ name:'', gender:null, age:null, mood:null, color:null, tpo:null, photo:false, own:{}, weather:WEATHER[0], weatherManual:false, diary:{}, shown:{}, selectedDay:null, calOff:0, usedReroll:false, batch:0, booted:false, consent:false, loc:'마포구 서교동', authed:true,   /* loc=데모 기본 동네(실서비스는 GPS가 잡는다) */ wakeTime:'07:00', wakeOn:false,
+const state={ name:'', gender:null, age:null, moods:[], color:null, tpo:null, photo:false, own:{}, weather:WEATHER[0], weatherManual:false, diary:{}, shown:{}, selectedDay:null, calOff:0, usedReroll:false, batch:0, booted:false, consent:false, loc:'마포구 서교동', authed:true,   /* loc=데모 기본 동네(실서비스는 GPS가 잡는다) */ wakeTime:'07:00', wakeOn:false,
   refPhotoUrl:null, refEmb:null, libEmb:null, clipOn:false };   /* refEmb=올린 사진의 분위기 좌표 · libEmb=라이브러리 39장 좌표 · clipOn=진짜 AI 매칭 작동 중 · shown={룩id:마지막으로 보여준 날} */
 const TODAY=new Date();
 const dkeyOf=d=> d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
@@ -1035,7 +1055,7 @@ const LS='rainism_state_v1';
 function persist(){
   try{ localStorage.setItem(LS, JSON.stringify({
     onboarded:true,
-    mood:state.mood, own:state.own,
+    moods:state.moods, own:state.own,
     diary:state.diary, shown:state.shown, loc:state.loc, weatherKey:state.weather.key, wakeTime:state.wakeTime, wakeOn:state.wakeOn
   })); }catch(e){}
 }
@@ -1312,15 +1332,26 @@ function toast(t){ const el=document.getElementById('toast'); el.textContent=t; 
 
 /* ---------- 퀴즈 ---------- */
 /* 무드는 고르고 → '다음'으로 확정한다. 나머지 퀴즈도 같은 방식 */
+const MOOD_MAX=3;   // 4개를 다 고르면 "전부 = 아무거나"가 돼서 취향 신호가 0이 된다
 function pickMood(v,btn){
-  state.mood=v;
-  document.querySelectorAll('#moodGrid button').forEach(b=>b.classList.remove('sel'));
-  btn.classList.add('sel');
-  document.getElementById('moodNext').disabled=false;
+  if(btn.classList.contains('sel')){ btn.classList.remove('sel'); }
+  else{
+    const n=document.querySelectorAll('#moodGrid button.sel').length;
+    if(n>=MOOD_MAX){ toast('3장까지 고를 수 있어요'); return; }
+    btn.classList.add('sel');
+  }
+  // 화면에서 켜진 것들을 모아 상태로 삼는다 — 같은 컨셉 사진이 여러 장이라 중복은 뺀다
+  state.moods=[...new Set([...document.querySelectorAll('#moodGrid button.sel')]
+    .map(b=>b.getAttribute('onclick').match(/'([^']+)'/)[1]))];
+  const cnt=document.querySelectorAll('#moodGrid button.sel').length;
+  document.getElementById('moodNext').disabled = cnt===0;
+  document.getElementById('moodHint').innerHTML = cnt
+    ? `<b>${cnt}장</b> 골랐어요 · 3장까지 고를 수 있어요`
+    : '마음에 드는 걸 <b>3장까지</b> 고를 수 있어요';
 }
 /* 색 = 무드 화면과 동일하게: 고르면 선택 표시 → '다음' 활성화(바로 안 넘어감) */
 function finishQuiz(){
-  track('퀴즈_완료', {컨셉:state.mood});                                 // ② 퍼널
+  track('퀴즈_완료', {컨셉:state.moods.join(',')});                                 // ② 퍼널
   renderCloset(); go('s-closet');                                        // 퀴즈 다음은 내 옷
 }
 /* ---------- 참고사진 → 진짜 임베딩(CLIP) ----------
@@ -1555,7 +1586,10 @@ function hardFilter(w){
 /* 취향 퀴즈 기반 점수 (사진이 없을 때의 질의) */
 function tagScore(l){
   let s=0;
-  if(l.mood===state.mood) s+=3; else s+=(MOODSIM[state.mood]&&MOODSIM[state.mood][l.mood])||0;
+  // 여러 개 골랐으면 그중 제일 잘 맞는 것 하나로 점수를 준다.
+  // 합치지 않는다 — 합치면 많이 고른 사람만 점수가 커져서 순위가 뒤집힌다
+  s += state.moods.reduce((mx,m)=> Math.max(mx,
+        l.mood===m ? 3 : ((MOODSIM[m]&&MOODSIM[m][l.mood])||0)), 0);
   return s;
 }
 /* 참고사진이 있으면: CLIP 코사인 유사도를 후보풀 안에서 0~1로 정규화해 l._cos 에 심는다 */
@@ -1681,7 +1715,7 @@ function reasonsFor(picks,w){
   });
 }
 /* 아이콘: 내 취향과 맞으면 하트, 아니면 체크 */
-function reasonIcon(l){ return (l && l.mood===state.mood) ? '♡' : '✓'; }
+function reasonIcon(l){ return (l && state.moods.includes(l.mood)) ? '♡' : '✓'; }
 /* 카드 제목은 짧게 — 비 오는 날이면 '레인 미니멀', 맑으면 '미니멀 데일리'. 옷 목록은 결정 후 pack에 나온다 */
 function shortName(l){ return state.weather.rain ? '레인 '+l.mood : l.mood+' 데일리'; }
 
@@ -1699,7 +1733,7 @@ function renderResult(){
      mood·color가 그대로 순위를 정한다(참인 문장, AGENTS §9-1).
      이 줄이 없으면 퀴즈 답이 반영됐다는 신호가 ♡ 아이콘 하나뿐이라 아무도 모른다.
      사진을 올린 경우엔 사진 유사도가 주(主)이므로 아래에서 사진 문장으로 덮어쓴다. */
-  document.getElementById('r-taste').innerHTML = state.mood
+  document.getElementById('r-taste').innerHTML = state.moods.length
     /* "~이라 골랐어요"는 거짓이 될 수 있다(§9-1). 비 오는 날 Y2K는 후보가 통째로 탈락해서
        3장에 Y2K가 한 장도 없을 수 있다. 날씨가 취향을 이긴다는 게 이 제품의 규칙이니
        문장은 "참고했어요"까지만 — 이건 점수에 실제로 반영되므로 항상 참이다. */
@@ -2193,7 +2227,7 @@ const SPLASH_MS=2400;           // 로고를 보여주는 최소 시간. 실제 
   // 🔴 그리기 전에 받는다. 안 기다리면 재방문 때 옛 목록·옛 날씨로 그려진다
   await Promise.all([loadLibrary(), loadWeather()]);
   if(saved && saved.onboarded){           // 재방문: 온보딩 스킵 → 바로 '오늘'
-    state.mood=saved.mood;
+    state.moods=saved.moods||(saved.mood?[saved.mood]:[]);   // 옛 저장본은 mood 하나였다
     state.own=saved.own||{};              // 내 옷 — 없으면 빈 칸(=점수에 영향 없음)
     Object.assign(state.diary, saved.diary||{});   // 유저 저장을 데모 시드 위에 덮기
     state.shown=saved.shown||{};                   // 노출 이력도 살려야 어제 본 3장이 오늘 또 안 뜬다
