@@ -1,7 +1,8 @@
 # rainism — 디자인 프로토타입 & MVP
 
 > 작성 2026-07-13 · 갱신 2026-07-15(온보딩 통합·날씨 탭·기록 상세·하이파이 시안 반영) · 파일: [`prototype/rainism_prototype_v1.html`](../prototype/rainism_prototype_v1.html)
-> **실행: 더블클릭.** 설치·서버·터미널 불필요. 단일 HTML + 실사진 39장.
+> **실행: 웹 주소로 열 것.** 단일 HTML + 실사진 124장.
+> ⚠️ **더블클릭(`file://`)으로 열면 코디가 39장만 나온다** — 브라우저가 외부 서버 호출을 막아 Supabase 목록(110장)을 못 받고 HTML에 박힌 예비 39장으로 내려간다.
 
 ---
 
@@ -10,7 +11,9 @@
 **목업이 아니라 실제로 작동하는 프로토타입이다.**
 
 - 추천 엔진(**하드필터 → 무드 유사도 → MMR 다양성 → 안전빵 → 이유 템플릿**)이 HTML 안의 JavaScript로 **실제 구현돼 있다.**
-- 코디 사진 **39장은 실사진**이며, 사람이 직접 무드·색·TPO·온도밴드·비 적합성으로 태깅했다.
+- 코디 사진 **110장은 실사진**이며(Supabase `library_looks`), 무드·색·온도밴드·비 적합성으로 태깅돼 있다.
+  - 🔴 **110장 전부 `source_license`가 `unverified`다**(옛 39장 포함). 그중 71장은 출처가 핀터레스트로 기록돼 있다 — 검증용 데모까지만 쓴다. 실서비스는 RG-4에 걸려 못 쓴다(`AGENTS.md §10`).
+  - ※ 처음 39장은 사람이 직접, 나중 71장의 `rain_ok`·`is_safe`·`items`·`name`은 **에이전트가 사진을 보고** 매겼다(2026-08-17).
 - 날씨를 바꾸면 **추천 결과가 실제로 달라진다.** 화면 전환만 하는 클릭더미가 아니다.
 
 ---
@@ -139,7 +142,7 @@
 | 파일 | 무엇 |
 |---|---|
 | [`prototype/rainism_prototype_v1.html`](../prototype/rainism_prototype_v1.html) | **정본 프로토타입** (47KB, 단일 파일) |
-| [`prototype/proto_img/`](../prototype/proto_img/) | 코디 실사진 **39장** (사람이 직접 태깅) |
+| [`prototype/proto_img/`](../prototype/proto_img/) | 코디 실사진 **124장** (그중 110장이 Supabase 목록에 등록돼 있다) |
 | [`prototype/landing_rainism_portfolio.html`](../prototype/landing_rainism_portfolio.html) | 서비스 소개용 랜딩 페이지 |
 
 ---

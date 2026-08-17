@@ -218,7 +218,12 @@
   .wnow-stats span{ flex:1; min-width:0; text-align:center; background:var(--accent2);
     border-radius:11px; padding:7px 3px; font-size:10.5px; color:var(--sub); font-weight:600; }
   .wnow-stats b{ display:block; font-size:14px; color:var(--ink); letter-spacing:-.3px; }
-  .wnow .bars{ height:52px; margin:16px 0 22px; }   /* 날씨 탭보다 낮게 — 자리를 덜 먹는다 */
+  /* 시간별 기온 — 막대(강수확률) 바로 위. 숫자를 아래 여백으로 띄워 온도 흐름을 그린다.
+     막대와 같은 flex 규칙(gap:8px · flex:1)을 써야 세로줄이 시각과 맞아떨어진다 */
+  .wnow .hrtemp{ display:flex; align-items:flex-end; gap:8px; height:28px; margin-top:11px; }
+  .wnow .hrtemp span{ flex:1; text-align:center; line-height:1; font-size:11.5px; font-weight:800;
+    color:var(--ink); letter-spacing:-.3px; }
+  .wnow .bars{ height:52px; margin:4px 0 22px; }   /* 날씨 탭보다 낮게 — 자리를 덜 먹는다 */
   .wnow-line{ font-size:12.5px; color:var(--sub); line-height:1.5; margin:0; }
   .tasteline{ color:var(--sub); font-size:13.5px; margin:10px 0 18px; }
   .tasteline:empty{ display:none; }
@@ -565,7 +570,9 @@
          사람이라 이 앱이 필요 없다. 이름을 모르는 사람이 사진만 보고 고를 수 있어야 한다(원칙 4).
          이름은 안에서 점수 매길 때만 쓴다.
          12장 = 컨셉 4개 × 3장 (2026-08-17). 4장일 땐 그 한 장이 안 예쁘면 컨셉을 통째로 놓쳤다.
-         무드가 안 겹치게 번갈아 놓는다 — 같은 컨셉 3장이 붙어 있으면 고르는 재미가 없다 -->
+         무드가 안 겹치게 번갈아 놓는다 — 같은 컨셉 3장이 붙어 있으면 고르는 재미가 없다.
+         ⚠️ 아래 12장은 '못 받았을 때 쓰는 것'이다. 서버(Supabase 110장)에서 받아오면
+            renderMoodGrid() 가 통째로 갈아끼운다 — 열 때마다 다른 12장이 나온다 -->
     <div class="moodgrid nolabel" id="moodGrid">
       <button onclick="pickMood('고프코어',this)" aria-label="분위기 1"><img src="./proto_img/04.jpg" alt=""><span class="chk">✓</span></button>
       <button onclick="pickMood('발레코어',this)" aria-label="분위기 2"><img src="./proto_img/13.jpg" alt=""><span class="chk">✓</span></button>
@@ -677,6 +684,10 @@
         <span><b id="wt-humid">78%</b>습도</span>
         <span><b id="wt-gap">4°</b>일교차</span>
       </div>
+      <!-- 시간별 기온 (2026-08-17) — 막대는 강수확률이라 기온이 안 보였다.
+           숫자가 기온만큼 위아래로 움직여서 하루 흐름이 선처럼 읽힌다.
+           🚫 막대를 하나 더 만들지 않았다 — 날씨 카드가 커지면 코디 첫 장이 화면 밖으로 밀린다 -->
+      <div class="hrtemp" id="wt-temps"></div>
       <div class="bars" id="wt-bars"></div>
       <p class="wnow-line" id="wt-line">체감 23도, 종일 비 소식이에요.</p>
     </div>
@@ -1035,10 +1046,10 @@ async function loadLibrary(){
 
 /* ---------- 날씨 시나리오 (데모 · 실제 앱은 기상청 자동) ---------- */
 const WEATHER=[
- {key:'jangma', e:'🌧️', n:'장마 · 체감 23°', m:'비 오는 따뜻한 날', temp:'warm', rain:true, badge:'☂ 비 · 체감 23°', title:'비 오는 오늘 입을 만한 3가지', line:'체감 23도, 종일 비 소식이에요. 젖어도 티 안 나는 옷과 우산을 챙기세요.', tomorrow:'내일도 오전까지 비, 오후에 그쳐요.', pop:[70,80,90,80,60,40], mm:'3~10mm', humid:'78%', gap:'4°'},
- {key:'hot', e:'☀️', n:'무더위 · 체감 31°', m:'맑고 더운 날', temp:'hot', rain:false, badge:'☀ 맑음 · 체감 31°', title:'무더운 오늘 시원하게 입을 3가지', line:'체감 31도, 한여름 더위예요. 얇고 통풍 잘 되는 소재로 시원하게.', tomorrow:'내일도 맑고 더워요. 자외선 조심!', pop:[0,0,10,10,0,0], mm:'0mm', humid:'55%', gap:'8°'},
- {key:'coolrain', e:'🌦️', n:'선선한 비 · 체감 20°', m:'비 오고 선선한 날', temp:'cool', rain:true, badge:'☂ 비 · 체감 20°', title:'선선한 비, 걸치기 좋은 3가지', line:'체감 20도, 비 오고 선선해요. 얇은 겉옷 하나면 딱 좋아요.', tomorrow:'내일 아침 쌀쌀, 낮에 풀려요.', pop:[60,70,60,50,50,40], mm:'2~6mm', humid:'80%', gap:'5°'},
- {key:'warmsun', e:'🌤️', n:'맑고 따뜻 · 체감 26°', m:'화창한 데일리', temp:'warm', rain:false, badge:'🌤 맑음 · 체감 26°', title:'화창한 오늘 입을 만한 3가지', line:'체감 26도, 화창해요. 가벼운 데일리룩 하나면 충분해요.', tomorrow:'내일도 맑아요. 나들이 좋은 날!', pop:[0,10,0,20,10,0], mm:'0mm', humid:'60%', gap:'7°'},
+ {key:'jangma', e:'🌧️', n:'장마 · 체감 23°', m:'비 오는 따뜻한 날', temp:'warm', rain:true, badge:'☂ 비 · 체감 23°', title:'비 오는 오늘 입을 만한 3가지', line:'체감 23도, 종일 비 소식이에요. 젖어도 티 안 나는 옷과 우산을 챙기세요.', tomorrow:'내일도 오전까지 비, 오후에 그쳐요.', temps:[22,23,23,23,22,21], pop:[70,80,90,80,60,40], mm:'3~10mm', humid:'78%', gap:'4°'},
+ {key:'hot', e:'☀️', n:'무더위 · 체감 31°', m:'맑고 더운 날', temp:'hot', rain:false, badge:'☀ 맑음 · 체감 31°', title:'무더운 오늘 시원하게 입을 3가지', line:'체감 31도, 한여름 더위예요. 얇고 통풍 잘 되는 소재로 시원하게.', tomorrow:'내일도 맑고 더워요. 자외선 조심!', temps:[26,29,31,31,29,27], pop:[0,0,10,10,0,0], mm:'0mm', humid:'55%', gap:'8°'},
+ {key:'coolrain', e:'🌦️', n:'선선한 비 · 체감 20°', m:'비 오고 선선한 날', temp:'cool', rain:true, badge:'☂ 비 · 체감 20°', title:'선선한 비, 걸치기 좋은 3가지', line:'체감 20도, 비 오고 선선해요. 얇은 겉옷 하나면 딱 좋아요.', tomorrow:'내일 아침 쌀쌀, 낮에 풀려요.', temps:[18,19,20,20,19,18], pop:[60,70,60,50,50,40], mm:'2~6mm', humid:'80%', gap:'5°'},
+ {key:'warmsun', e:'🌤️', n:'맑고 따뜻 · 체감 26°', m:'화창한 데일리', temp:'warm', rain:false, badge:'🌤 맑음 · 체감 26°', title:'화창한 오늘 입을 만한 3가지', line:'체감 26도, 화창해요. 가벼운 데일리룩 하나면 충분해요.', tomorrow:'내일도 맑아요. 나들이 좋은 날!', temps:[21,24,26,26,24,22], pop:[0,10,0,20,10,0], mm:'0mm', humid:'60%', gap:'7°'},
 ];
 
 /* ---------- 상태 ---------- */
@@ -1356,6 +1367,30 @@ function toast(t){ const el=document.getElementById('toast'); el.textContent=t; 
    숙제가 된다. 마음에 드는 걸 마음에 드는 만큼 고르면 된다.
    ⚠️ 다만 컨셉 4종을 **전부** 고르면 "전부 = 아무거나"가 되어 취향 신호가 0이 된다.
       막지는 않되(유저의 선택이다) 그때만 조용히 알려준다 — 아래 안내문. */
+/* 온보딩 12장을 라이브러리(서버)에서 뽑는다 (2026-08-17).
+   왜: 12장이 HTML에 박혀 있어서, 서버 사진이 110장으로 늘어도 첫 화면은 늘 같은 12장이었다.
+   컨셉 4종 × 3장을 무드가 안 겹치게 번갈아 놓는다 — 그건 그대로다. 달라진 건 '어느 3장이냐'다.
+   열 때마다 다른 사진이 나온다: 같은 사람이 다시 봐도 첫 화면이 새롭고, 12장이 덮는 취향 범위도 넓어진다.
+   🚫 한 컨셉이라도 3장이 안 되면 손을 대지 않는다 — HTML에 박힌 12장이 그대로 남는다(빈 화면보다 낫다).
+      file://(더블클릭)은 라이브러리를 안 부르므로 항상 이 경로다. */
+function renderMoodGrid(){
+  const g=document.getElementById('moodGrid'); if(!g) return;
+  const moods=Object.keys(MOODSIM);            // 컨셉 4종 — 점수표(MOODSIM)와 같은 목록을 쓴다
+  const pick={};
+  for(const m of moods){
+    const cand=LOOKS.filter(l=> l.mood===m);
+    if(cand.length<3) return;                  // 모자라면 통째로 포기 (반쪽짜리 화면을 만들지 않는다)
+    pick[m]=[];                                // 뽑은 건 후보에서 빼면서 3장 — 같은 사진이 두 번 안 나온다
+    while(pick[m].length<3) pick[m].push(cand.splice(Math.floor(Math.random()*cand.length),1)[0]);
+  }
+  let html='', n=0;
+  for(let i=0;i<3;i++) for(const m of moods){   // 한 바퀴에 컨셉 4종 → 옆자리가 늘 다른 컨셉
+    const l=pick[m][i]; n++;
+    html+='<button onclick="pickMood(\''+m+'\',this)" aria-label="분위기 '+n+'">'
+        + '<img src="'+l.img+'" alt=""><span class="chk">✓</span></button>';
+  }
+  g.innerHTML=html;
+}
 function pickMood(v,btn){
   btn.classList.toggle('sel');
   // 화면에서 켜진 것들을 모아 상태로 삼는다 — 같은 컨셉 사진이 여러 장이라 중복은 뺀다
@@ -1464,7 +1499,7 @@ function liveWeather(s, dateStr){
       : umbrella  ? sky+'이지만 비 올 확률이 '+s.maxPop+'%예요. 접이우산 하나 챙기면 좋아요.'
                   : sky+'이에요.')
       + (s.gap>=8 ? ' 일교차가 '+s.gap+'도라 걸칠 것 하나 챙기세요.' : ''),
-    pop:s.pop, hrs:s.hrs, mm:(s.mm>0?s.mm+'mm':'0mm'),
+    pop:s.pop, hrs:s.hrs, temps:s.temps, mm:(s.mm>0?s.mm+'mm':'0mm'),
     humid:s.humid+'%', gap:(s.gap!=null?s.gap+'°':'—'), tempLabel:'기온',
   };
 }
@@ -2113,6 +2148,17 @@ function renderWeatherCard(){
   document.getElementById('wt-gap').textContent=w.gap;
   document.getElementById('wt-line').textContent=w.line;
   const hrs=w.hrs||['9시','12시','15시','18시','21시','24시'];   // 기상청 값은 남은 시각만 온다
+  /* 시간별 기온 — 숫자를 아래 여백으로 띄운다. 제일 추운 시각이 바닥, 제일 더운 시각이 꼭대기.
+     🚫 시각 수와 안 맞으면 아예 안 그린다 — 줄이 어긋나면 6시 기온을 9시 것으로 읽는다(§9-1) */
+  const tbox=document.getElementById('wt-temps');
+  // 빈 값을 Number()에 넣으면 0이 된다 — 기상청이 한 시각을 빼먹으면 '0°'라고 우기게 된다. 먼저 걸러낸다
+  const tps=(w.temps||[]).map(v=> (v===null||v===undefined||v==='') ? NaN : Number(v));
+  if(tps.length!==w.pop.length || tps.some(t=>!isFinite(t))){ tbox.style.display='none'; }
+  else{
+    const lo=Math.min(...tps), span=(Math.max(...tps)-lo)||1;   // 하루 종일 같은 기온이면 전부 바닥
+    tbox.style.display='flex';
+    tbox.innerHTML=tps.map(t=>`<span style="margin-bottom:${Math.round((t-lo)/span*17)}px">${t}°</span>`).join('');
+  }
   const peak=Math.max(...w.pop);
   document.getElementById('wt-bars').innerHTML=w.pop.map((p,i)=>
     `<div class="b" style="height:${Math.max(6,p)}%;background:${p===peak&&p>0?'var(--rain)':'var(--accent2)'}"><em>${p}%</em><span>${hrs[i]}</span></div>`).join('');
@@ -2152,6 +2198,7 @@ const SPLASH_MS=2400;           // 로고를 보여주는 최소 시간. 실제 
   }
   // 첫 방문: 로고를 최소 시간만큼 보여준 뒤 첫 질문으로. 목록 받는 데 오래 걸렸으면 그만큼 덜 기다린다
   await new Promise(r=>setTimeout(r, Math.max(0, SPLASH_MS-(Date.now()-t0))));
+  renderMoodGrid();          // 라이브러리를 받은 뒤에 그린다 — 그 전에 그리면 내장 39장에서만 뽑힌다
   go('s-q1');
 })();
 </script>

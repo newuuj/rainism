@@ -54,7 +54,9 @@ python3 -m http.server 8899   # → http://localhost:8899/rainism_prototype_v1.h
 
 ### 배포 — 🚫 HTML 사본을 만들지 말 것
 
-**고치는 파일은 `prototype/rainism_prototype_v1.html` 하나뿐이다.** 사진 39장(`prototype/proto_img/`)이 저장소에 함께 있어서, Vercel이 저장소를 통째로 올리면 **상대경로가 그대로 작동한다.** 빌드 단계 없음, 이미지 호스팅 없음.
+**고치는 파일은 `prototype/rainism_prototype_v1.html` 하나뿐이다.** 사진 124장(`prototype/proto_img/`)이 저장소에 함께 있어서, Vercel이 저장소를 통째로 올리면 **상대경로가 그대로 작동한다.** 빌드 단계 없음, 이미지 호스팅 없음.
+
+> 📌 **코디 목록(무드·온도·비 적합성 등)은 HTML이 아니라 Supabase에 있다** — 110장(`AGENTS.md §10`). HTML에 박힌 39장은 서버를 못 받았을 때 쓰는 예비다. **코디를 더하거나 태그를 고치려면 HTML이 아니라 `library_looks` 표를 고친다.** 쓰기 키는 `.env.local`의 `SUPABASE_SERVICE_ROLE_KEY`(깃에 안 올라간다).
 
 - 루트 `index.html` = **프로토타입으로 보내는 5줄짜리 이동 페이지.** 내용이 없으니 낡을 일도 없다.
 - ⚠️ **주소 바꿔치기(rewrite)로 `/`에서 띄우면 안 된다.** 사진 경로가 `./proto_img/`라서 주소가 `/`로 남으면 **사진이 전부 깨진다.** 그래서 rewrite가 아니라 **이동**이다.
