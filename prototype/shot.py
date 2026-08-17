@@ -2,7 +2,7 @@
 """프로토타입 화면 캡쳐 — 손으로 가기 어려운 예외 화면까지 한 번에.
 
   python3 prototype/shot.py 오늘
-  python3 prototype/shot.py 오늘 기록 날씨
+  python3 prototype/shot.py 오늘 기록
   python3 prototype/shot.py 오늘 --sim lib=thin        # 라이브러리 부족한 날
   python3 prototype/shot.py 오늘 --sim auth=expired    # 세션 만료
   python3 prototype/shot.py all                        # 전부
@@ -20,11 +20,13 @@ VIEW = {"width": 402, "height": 874}   # iPhone 17 논리 화면 크기(pt). ×2
 URL = os.environ.get("RAINISM_URL") or ("file://" + str((HERE / "rainism_prototype_v1.html").resolve()))
 
 # 화면 이름 → 거기까지 가는 클릭 순서 (온보딩을 매번 통과해야 도달함)
+# ※ '날씨'는 오늘 탭 안 카드로 합쳤다(2026-08-17). '날씨선택'도 뺐다 — 결과 화면의 데모 버튼 4개를 지워서
+#    이제 그 화면엔 우하단 🧪 상황 패널로만 간다
 QUIZ = ["#s-q1 .moodgrid button:nth-child(4)", "#moodNext"]   # 질문은 사진 고르기 하나뿐 → 내 옷 화면으로
 # 스플래시엔 버튼이 없다(2.4초 뒤 자동으로 넘어감). 클릭은 화면이 보일 때까지 알아서 기다린다
-CLOSET = ["#closetGrid .cgroup:nth-child(1) .citem:nth-child(1)",   # 퀴즈 다음은 옷장이다 — 몇 개 고르고 넘어간다
-          "#closetGrid .cgroup:nth-child(1) .citem:nth-child(2)",
-          "#closetGrid .cgroup:nth-child(2) .citem:nth-child(1)",
+CLOSET = ["#closetGrid .citem:nth-child(1)",   # 퀴즈 다음은 옷장이다 — 몇 개 고르고 넘어간다
+          "#closetGrid .citem:nth-child(4)",   # (2026-08-17 흩뿌리기로 바뀌며 그룹이 없어졌다)
+          "#closetGrid .citem:nth-child(9)",
           "#closetNext"]
 # 위치를 허용하면 동네 화면을 건너뛴다. 캡쳐용 브라우저는 위치가 막혀 있어 자동으로 동네 화면에 떨어진다
 DONG = ["#s-location .btn"]   # 이 동네로 할게요 → 날씨 자동 → 결과
@@ -41,9 +43,7 @@ SCREENS = {
     "동네":   QUIZ + CLOSET,               # 위치가 막히면 자동으로 여기로 떨어진다
     "오늘":   TO_RESULT,
     "결정":   TO_RESULT + [".look:nth-child(1) .heart"],
-    "날씨":   TO_RESULT + ["#tab-weather"],
     "기록":   TO_RESULT + ["#tab-calendar"],
-    "날씨선택": TO_RESULT + ["#s-result .btn.ghost"],   # 결과에서만 갈 수 있는 데모 화면
 }
 
 def main():
