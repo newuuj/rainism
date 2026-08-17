@@ -218,10 +218,12 @@
   .wnow-stats span{ flex:1; min-width:0; text-align:center; background:var(--accent2);
     border-radius:11px; padding:7px 3px; font-size:10.5px; color:var(--sub); font-weight:600; }
   .wnow-stats b{ display:block; font-size:14px; color:var(--ink); letter-spacing:-.3px; }
-  /* 시간별 기온 — 막대(강수확률) 바로 위. 숫자를 아래 여백으로 띄워 온도 흐름을 그린다.
-     막대와 같은 flex 규칙(gap:8px · flex:1)을 써야 세로줄이 시각과 맞아떨어진다 */
-  .wnow .hrtemp{ display:flex; align-items:flex-end; gap:8px; height:28px; margin-top:11px; }
-  .wnow .hrtemp span{ flex:1; text-align:center; line-height:1; font-size:11.5px; font-weight:800;
+  /* 시간별 기온 — 막대(강수확률) 바로 위에 꺾은선. 점을 잇는 선이 하루 흐름이고, 숫자는 점 위에 붙는다.
+     선(svg)은 칸 너비를 %로 잡아 눕히고, 숫자는 flex 한 줄로 얹는다 — 둘 다 막대와 세로줄이 맞는다 */
+  .wnow .hrtemp{ position:relative; height:44px; margin-top:10px; }
+  .wnow .hrtemp svg{ position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+  .wnow .hrtemp .nums{ display:flex; align-items:flex-end; gap:8px; height:100%; position:relative; }
+  .wnow .hrtemp .nums span{ flex:1; text-align:center; line-height:1; font-size:11.5px; font-weight:800;
     color:var(--ink); letter-spacing:-.3px; }
   .wnow .bars{ height:52px; margin:4px 0 22px; }   /* 날씨 탭보다 낮게 — 자리를 덜 먹는다 */
   .wnow-line{ font-size:12.5px; color:var(--sub); line-height:1.5; margin:0; }
@@ -2148,7 +2150,7 @@ function renderWeatherCard(){
   document.getElementById('wt-gap').textContent=w.gap;
   document.getElementById('wt-line').textContent=w.line;
   const hrs=w.hrs||['9시','12시','15시','18시','21시','24시'];   // 기상청 값은 남은 시각만 온다
-  /* 시간별 기온 — 숫자를 아래 여백으로 띄운다. 제일 추운 시각이 바닥, 제일 더운 시각이 꼭대기.
+  /* 시간별 기온 = 꺾은선. 제일 추운 시각이 바닥, 제일 더운 시각이 꼭대기.
      🚫 시각 수와 안 맞으면 아예 안 그린다 — 줄이 어긋나면 6시 기온을 9시 것으로 읽는다(§9-1) */
   const tbox=document.getElementById('wt-temps');
   // 빈 값을 Number()에 넣으면 0이 된다 — 기상청이 한 시각을 빼먹으면 '0°'라고 우기게 된다. 먼저 걸러낸다
@@ -2156,8 +2158,18 @@ function renderWeatherCard(){
   if(tps.length!==w.pop.length || tps.some(t=>!isFinite(t))){ tbox.style.display='none'; }
   else{
     const lo=Math.min(...tps), span=(Math.max(...tps)-lo)||1;   // 하루 종일 같은 기온이면 전부 바닥
-    tbox.style.display='flex';
-    tbox.innerHTML=tps.map(t=>`<span style="margin-bottom:${Math.round((t-lo)/span*17)}px">${t}°</span>`).join('');
+    const n=tps.length;
+    const off=t=> Math.round((t-lo)/span*16);                   // 값이 클수록 위로 (0~16px)
+    const cx=i=> ((i+.5)/n*100).toFixed(2)+'%';                 // 칸 한가운데 — 막대와 같은 세로줄
+    const cy=i=> 40-off(tps[i]);                                // 44px 상자의 아래쪽 4px를 남긴다
+    let svg='<svg aria-hidden="true">';
+    for(let i=0;i<n-1;i++)                                      // 점을 잇는 선 = 하루 흐름
+      svg+=`<line x1="${cx(i)}" y1="${cy(i)}" x2="${cx(i+1)}" y2="${cy(i+1)}" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>`;
+    for(let i=0;i<n;i++)
+      svg+=`<circle cx="${cx(i)}" cy="${cy(i)}" r="3.2" fill="var(--accent)"/>`;
+    tbox.style.display='block';
+    tbox.innerHTML=svg+'</svg><div class="nums">'
+      + tps.map(t=>`<span style="margin-bottom:${off(t)+10}px">${t}°</span>`).join('') + '</div>';
   }
   const peak=Math.max(...w.pop);
   document.getElementById('wt-bars').innerHTML=w.pop.map((p,i)=>
@@ -2181,6 +2193,9 @@ const SPLASH_MS=2400;           // 로고를 보여주는 최소 시간. 실제 
   if(saved && saved.loc) state.loc=saved.loc;   // 격자를 알아야 그 동네 날씨를 부를 수 있다
   // 🔴 그리기 전에 받는다. 안 기다리면 재방문 때 옛 목록·옛 날씨로 그려진다
   await Promise.all([loadLibrary(), loadWeather()]);
+  /* 로고는 열 때마다 보여준다 (2026-08-17 유저 결정) — 예전엔 재방문이면 건너뛰고 바로 '오늘'로 갔다.
+     목록·날씨 받는 시간이 이 안에 이미 들어가 있어서, 실제로 더 기다리는 건 그 나머지뿐이다. */
+  await new Promise(r=>setTimeout(r, Math.max(0, SPLASH_MS-(Date.now()-t0))));
   if(saved && saved.onboarded){           // 재방문: 온보딩 스킵 → 바로 '오늘'
     state.moods=saved.moods||(saved.mood?[saved.mood]:[]);   // 옛 저장본은 mood 하나였다
     state.own=saved.own||{};              // 내 옷 — 없으면 빈 칸(=점수에 영향 없음)
@@ -2194,10 +2209,9 @@ const SPLASH_MS=2400;           // 로고를 보여주는 최소 시간. 실제 
     if(state.wakeOn) scheduleWake();              // 재방문에도 알림은 살아 있다
     document.getElementById('tab-calendar').classList.remove('active');
     document.getElementById('tab-today').classList.add('active');
-    return;                             // 재방문은 기다리지 않는다 — 목록 받는 시간만 스플래시가 덮는다
+    return;
   }
-  // 첫 방문: 로고를 최소 시간만큼 보여준 뒤 첫 질문으로. 목록 받는 데 오래 걸렸으면 그만큼 덜 기다린다
-  await new Promise(r=>setTimeout(r, Math.max(0, SPLASH_MS-(Date.now()-t0))));
+  // 첫 방문은 첫 질문으로
   renderMoodGrid();          // 라이브러리를 받은 뒤에 그린다 — 그 전에 그리면 내장 39장에서만 뽑힌다
   go('s-q1');
 })();
