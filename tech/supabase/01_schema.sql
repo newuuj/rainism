@@ -39,7 +39,7 @@ create table if not exists library_looks (
   -- ── 🔴 날씨 태그 (하드필터용 — 틀리면 안 되는 것 · 원칙 2) ────
   temp_min      smallint not null,       -- 적용 체감온도 하한 (°C)
   temp_max      smallint not null,       -- 적용 체감온도 상한 (°C)
-                                         -- 구간 근거 = tech/rainism_outfit_rules_v1_summer_women.csv [1]
+                                         -- 구간 근거 = tech/rainism_outfit_rules_v2_allseason_women.csv [1]
                                          --   무더위·폭염 28↑ / 따뜻함 23–27 / 선선함 20–22 / 서늘 17–19
   rain_ok       boolean not null default false,   -- 비 오는 날 입어도 되나
   boots         boolean not null default false,   -- 레인부츠 포함. 이유 문장에 쓴다
