@@ -27,8 +27,8 @@
 **링크: (아직 배포 안 함)**
 
 **올리는 법:** 저장소를 Vercel(또는 Netlify·GitHub Pages)에 연결하면 끝이다. **빌드 단계도, 준비할 파일도 없다.**
-프로토타입 한 장(`prototype/rainism_prototype_v1.html`)과 사진 39장(`prototype/proto_img/`)이
-저장소에 함께 있어서 그대로 올라간다. 루트 `index.html`은 프로토타입으로 보내는 이동 페이지다.
+프로토타입 한 장(`prototype/rainism_prototype_v1.html`)과 사진 124장(`prototype/proto_img/`)이
+저장소에 함께 있어서 그대로 올라간다. 코디 목록(110장)은 Supabase에서 받아온다 — `AGENTS.md §10`. 루트 `index.html`은 프로토타입으로 보내는 이동 페이지다.
 
 *(2026-08-08: 사진을 파일 안에 심은 "한 장짜리 자립 파일" 방식은 폐기했다 — 같은 화면이 파일 3개로 갈라져
 원본만 고치고 배포 화면은 옛날 것으로 남는 사고가 났다.)*
