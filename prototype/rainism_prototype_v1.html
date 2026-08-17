@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- 검색엔진 노출 차단: 포트폴리오/심사용 데모라 검색으로 발견되면 안 된다 -->
 <meta name="robots" content="noindex, nofollow, noarchive, noimageindex">
+<!-- PWA — '홈 화면에 추가'하면 주소창 없이 앱처럼 열린다. 아이폰 웹푸시의 전제조건이기도 하다(FR-21).
+     ⚠️ file://(더블클릭)에선 manifest 가 적용되지 않는다. 웹 주소(http/https)로 열어야 한다 -->
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#ff6b9d">
+<link rel="apple-touch-icon" href="./proto_img/icon-180.png">
+<meta name="apple-mobile-web-app-title" content="rainism">
+<meta name="mobile-web-app-capable" content="yes">
 <title>rainism 프로토타입</title>
 <style>
   /* Pretendard Variable — 화면이 전부 한글이라 시스템 폰트 폴백은 사고다.
@@ -36,7 +43,7 @@
   }
   .screen{ display:none; flex-direction:column; flex:1; padding:26px 22px 32px; animation:fade .35s ease; }
   /* 하단 여백은 32px 기본 — 온보딩 '다음' 버튼이 바닥 가까이 오게. 탭바 덮이는 화면만 96px로 되돌림 */
-  #s-result, #s-weathertab, #s-saved{ padding-bottom:96px; }
+  #s-result, #s-saved{ padding-bottom:96px; }
   .screen.on{ display:flex; }
   @keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
   @media (prefers-reduced-motion:reduce){ .screen{animation:none;}
@@ -61,17 +68,29 @@
   /* 내 옷 고르기 — 여러 개 고르는 칩. .choice(하나만 고름)와 달라서 따로 둔다.
      min-height 46px = 터치 영역 하한(NFR-7). 이 값을 줄이지 말 것 —
      이 저장소에서 이미 캐스케이드로 64px가 52px까지 깎인 적이 있다. */
-  .cgroup{ margin-top:18px; }
-  .cgroup > b{ display:block; font-size:12.5px; font-weight:800; color:var(--muted);
-    letter-spacing:.02em; margin-bottom:9px; }
-  .cwrap{ display:flex; flex-wrap:wrap; gap:8px; }
-  .citem{ min-height:46px; padding:11px 14px; border-radius:14px; background:#fff;
-    border:1.6px solid var(--line); font-size:14px; font-weight:600; color:var(--ink);
-    cursor:pointer; display:inline-flex; align-items:center; gap:6px; line-height:1.2; }
-  .citem .cmark{ font-size:12px; opacity:0; }         /* 색만으로 구분하지 않는다(NFR-7) */
-  .citem.on{ border-color:var(--accent); background:#fbedf3; color:var(--accent); }
+  /* 흩뿌리기 배치 (2026-08-17) — 칸으로 나눠 담지 않고 배경 위에 그냥 널어놓는다.
+     카드·테두리·그룹 제목이 전부 없어져서 옷만 남는다.
+     2열 신문단(column) 위에 폭·여백을 흔들어 얹는다. 자리는 브라우저가 알아서 쌓아주니
+     겹치는 일이 없고, 흔들기만으로 「아무렇게나 놓인」 느낌이 난다. */
+  #closetGrid{ column-count:2; column-gap:14px; margin-top:16px; }
+  .citem{ position:relative; display:block; break-inside:avoid; padding:0; border:0;
+    background:none; cursor:pointer; transition:transform .14s; }
+  .citem-img{ width:100%; height:auto; display:block; transition:filter .22s;
+    filter:drop-shadow(0 4px 9px rgba(74,35,56,.17)); }
+  .citem:active{ transform:scale(.95); }
+  /* 고른 것이 어두워진다 — 고른 것에 테두리를 두르는 게 아니라 그 사진을 눌러 앉힌다.
+     🚫 반대로(안 고른 걸 어둡게) 했다가 되돌렸다 — 판 전체가 어두워져 답답했다. */
+  .citem.on .citem-img{ filter:brightness(.4) saturate(.42) drop-shadow(0 4px 9px rgba(74,35,56,.17)); }
+  /* 색·밝기만으로 구분하지 않는다(NFR-7) — ✓ 와 이름이 같이 붙는다 */
+  .cmark{ position:absolute; right:4px; top:4px; width:26px; height:26px; border-radius:50%;
+    background:var(--accent); color:#fff; font-size:14px; font-weight:800; z-index:2;
+    display:flex; align-items:center; justify-content:center; opacity:0;
+    box-shadow:0 2px 6px rgba(58,24,42,.35); }
   .citem.on .cmark{ opacity:1; }
-  #closetCount{ font-size:13px; font-weight:700; color:var(--accent); margin-top:16px; }
+  .clabel{ position:absolute; bottom:8px; left:50%; transform:translateX(-50%); z-index:2;
+    font-size:12px; font-weight:800; color:var(--accent); white-space:nowrap; opacity:0;
+    background:#fff; border-radius:999px; padding:3px 10px; box-shadow:0 2px 6px rgba(58,24,42,.3); }
+  .citem.on .clabel{ opacity:1; }
   .choice{ text-align:left; background:#fff; border:1.6px solid var(--line); border-radius:16px;
     padding:16px 18px; font-size:16px; font-weight:600; cursor:pointer; font-family:inherit; color:var(--ink);
     display:flex; align-items:center; gap:13px; transition:.12s; }
@@ -96,7 +115,7 @@
   .txtin:focus{ outline:none; border-color:var(--accent); }
   .btn:disabled{ opacity:.4; cursor:default; }
 
-  /* 참고사진 드롭존 */
+  /* 사진 올리는 자리 — 지금은 기록 탭의 '그날 고른 코디 사진' 하나만 쓴다 (참고사진 기능은 2026-08-17 폐기) */
   .dropzone{ display:flex; flex-direction:column; align-items:center; justify-content:center;
     min-height:230px; margin-top:20px; padding:20px; text-align:center; cursor:pointer;
     background:#f7f4f5; border:2px dashed #e0ced5; border-radius:18px; transition:.12s; }
@@ -177,11 +196,30 @@
   @keyframes twinkle{ 0%,70%,100%{opacity:0; transform:scale(.5)} 22%{opacity:1; transform:scale(1)} }
 
   /* result */
-  .rtop{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
   .rdate{ font-size:12.5px; color:var(--sub); font-weight:600; text-align:right; flex:none; }
   #r-title{ white-space:pre-line; }   /* 제목의 줄바꿈(,\n)을 그대로 보여준다 */
-  .wbadge{ display:inline-flex; align-items:center; gap:7px; background:#fbe6ef; color:#873a5a;
-    padding:7px 13px; border-radius:20px; font-size:13px; font-weight:700; }
+
+  /* 오늘 화면 위에 얹는 날씨 카드 — 옛 '날씨' 탭을 압축해 여기로 옮겼다 (2026-08-17).
+     🚫 키우지 말 것. 이게 커지면 코디 첫 장이 화면 밖으로 밀리고, 그게 이 앱이 지는 방식이다 */
+  .wnow{ background:rgba(255,255,255,.72); border:1.5px solid rgba(255,192,203,.45);
+    box-shadow:0 2px 10px rgba(255,150,180,.10); border-radius:18px;
+    padding:14px 16px 10px; margin-bottom:14px; }
+  .wnow-top{ display:flex; align-items:center; gap:11px; }
+  .wnow-ico{ font-size:32px; line-height:1; flex:none; }
+  .wnow-t{ flex:1; min-width:0; }
+  .wnow-temp{ display:flex; align-items:baseline; gap:7px;
+    font-size:30px; font-weight:800; letter-spacing:-1px; line-height:1.1; }
+  .wnow-temp em{ font-style:normal; font-size:12px; font-weight:700; color:var(--accent); }
+  .wnow-desc{ font-size:12.5px; color:var(--sub); margin-top:2px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  /* 진짜 예보가 아닌 날엔 여기 붙는다 — 작지만 반드시 있어야 한다(원칙 5 · §9-1) */
+  .fakechip{ font-style:normal; font-size:10.5px; font-weight:700; color:#9c6f85;
+    background:var(--accent2); border-radius:20px; padding:2px 7px; }
+  .wnow-stats{ display:flex; gap:6px; margin-top:12px; }
+  .wnow-stats span{ flex:1; min-width:0; text-align:center; background:var(--accent2);
+    border-radius:11px; padding:7px 3px; font-size:10.5px; color:var(--sub); font-weight:600; }
+  .wnow-stats b{ display:block; font-size:14px; color:var(--ink); letter-spacing:-.3px; }
+  .wnow .bars{ height:52px; margin:16px 0 22px; }   /* 날씨 탭보다 낮게 — 자리를 덜 먹는다 */
+  .wnow-line{ font-size:12.5px; color:var(--sub); line-height:1.5; margin:0; }
   .tasteline{ color:var(--sub); font-size:13.5px; margin:10px 0 18px; }
   .tasteline:empty{ display:none; }
   .tasteline b{ color:var(--accent); }
@@ -202,36 +240,19 @@
   .raintip{ margin-top:9px; background:#fbe6ef; color:#873a5a; border-radius:9px;
     padding:7px 10px; font-size:12.5px; font-weight:600; }
   .raintip b{ font-weight:800; }
-  .heart{ margin-top:13px; width:100%; border:1.5px solid var(--line); background:#fff; border-radius:13px;
-    padding:11px; font-size:14.5px; font-weight:700; cursor:pointer; font-family:inherit; color:var(--ink);
+  /* 3장 모두 같은 분홍 버튼 (2026-08-17) — 예전엔 첫 장만 색이 차 있었다.
+     첫 장을 강조하면 "1번이 정답"으로 읽혀서 나머지 두 장이 들러리가 된다. 3장은 동등하다. */
+  .heart{ margin-top:13px; width:100%; border:1.5px solid var(--accent); background:var(--accent);
+    border-radius:13px; padding:11px; font-size:14.5px; font-weight:700; cursor:pointer;
+    font-family:inherit; color:#fff;
     display:flex; align-items:center; justify-content:center; gap:8px; transition:.15s; }
-  .heart.saved{ background:#fdeef0; border-color:#f5d3d8; color:var(--heart); }
-  .heart.primary{ background:var(--accent); border-color:var(--accent); color:#fff; }   /* 첫 추천 = 파란 CTA */
+  /* 정한 것 — 채운 분홍의 반대로 옅게 간다. 글자도 '입기로 했어요'로 바뀐다(색만으로 구분하지 않는다) */
+  .heart.saved{ background:#fff; border-color:var(--accent); color:var(--accent); }
 
-  /* 어제 입었어요? — 신호는 여기서만 잡힌다(유저가 확실히 오는 시점 = 다음 날 아침) */
-  .yday{ display:flex; align-items:center; gap:10px; background:#fff; border:1.5px solid var(--line);
-    border-radius:14px; padding:9px 10px; margin-bottom:12px; position:relative; }
-  .yday img{ width:38px; height:48px; object-fit:cover; border-radius:8px; flex:none; }
-  .yday .yt{ flex:1; min-width:0; }
-  .yday .yt b{ display:block; font-size:13.5px; font-weight:700; }
-  .yday .yt span{ display:block; font-size:11.5px; color:var(--sub); }
-  .yday .ya{ display:flex; gap:6px; flex:none; }
-  .yday .ya button{ border:1.4px solid var(--line); background:#fff; border-radius:10px; padding:7px 10px;
-    font-size:12.5px; font-weight:700; font-family:inherit; color:var(--ink); cursor:pointer; }
-  .yday .ya button.yes{ background:var(--accent); color:#fff; border-color:var(--accent); }
-  .yday .yx{ position:absolute; top:-7px; right:-7px; width:20px; height:20px; border-radius:50%;
-    border:1px solid var(--line); background:#fff; color:var(--sub); font-size:10px; cursor:pointer; line-height:1; }
   .wornchip{ font-size:10.5px; font-weight:800; color:#c5648c; background:#fbe6ef;
     padding:3px 8px; border-radius:20px; margin-left:6px; }
 
   /* 밤 모드 · 알람 · 설치 */
-  .nightbar{ position:relative; display:flex; align-items:center; gap:9px; background:#482d38; color:#fff;
-    border-radius:14px; padding:11px 13px; margin:7px 0 12px; font-size:13px; }
-  .nightbar b{ font-weight:800; }
-  .nightbar span{ opacity:.75; display:block; font-size:11.5px; }
-  .nightbar .nx{ position:absolute; top:-7px; right:-7px; width:20px; height:20px;
-    border-radius:50%; border:1px solid var(--line); background:#fff; color:var(--sub);
-    font-size:10px; line-height:1; cursor:pointer; padding:0; font-family:inherit; }
 
   .wake{ background:#fff; border:1.5px solid var(--line); border-radius:16px; padding:15px 16px; margin:4px 0 14px; }
   .wake .wq{ font-size:15px; font-weight:800; }
@@ -261,6 +282,15 @@
   .lswidget .lw2{ font-size:11px; color:var(--sub); }
   .lsnote{ font-size:11.5px; color:var(--sub); text-align:center; margin-bottom:16px; }
 
+  /* 홈 화면 추가 → 알림 켜기, 두 단계를 눈에 보이게 나눈다 (2026-08-17) */
+  .istep{ margin-top:18px; }
+  .istep-h{ display:flex; align-items:center; gap:9px; font-size:15px; font-weight:800; }
+  .istep-h i{ flex:none; width:24px; height:24px; border-radius:50%; font-style:normal;
+    background:var(--accent); color:#fff; font-size:13px; font-weight:800;
+    display:flex; align-items:center; justify-content:center; }
+  .istep.done .istep-h i{ background:var(--safe); }
+  .istep.done .istep-h{ color:var(--sub); }
+  .istep.done .steps{ display:none; }
   .steps{ counter-reset:st; margin:6px 0 4px; }
   .steps li{ list-style:none; counter-increment:st; display:flex; gap:10px; padding:8px 0; font-size:14px; }
   .steps li::before{ content:counter(st); flex:none; width:21px; height:21px; border-radius:50%;
@@ -271,7 +301,6 @@
   .btn.ghost{ min-height:48px; padding:14px; }
   .heart{ min-height:50px; padding:14px; }
   .backb{ min-height:44px; display:flex; align-items:center; }
-  .yday .ya button{ min-height:44px; padding:7px 12px; }
   /* .wake 는 자기 규칙(64px)이 이미 하한을 넘는다 — 여기서 다시 잡으면 그 값을 덮어쓴다 */
   .resetlink{ min-height:44px; display:flex; align-items:center; }
   .daymodal-x{ min-width:44px; min-height:44px; }
@@ -383,18 +412,6 @@
 
   /* weather tab */
   /* 날씨 탭 — 흰 배경·큰 온도·2×2 지표·안내 배너 (와이어프레임) */
-  .wt-loc2{ font-size:13px; color:var(--sub); font-weight:600; margin:2px 0 16px; }
-  .wt-head{ display:flex; align-items:center; gap:16px; margin-bottom:22px; }
-  .wt-ico{ font-size:52px; line-height:1; flex:none; }
-  .wt-big{ font-size:60px; font-weight:800; line-height:1; letter-spacing:-2px; }
-  .wt-sub{ font-size:14px; color:var(--sub); margin-top:6px; }
-  .wt-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
-  .wt-stat{ background:rgba(255,255,255,.72); border:1.5px solid rgba(255,192,203,.45); box-shadow:0 2px 10px rgba(255,150,180,.10); border-radius:16px; padding:15px 18px; }
-  .wt-stat .k{ font-size:13px; color:var(--sub); font-weight:600; }
-  .wt-stat .v{ font-size:22px; font-weight:800; margin-top:6px; letter-spacing:-.5px; }
-  .wt-info{ display:flex; gap:9px; background:var(--accent2); color:#873a5a; border-radius:16px;
-    padding:14px 16px; font-size:14px; line-height:1.5; margin-bottom:24px; }
-  .wt-hrlabel{ font-size:13px; color:var(--sub); font-weight:700; margin-bottom:12px; }
   .bars{ display:flex; align-items:flex-end; gap:8px; height:90px; margin:14px 0 6px; }
   .bars .b{ flex:1; background:var(--accent2); border-radius:6px 6px 0 0; position:relative; }
   .bars .b span{ position:absolute; bottom:-20px; left:0; right:0; text-align:center; font-size:10px; color:var(--sub); }
@@ -497,8 +514,6 @@
   .wp .e{ font-size:26px; }
   .wp .n{ font-weight:800; font-size:14px; margin-top:6px; }
   .wp .m{ font-size:11.5px; color:var(--sub); margin-top:2px; }
-  .actrow{ display:flex; gap:9px; justify-content:center; margin:2px 0 8px; }
-  .actrow .btn{ flex:1 1 0; max-width:190px; margin:0; padding:9px 8px; font-size:15px; text-align:center; background:transparent; }
 
   /* 달력: 날짜 클릭 → 그날 상세페이지(폰 안에서 전체화면) */
   .daymodal{ position:absolute; inset:0; background:#fff; display:none;
@@ -520,15 +535,6 @@
   .wornchip.done{ color:#2e7d4f; background:#e8f5ec; }
   .wornchip.undone{ color:var(--sub); background:#f8edf2; }   /* pending 클래스는 캘린더 버튼(.pending)과 충돌 → 안 씀 */
 
-  /* 참고사진 칩(오늘 화면에서 사진 추가 시) */
-  #refchip:not(:empty){ margin:0 0 12px; }
-  .aichip{ display:inline-block; margin-left:6px; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:700;
-           background:#e8f5ec; color:#2e7d4f; border:1px solid #cfe8d8; vertical-align:middle; }
-  .refchip{ display:inline-flex; align-items:center; gap:9px; background:#fcedf3; border:1px solid #f7d9e6;
-    border-radius:30px; padding:6px 10px 6px 6px; font-size:12.5px; color:#873a5a; font-weight:700; }
-  .refchip img{ width:30px; height:30px; border-radius:50%; object-fit:cover; }
-  .refchip button{ border:none; background:#ecc7d6; color:#873a5a; width:20px; height:20px; border-radius:50%;
-    font-size:11px; cursor:pointer; line-height:1; }
   .resetlink{ align-self:flex-start; background:none; border:none; color:var(--sub); font-size:12px;
     font-weight:700; cursor:pointer; padding:4px 2px; white-space:nowrap; }
   .resetlink:hover{ color:var(--ink); }
@@ -553,8 +559,8 @@
   <!-- 4. QUIZ 1 MOOD — 스플래시 다음 = 첫 화면이라 뒤로가기 없음 -->
   <section class="screen" id="s-q1">
     <div class="progress"><i class="done"></i><i></i></div>
-    <h2>어떤 게 제일 나 같아요?</h2>
-    <p class="sub" id="moodHint">마음에 드는 걸 <b>3장까지</b> 고를 수 있어요</p>
+    <h2>어떤 게 제일 마음에 들어요?</h2>
+    <p class="sub" id="moodHint">마음에 드는 걸 다 골라주세요</p>
     <!-- 🚫 컨셉 이름을 화면에 쓰지 않는다 (2026-08-16). "고프코어"를 아는 사람은 이미 취향이 있는
          사람이라 이 앱이 필요 없다. 이름을 모르는 사람이 사진만 보고 고를 수 있어야 한다(원칙 4).
          이름은 안에서 점수 매길 때만 쓴다.
@@ -586,18 +592,17 @@
        원칙 3(보상이 노동보다 먼저)에 맞다. 컨셉 4개가 이미 형식(포멀도)을 어느 정도 가른다. -->
 
   <!-- 내 옷 (2026-08-10 결정 · 2026-08-15 온보딩의 마지막 질문이 됨) —
-       가진 옷을 체크하면 그게 들어간 코디를 먼저 보여준다. 참고사진 화면을 뺀 뒤로
+       가진 옷을 체크하면 그게 들어간 코디를 먼저 보여준다.
        퀴즈 말고 유저가 주는 유일한 재료라서, 온보딩에서 제일 공들이는 화면이다.
        🚫 옷을 등록·촬영시키는 게 아니다(그건 여전히 안 한다). 있는 것만 눌러서 표시.
        건너뛰기가 항상 보인다 — 안 고르면 지금까지와 똑같이 취향만으로 고른다.
-       (참고사진은 온보딩에서 빠졌을 뿐 사라진 게 아니다 — 결과 화면 '📷 이 사진처럼'에 남아 있다) -->
+       -->
   <section class="screen" id="s-closet">
     <button class="backb" onclick="back()" aria-label="뒤로">← 뒤로</button>
     <div class="progress"><i class="done"></i><i class="done"></i></div>
     <h2>가지고 있는 옷을 골라주세요</h2>
     <p class="sub">가진 옷으로 입을 수 있는 코디를 <b>더 챙겨서</b> 골라드려요. 안 골라도 괜찮아요.</p>
     <div id="closetGrid"></div>
-    <p class="privnote">👕 몇 개만 골라도 돼요. 나중에 바꿀 수 있어요</p>
     <div class="spacer"></div>
     <button class="btn" id="closetNext" onclick="closetDone()">다 골랐어요</button>
     <button class="btn ghost" onclick="closetSkip()">건너뛸래요</button>
@@ -651,48 +656,53 @@
 
   <!-- 9. RESULT (core tab) -->
   <section class="screen" id="s-result">
-    <div class="nightbar" id="nightBar" style="display:none">
-      <span style="font-size:19px">🌙</span>
-      <div><b>지금은 밤이에요</b>
-        <span>내일 아침 코디를 골라뒀어요</span></div>
-      <button class="nx" onclick="this.closest('.nightbar').style.display='none'" aria-label="닫기">✕</button>
-    </div>
-    <div class="yday" id="ydayAsk" style="display:none">
-      <img id="yd-img" alt="어제 코디">
-      <div class="yt"><b>어제 이거 입었어요?</b><span>알려주면 기록에 ✓로 남겨둘게요</span></div>
-      <div class="ya">
-        <button class="yes" onclick="answerWorn(true)">입었어요</button>
-        <button onclick="answerWorn(false)">아니요</button>
+    <!-- '어제 이거 입었어요?' 배너는 뺐다 (2026-08-17 유저 요청) — 오늘 화면 맨 위를 카드 두 장이 덮었다.
+         🔴 착용 확인(FR-20b·착용률 지표)이 사라진 건 아니다. 기록 탭의
+         "아직 안 알려준 날이 N일 있어요" 로 계속 답할 수 있다 -->
+    <!-- 날씨 + 코디를 한 화면에서 본다 (2026-08-17에 날씨 탭을 여기로 합쳤다).
+         날씨를 보러 탭을 옮기면 "오늘 뭐 입지"의 흐름이 끊긴다 — 날씨는 코디를 고르는 근거라서
+         같이 보여야 한다. 대신 **작게** 넣는다 — 코디 3장이 화면 밖으로 밀리면 원칙(결정 대행)이 깨진다 -->
+    <div class="wnow">
+      <div class="wnow-top">
+        <span class="wnow-ico" id="wt-ico">🌧️</span>
+        <div class="wnow-t">
+          <div class="wnow-temp"><span id="wt-temp">23°</span><em id="r-weather">오늘</em></div>
+          <div class="wnow-desc"><span id="wt-desc">기온 · 비</span><em class="fakechip" id="cacheBar" style="display:none"></em></div>
+        </div>
+        <div class="rdate" id="r-date">7월 14일 화 · 서교동</div>
       </div>
-      <button class="yx" onclick="answerWorn(null)">✕</button>
-    </div>
-    <div class="rtop">
-      <div class="wbadge" id="r-weather">☂ 비 · 체감 24°</div>
-      <div class="rdate" id="r-date">7월 14일 화 · 서교동</div>
+      <div class="wnow-stats">
+        <span><b id="wt-pop">90%</b>강수확률</span>
+        <span><b id="wt-mm">3~10mm</b>강수량</span>
+        <span><b id="wt-humid">78%</b>습도</span>
+        <span><b id="wt-gap">4°</b>일교차</span>
+      </div>
+      <div class="bars" id="wt-bars"></div>
+      <p class="wnow-line" id="wt-line">체감 23도, 종일 비 소식이에요.</p>
     </div>
     <h2 id="r-title">비 오는 오늘,
 입을 만한 3가지</h2>
     <div class="statebar off" id="offBar" style="display:none">📴 오프라인이에요 · 마지막으로 받은 날씨로 골랐어요</div>
-    <div class="statebar warn" id="cacheBar" style="display:none"></div>
     <div class="statebar warn" id="thinBar" style="display:none"></div>
     <div class="tasteline" id="r-taste"></div>
-    <div id="refchip"></div>
     <div id="looks"></div>
-    <div class="wake" id="wakeCard" style="display:none">
-      <div class="wq">⏰ 아침에 깨워드릴까요?</div>
-      <div class="ws">그 시각에 오늘 날씨 + 코디 3장을 알림으로 보내요. 안 열어도 돼요.</div>
-      <div class="wrow">
-        <input type="time" id="wakeTime" value="07:00" aria-label="알림 시각">
-        <button class="wgo" id="wakeGo" onclick="enableWake()">알림 받을래요</button>
-      </div>
-    </div>
-    <div class="actrow">
-      <button class="btn soft outline" id="rerollBtn" onclick="reroll()">🔄 다른 거 보여줘</button>
-      <label class="btn soft" style="cursor:pointer"><input type="file" accept="image/*" style="display:none" onchange="onResultPhoto(this)">📷 이 사진처럼</label>
-    </div>
-    <!-- 온보딩에선 날씨를 안 묻는다(동네 고르면 자동). 데모로 4가지 날씨를 보려면 여기로 -->
-    <button class="btn ghost" onclick="go('s-weather')">🌤 다른 날씨로 보기 (데모)</button>
-    <button class="btn ghost" onclick="resetAll()">↻ 처음부터</button>
+    <!-- ⏰ "아침에 깨워드릴까요?" 카드를 뺐다 (2026-08-17 유저 요청) — 코디를 보는 자리에
+         알람 설정이 끼어 있어서. 아래 두 줄을 되살리면 그대로 돌아온다.
+         🔴 이게 s-install(홈 화면 추가 → 알림 켜기)로 가는 유일한 문이었다.
+            지금은 그 화면에 닿을 방법이 없다 = 알림을 켤 수 없다.
+            아침 알림은 코어이고 북극성 지표("알림 도달일 결정률")가 여기 걸려 있으므로
+            문을 다른 자리에 다시 달아야 한다 — AGENTS.md §5 · 03_PRD FR-21 -->
+    <!-- <div class="wake" id="wakeCard" style="display:none"> … </div> -->
+    <!-- 아래 버튼 4개를 뺐다 (2026-08-17 유저 결정) — 코디 3장 밑이 버튼밭이었다.
+         🔴 같이 사라진 것들이 있다. 되살릴 때 여기부터 볼 것:
+           · 🔄 다른 거 보여줘  = 원칙 1의 **유일한 탈출구**(FR-14b). 3장이 다 별로일 때 유저가 할 수 있는 게 지금은 없다.
+           · 📷 이 사진처럼      = 참고사진 입구. → 기능까지 폐기(아래).
+           · 🌤 다른 날씨로 보기 = 심사자가 비/무더위 결과를 비교하던 데모 버튼.
+           · ↻ 처음부터          = 데모 초기화.
+         🚫 '다른 거 보여줘'는 **버튼만이 아니라 기능까지 폐기**했다(2026-08-17 유저 결정 — 3장 안에서 결정).
+         🚫 **참고사진 기능도 통째로 뺐다**(2026-08-17) — 온보딩·결과 화면 양쪽에서 입구가 사라진 뒤로 죽은 코드였다.
+            같이 사라진 것: CLIP 브라우저 임베딩 · 사진 유사도 점수 · 🧪 상황의 '참고사진 처리' 행.
+            데모 날씨·초기화는 우하단 🧪 상황 패널로 간다 -->
   </section>
 
   <!-- INSTALL · 위젯 · 알림 (D1으로 돌아오게 만드는 유일한 장치) -->
@@ -713,37 +723,29 @@
     </div>
     <div class="lsnote">잠금화면 위젯 미리보기 · <b>실물 아님</b> (네이티브 앱 단계에 제공)</div>
 
-    <ol class="steps">
-      <li>공유 버튼 <b>⬆︎</b> 을 누르고</li>
-      <li><b>‘홈 화면에 추가’</b> 를 고르면</li>
-      <li>내일 아침 <b id="st-time">7:00</b> 에 알림이 와요</li>
-    </ol>
+    <!-- 순서가 중요하다 (2026-08-17에 뒤집음) — 아이폰은 홈 화면에 추가된 상태에서만 알림이 온다.
+         알림 허용을 먼저 물으면, 거부한 사람은 홈 화면 추가 안내조차 못 보고 둘 다 놓친다.
+         그래서 ①홈 화면 추가 → ②알림 켜기. 상세 = AGENTS.md §5 · 03_PRD FR-21 -->
+    <div class="istep" id="istep1">
+      <div class="istep-h"><i>1</i> 홈 화면에 추가하기</div>
+      <ol class="steps" id="installSteps">
+        <li>공유 버튼 <b>⬆︎</b> 을 누르고</li>
+        <li><b>‘홈 화면에 추가’</b> 를 고르면</li>
+        <li>앱처럼 열려요 — <b>여기까지 해야 알림이 도착해요</b></li>
+      </ol>
+    </div>
+
+    <div class="istep" id="istep2">
+      <div class="istep-h"><i>2</i> 알림 켜기</div>
+      <p class="sub" id="wakeNote">홈 화면에 추가한 다음에 눌러주세요.</p>
+      <button class="btn" id="notifyBtn" onclick="askNotify()">🔔 아침 <b id="st-time">7:00</b> 알림 켜기</button>
+    </div>
 
     <div class="spacer"></div>
-    <button class="btn soft" onclick="testNotify()">🔔 알림 미리보기</button>
-    <button class="btn" onclick="go('s-result')" style="margin-top:8px">알겠어요</button>
+    <button class="btn soft" onclick="testNotify()">알림 미리보기</button>
+    <button class="btn ghost" onclick="go('s-result')" style="margin-top:8px">나중에 할게요</button>
   </section>
 
-  <!-- 10. WEATHER TAB -->
-  <section class="screen" id="s-weathertab">
-    <div class="wt-loc2" id="wt-loc">📍 마포구 서교동 · 7월 14일 화</div>
-    <div class="wt-head">
-      <div class="wt-ico" id="wt-ico">🌧️</div>
-      <div>
-        <div class="wt-big" id="wt-temp">23°</div>
-        <div class="wt-sub" id="wt-desc">체감온도 · 비</div>
-      </div>
-    </div>
-    <div class="wt-grid">
-      <div class="wt-stat"><div class="k">강수확률</div><div class="v" id="wt-pop">80%</div></div>
-      <div class="wt-stat"><div class="k">강수량</div><div class="v" id="wt-mm">3~10mm</div></div>
-      <div class="wt-stat"><div class="k">습도</div><div class="v" id="wt-humid">78%</div></div>
-      <div class="wt-stat"><div class="k">일교차</div><div class="v" id="wt-gap">4°</div></div>
-    </div>
-    <div class="wt-info"><span>ℹ️</span><span id="wt-line">체감 23도, 종일 비 소식이에요.</span></div>
-    <div class="wt-hrlabel">시간별</div>
-    <div class="bars" id="wt-bars"></div>
-  </section>
 
   <!-- SAVED SHEET (코디 캘린더) -->
   <section class="screen" id="s-saved">
@@ -763,7 +765,6 @@
   <!-- TAB BAR -->
   <nav class="tabbar" id="tabbar">
     <button id="tab-today" class="active" onclick="switchTab('today')"><span class="ic">👗</span>오늘</button>
-    <button id="tab-weather" onclick="switchTab('weather')"><span class="ic">🌧️</span>날씨</button>
     <button id="tab-calendar" onclick="switchTab('calendar')"><span class="ic">📅</span>기록</button>
   </nav>
 
@@ -832,40 +833,6 @@
   <div id="toast"></div>
 </div>
 
-<!-- ===== 실제 이미지 임베딩(CLIP) — 브라우저 안에서 직접 실행. 서버·API키·비용 0 =====
-     file:// 더블클릭에서는 CORS로 모델을 못 불러온다 → window.CLIP 이 안 생기고 태그 기반으로 자동 폴백.
-     웹에 올린 주소(Netlify 등)로 열면 켜진다. -->
-<script type="module">
-  try{
-    const { AutoProcessor, CLIPVisionModelWithProjection, RawImage, env } =
-      await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
-    env.allowLocalModels = false;                     // 모델은 Hugging Face 허브에서만
-
-    const NAME = 'Xenova/clip-vit-base-patch32';
-    let processor=null, vision=null, booting=null;
-    const boot = () => (booting ||= (async () => {
-      processor = await AutoProcessor.from_pretrained(NAME);
-      vision    = await CLIPVisionModelWithProjection.from_pretrained(NAME, { quantized:true });
-    })());
-
-    const l2 = v => { let s=0; for(const x of v) s+=x*x; s=Math.sqrt(s)||1; return Float32Array.from(v, x=>x/s); };
-
-    window.CLIP = {
-      /* 사진 1장 → 분위기 좌표(512차원 벡터) */
-      async embed(src){
-        await boot();
-        const { image_embeds } = await vision(await processor(await RawImage.read(src)));
-        return l2(image_embeds.data);
-      },
-      /* 두 좌표가 얼마나 가까운가 = 코사인 유사도 */
-      cos(a,b){ let s=0; for(let i=0;i<a.length;i++) s+=a[i]*b[i]; return s; }
-    };
-    console.log('[CLIP] 준비됨 — 사진 올리면 진짜 임베딩 매칭이 돕니다.');
-  }catch(e){
-    console.warn('[CLIP] 모델을 못 불러왔습니다 → 태그 기반으로 폴백합니다.', e);
-  }
-</script>
-
 <!-- 전국 동네표 (이름·위경도·기상청 격자 3563개) — dong_grid_build.py 가 만든다. 손으로 고치지 말 것 -->
 <script src="dong_grid.js"></script>
 
@@ -920,6 +887,39 @@ let LOOKS=[
 /* ---------- 내 옷 (2026-08-10 결정) ----------
    목록은 지어낸 게 아니라 라이브러리 39장의 구성 아이템에서 뽑았다.
    (표기 119개 → 종류 22개 → 소품 빼고 21개. 없는 옷을 물어보면 체크가 헛돈다) */
+
+/* 옷 카테고리 사진 21종 (2026-08-17) — 글자만 있던 칩에 사진을 붙인다.
+   라이브러리 사진에서 그 옷이 있는 자리만 잘라 배경을 지웠다(rembg).
+   ⚠️ 옷을 조각내 '조합'하려는 게 아니다(§5 금지). 내가 가진 옷을 체크할 때 알아보라고 붙인 그림이고,
+      추천은 지금까지대로 원본 사진을 통째로 쓴다.
+   ⚠️ 새 사진을 들여온 게 아니라 이미 있던 01~40번을 잘라 쓴 것이라 라이선스가 늘지 않는다. */
+/* 옷 카테고리 사진 21장 — 값 = 파일 이름, 옆 숫자는 어느 코디 사진에서 잘라냈는지.
+   ※ 한때 카테고리당 2장(39장)이었는데 화면이 5화면 길이가 되어 1장으로 내렸다 (2026-08-17).
+      배열로 둔 건 그대로다 — 다시 늘릴 때 여기에 파일 이름만 더하면 된다. */
+const ITEM_ART={
+ '반팔티':['tee1'],           // 10번 사진에서
+ '긴팔티':['longtee1'],       // 16
+ '민소매·나시':['sleeveless1'], // 03
+ '블라우스':['blouse1'],      // 27
+ '셔츠':['shirt1'],           // 40
+ '니트':['knit1'],            // 19
+ '반바지':['shorts1'],        // 02
+ '스커트':['skirt1'],         // 08
+ '청바지':['jeans1'],         // 17
+ '와이드팬츠':['widepants1'], // 03
+ '레깅스':['leggings1'],      // 15
+ '원피스':['dress1'],         // 36
+ '가디건':['cardigan1'],      // 15
+ '후드·맨투맨':['hoodie1'],   // 20
+ '재킷':['jacket1'],          // 14
+ '레인재킷':['rainjacket1'],  // 26
+ '레인부츠':['rainboots1'],   // 23
+ '스니커즈':['sneakers1'],    // 08
+ '부츠':['boots1'],           // 12
+ '샌들·슬리퍼':['sandals1'],  // 39
+ '플랫·로퍼':['flats1'],      // 11
+};
+
 const CLOSET=[
   {g:'상의', items:['반팔티','긴팔티','민소매·나시','블라우스','셔츠','니트']},
   {g:'하의·원피스', items:['반바지','스커트','청바지','와이드팬츠','레깅스','원피스']},
@@ -939,25 +939,47 @@ const ITEMCAT=[
 ];
 const catOf = t => (ITEMCAT.find(([,re])=>re.test(t))||[null])[0];
 
+/* 사진의 실제 가로 픽셀. 원본 코디 사진이 640px밖에 안 돼서 잘라낸 조각도 작다.
+   이 값의 1.25배를 넘겨 늘리지 않는다 — 넘기면 눈에 띄게 뭉개진다.
+   덤으로 사진마다 최대 크기가 달라져서 흩뿌린 느낌이 더 산다. */
+const ITEM_W={blouse1:159, boots1:159, cardigan1:154, dress1:144, flats1:65, hoodie1:142, jacket1:250, jeans1:140, knit1:157, leggings1:168, longtee1:275, rainboots1:110, rainjacket1:225, sandals1:85, shirt1:159, shorts1:162, skirt1:121, sleeveless1:201, sneakers1:119, tee1:277, widepants1:191};
+
+/* 흩뿌리기 — 폭과 여백만 흔든다. 쌓는 건 브라우저(2열 신문단)가 한다.
+   완전 난수로 좌표를 찍으면 겹치거나 한쪽만 비어서 오히려 지저분하다.
+   흔드는 값은 번호로 만들어 열 때마다 같은 자리에 나온다(매번 바뀌면 멀미난다). */
+const jitter = n => { const x = Math.sin(n * 127.1) * 43758.5453; return x - Math.floor(x); };
+
+function closetTiles(){
+  // [카테고리, 파일이름] 을 펼친 뒤 섞는다 — 같은 종류가 나란히 붙지 않게
+  const flat = [];
+  Object.entries(ITEM_ART).forEach(([cat, files]) => files.forEach(f => flat.push([cat, f])));
+  return flat.map((v, i) => [v, jitter(i * 3.7)])       // 번호로 만든 값이라 순서가 늘 같다
+             .sort((a, b) => a[1] - b[1]).map(v => v[0]);
+}
+
 function renderCloset(){
-  document.getElementById('closetGrid').innerHTML =
-    CLOSET.map(g=>`<div class="cgroup"><b>${g.g}</b><div class="cwrap">`+
-      g.items.map(it=>`<button class="citem${state.own[it]?' on':''}" onclick="toggleOwn('${it}',this)">`+
-        `${it}<span class="cmark">✓</span></button>`).join('')+
-    `</div></div>`).join('') + `<div id="closetCount"></div>`;
-  updateClosetCount();
+  document.getElementById('closetGrid').innerHTML = closetTiles().map(([cat, file], i) => {
+    const w  = 76 + Math.round(jitter(i + 11) * 24);          // 칸 폭의 76~100%
+    const ml = Math.round(jitter(i + 31) * (100 - w));        // 남는 폭만큼 좌우로 밀기
+    const mb = 22 + Math.round(jitter(i + 71) * 26);          // 아래 여백 22~48px
+    return `<button class="citem${state.own[cat] ? ' on' : ''}" data-cat="${cat}"
+      style="width:${w}%;max-width:${Math.round((ITEM_W[file]||400)*1.25)}px;margin-left:${ml}%;margin-bottom:${mb}px"
+      onclick="toggleOwn('${cat}')" aria-pressed="${!!state.own[cat]}" aria-label="${cat}">
+      <img class="citem-img" src="./proto_img/item/${file}.png" alt="${cat}">
+      <span class="cmark">✓</span><span class="clabel">${cat}</span></button>`;
+  }).join('');
 }
-function toggleOwn(it, el){
-  if(state.own[it]) delete state.own[it]; else state.own[it]=1;
-  el.classList.toggle('on', !!state.own[it]);
-  updateClosetCount();
+function toggleOwn(cat){
+  if(state.own[cat]) delete state.own[cat]; else state.own[cat]=1;
+  // 같은 카테고리 사진이 여러 장이라 전부 같이 켜고 꺼야 한다
+  document.querySelectorAll(`.citem[data-cat="${cat}"]`).forEach(el=>{
+    el.classList.toggle('on', !!state.own[cat]);
+    el.setAttribute('aria-pressed', !!state.own[cat]);
+  });
 }
-function updateClosetCount(){
-  const n=Object.keys(state.own).length, el=document.getElementById('closetCount');
-  if(el) el.textContent = n ? `${n}개 골랐어요` : '';
-  // 버튼 문구는 그대로 둔다. 예전에 0개일 때 '아직 안 고를래요'로 바꿨더니
-  // 아래 '건너뛸래요'와 같은 말이 돼서 버튼 두 개가 같은 걸 하는 화면이 됐다.
-}
+// 고른 개수 표시('N개 골랐어요')는 뺐다 (2026-08-17) — 사진이 어두워지는 것으로 이미 보인다.
+// 버튼 문구는 그대로 둔다. 예전에 0개일 때 '아직 안 고를래요'로 바꿨더니
+// 아래 '건너뛸래요'와 같은 말이 돼서 버튼 두 개가 같은 걸 하는 화면이 됐다.
 /* 이 코디에서 내가 가진 아이템의 비율 (0~1). 아무것도 안 골랐으면 null = 점수에 영향 없음.
    🚫 하드필터가 아니다. 없는 옷이 섞여 있어도 후보에서 빼지 않는다 —
       빼면 "결과 없음"이 나고(FR-14 위반), 날씨 말고는 하드필터를 두지 않기로 했다(원칙 2). */
@@ -1013,18 +1035,18 @@ async function loadLibrary(){
 
 /* ---------- 날씨 시나리오 (데모 · 실제 앱은 기상청 자동) ---------- */
 const WEATHER=[
- {key:'jangma', e:'🌧️', n:'장마 · 체감 23°', m:'비 오는 따뜻한 날', temp:'warm', rain:true, badge:'☂ 비 · 체감 23°', title:'비 오는 오늘,\n입을 만한 3가지', line:'체감 23도, 종일 비 소식이에요. 젖어도 티 안 나는 옷과 우산을 챙기세요.', tomorrow:'내일도 오전까지 비, 오후에 그쳐요.', pop:[70,80,90,80,60,40], mm:'3~10mm', humid:'78%', gap:'4°'},
- {key:'hot', e:'☀️', n:'무더위 · 체감 31°', m:'맑고 더운 날', temp:'hot', rain:false, badge:'☀ 맑음 · 체감 31°', title:'무더운 오늘,\n시원하게 입을 3가지', line:'체감 31도, 한여름 더위예요. 얇고 통풍 잘 되는 소재로 시원하게.', tomorrow:'내일도 맑고 더워요. 자외선 조심!', pop:[0,0,10,10,0,0], mm:'0mm', humid:'55%', gap:'8°'},
- {key:'coolrain', e:'🌦️', n:'선선한 비 · 체감 20°', m:'비 오고 선선한 날', temp:'cool', rain:true, badge:'☂ 비 · 체감 20°', title:'선선한 비,\n걸치기 좋은 3가지', line:'체감 20도, 비 오고 선선해요. 얇은 겉옷 하나면 딱 좋아요.', tomorrow:'내일 아침 쌀쌀, 낮에 풀려요.', pop:[60,70,60,50,50,40], mm:'2~6mm', humid:'80%', gap:'5°'},
- {key:'warmsun', e:'🌤️', n:'맑고 따뜻 · 체감 26°', m:'화창한 데일리', temp:'warm', rain:false, badge:'🌤 맑음 · 체감 26°', title:'화창한 오늘,\n입을 만한 3가지', line:'체감 26도, 화창해요. 가벼운 데일리룩 하나면 충분해요.', tomorrow:'내일도 맑아요. 나들이 좋은 날!', pop:[0,10,0,20,10,0], mm:'0mm', humid:'60%', gap:'7°'},
+ {key:'jangma', e:'🌧️', n:'장마 · 체감 23°', m:'비 오는 따뜻한 날', temp:'warm', rain:true, badge:'☂ 비 · 체감 23°', title:'비 오는 오늘 입을 만한 3가지', line:'체감 23도, 종일 비 소식이에요. 젖어도 티 안 나는 옷과 우산을 챙기세요.', tomorrow:'내일도 오전까지 비, 오후에 그쳐요.', pop:[70,80,90,80,60,40], mm:'3~10mm', humid:'78%', gap:'4°'},
+ {key:'hot', e:'☀️', n:'무더위 · 체감 31°', m:'맑고 더운 날', temp:'hot', rain:false, badge:'☀ 맑음 · 체감 31°', title:'무더운 오늘 시원하게 입을 3가지', line:'체감 31도, 한여름 더위예요. 얇고 통풍 잘 되는 소재로 시원하게.', tomorrow:'내일도 맑고 더워요. 자외선 조심!', pop:[0,0,10,10,0,0], mm:'0mm', humid:'55%', gap:'8°'},
+ {key:'coolrain', e:'🌦️', n:'선선한 비 · 체감 20°', m:'비 오고 선선한 날', temp:'cool', rain:true, badge:'☂ 비 · 체감 20°', title:'선선한 비, 걸치기 좋은 3가지', line:'체감 20도, 비 오고 선선해요. 얇은 겉옷 하나면 딱 좋아요.', tomorrow:'내일 아침 쌀쌀, 낮에 풀려요.', pop:[60,70,60,50,50,40], mm:'2~6mm', humid:'80%', gap:'5°'},
+ {key:'warmsun', e:'🌤️', n:'맑고 따뜻 · 체감 26°', m:'화창한 데일리', temp:'warm', rain:false, badge:'🌤 맑음 · 체감 26°', title:'화창한 오늘 입을 만한 3가지', line:'체감 26도, 화창해요. 가벼운 데일리룩 하나면 충분해요.', tomorrow:'내일도 맑아요. 나들이 좋은 날!', pop:[0,10,0,20,10,0], mm:'0mm', humid:'60%', gap:'7°'},
 ];
 
 /* ---------- 상태 ---------- */
 /* saved 배열은 없앴다 — '오늘 뭘 골랐나'를 배열과 달력(diary)이 따로 들고 있어서 어긋났다.
    (2장 고르면 카드는 둘 다 '입기로 했어요'인데 달력엔 1장만 남았다)
    이제 정본은 달력 한 곳뿐이다. 하루 = 코디 한 벌. */
-const state={ name:'', gender:null, age:null, moods:[], color:null, tpo:null, photo:false, own:{}, weather:WEATHER[0], weatherManual:false, diary:{}, shown:{}, selectedDay:null, calOff:0, usedReroll:false, batch:0, booted:false, consent:false, loc:'마포구 서교동', authed:true,   /* loc=데모 기본 동네(실서비스는 GPS가 잡는다) */ wakeTime:'07:00', wakeOn:false,
-  refPhotoUrl:null, refEmb:null, libEmb:null, clipOn:false };   /* refEmb=올린 사진의 분위기 좌표 · libEmb=라이브러리 39장 좌표 · clipOn=진짜 AI 매칭 작동 중 · shown={룩id:마지막으로 보여준 날} */
+const state={ name:'', gender:null, age:null, moods:[], color:null, tpo:null, own:{}, weather:WEATHER[0], weatherManual:false, diary:{}, shown:{}, selectedDay:null, calOff:0, batch:0, booted:false, consent:false, loc:'마포구 서교동', authed:true,   /* loc=데모 기본 동네(실서비스는 GPS가 잡는다) */ wakeTime:'07:00', wakeOn:false,
+  };   /* shown={룩id:마지막으로 보여준 날} */
 const TODAY=new Date();
 const dkeyOf=d=> d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
 const todayKey=()=> dkeyOf(TODAY);
@@ -1113,8 +1135,8 @@ function trackImpression(picks){
   const k=targetKey()+'|'+picks.map(p=>p.id).join(',');
   if(k===lastImp) return;
   lastImp=k;
-  track('3장_표시', { 장수:picks.length, 날씨:state.weather.key,
-                     질의: state.clipOn ? '참고사진' : '취향', 리롤:state.usedReroll });
+  track('3장_표시', { 장수:picks.length, 날씨:state.weather.key
+                     });
 }
 
 /* ---------- 동의 · 위치 (예외: 권한 거부 = 실패가 아니라 다른 입력 경로) ---------- */
@@ -1203,9 +1225,8 @@ function rejectGps(){
 }
 /* 동네가 뜨는 곳: 오늘 탭 머리 · 날씨 탭 머리 */
 function paintLoc(){
-  const r=document.getElementById('r-date'), w=document.getElementById('wt-loc');
+  const r=document.getElementById('r-date');
   if(r) r.textContent=resultDateLabel();
-  if(w) w.textContent='📍 '+state.loc+' · '+fmtDateShort(shownDate());
 }
 /* 동네 리스트 — 검색어로 거른다(빈 검색 = 전부). 고른 동네엔 체크. */
 const DONG_PIN='<span class="pin"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>';
@@ -1220,12 +1241,11 @@ function renderDong(q=''){
 }
 
 /* ================= 상황 시뮬레이터 (데모 전용 · 앱 화면엔 없음) ================= */
-const SIM={ time:'auto', geo:'ok', kma:'ok', ai:'ok', auth:'ok', lib:'ok' };
+const SIM={ time:'auto', geo:'ok', kma:'ok', auth:'ok', lib:'ok' };
 const SIMDEF=[
  {k:'time', t:'앱을 언제 열었나', o:[['auto','지금 시각'],['morning','아침'],['night','밤']]},
  {k:'geo',  t:'위치 권한',    o:[['ok','허용'],['deny','거부']]},
  {k:'kma',  t:'기상청 API',   o:[['ok','정상'],['cache','장애(캐시 있음)'],['down','장애(캐시 없음)']]},
- {k:'ai',   t:'참고사진 처리', o:[['ok','정상'],['fail','AI 실패'],['block','부적절 차단']]},
  {k:'auth', t:'로그인',        o:[['ok','로그인됨'],['expired','세션 만료']]},
  {k:'lib',  t:'라이브러리',    o:[['ok','정상'],['thin','얇음(2장)']]},
 ];
@@ -1315,7 +1335,7 @@ function back(){
 function paint(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   document.getElementById(id).classList.add('on');
-  const coreTabs=['s-result','s-weathertab','s-saved'];
+  const coreTabs=['s-result','s-saved'];
   document.getElementById('tabbar').classList.toggle('on', coreTabs.includes(id));
   document.getElementById('phone').scrollTop=0; window.scrollTo(0,0);
 }
@@ -1324,7 +1344,7 @@ function go(id){
   if(cur && ONB.includes(cur.id) && ONB.includes(id)) hist.push(cur.id);   // 온보딩 안에서 이동할 때만 기록
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   document.getElementById(id).classList.add('on');
-  const coreTabs=['s-result','s-weathertab','s-saved'];
+  const coreTabs=['s-result','s-saved'];
   document.getElementById('tabbar').classList.toggle('on', coreTabs.includes(id));
   document.getElementById('phone').scrollTop=0; window.scrollTo(0,0);
 }
@@ -1332,71 +1352,27 @@ function toast(t){ const el=document.getElementById('toast'); el.textContent=t; 
 
 /* ---------- 퀴즈 ---------- */
 /* 무드는 고르고 → '다음'으로 확정한다. 나머지 퀴즈도 같은 방식 */
-const MOOD_MAX=3;   // 4개를 다 고르면 "전부 = 아무거나"가 돼서 취향 신호가 0이 된다
+/* 몇 장까지라고 정해주지 않는다 (2026-08-17 유저 결정) — 개수를 제시하면 그 숫자를 채우려는
+   숙제가 된다. 마음에 드는 걸 마음에 드는 만큼 고르면 된다.
+   ⚠️ 다만 컨셉 4종을 **전부** 고르면 "전부 = 아무거나"가 되어 취향 신호가 0이 된다.
+      막지는 않되(유저의 선택이다) 그때만 조용히 알려준다 — 아래 안내문. */
 function pickMood(v,btn){
-  if(btn.classList.contains('sel')){ btn.classList.remove('sel'); }
-  else{
-    const n=document.querySelectorAll('#moodGrid button.sel').length;
-    if(n>=MOOD_MAX){ toast('3장까지 고를 수 있어요'); return; }
-    btn.classList.add('sel');
-  }
+  btn.classList.toggle('sel');
   // 화면에서 켜진 것들을 모아 상태로 삼는다 — 같은 컨셉 사진이 여러 장이라 중복은 뺀다
   state.moods=[...new Set([...document.querySelectorAll('#moodGrid button.sel')]
     .map(b=>b.getAttribute('onclick').match(/'([^']+)'/)[1]))];
   const cnt=document.querySelectorAll('#moodGrid button.sel').length;
   document.getElementById('moodNext').disabled = cnt===0;
-  document.getElementById('moodHint').innerHTML = cnt
-    ? `<b>${cnt}장</b> 골랐어요 · 3장까지 고를 수 있어요`
-    : '마음에 드는 걸 <b>3장까지</b> 고를 수 있어요';
+  // 컨셉 4종을 다 고른 순간에만 말해준다. 그 외엔 개수를 세어 보여주지 않는다(숙제가 된다)
+  const all = state.moods.length >= Object.keys(MOODSIM).length;
+  document.getElementById('moodHint').innerHTML = all
+    ? '전부 고르면 <b>고르는 의미가 없어져요</b> · 좀 덜 골라도 괜찮아요'
+    : '마음에 드는 걸 다 골라주세요';
 }
 /* 색 = 무드 화면과 동일하게: 고르면 선택 표시 → '다음' 활성화(바로 안 넘어감) */
 function finishQuiz(){
   track('퀴즈_완료', {컨셉:state.moods.join(',')});                                 // ② 퍼널
   renderCloset(); go('s-closet');                                        // 퀴즈 다음은 내 옷
-}
-/* ---------- 참고사진 → 진짜 임베딩(CLIP) ----------
-   온보딩에서는 빠졌다(2026-08-15). 지금 사진이 들어오는 입구는 결과 화면 '📷 이 사진처럼' 하나뿐. */
-function setStatus(id,html){ const e=id&&document.getElementById(id); if(e) e.innerHTML=html; }
-
-/* 사진을 실제로 놓아준다. 참조만 null로 바꾸면 브라우저는 사진을 계속 붙들고 있다.
-   화면이 "빼면 바로 사라져요"라고 말하므로, 말한 대로 한다(§9-1). */
-function releaseRefPhoto(){
-  if(state.refPhotoUrl) URL.revokeObjectURL(state.refPhotoUrl);
-  state.photo=false; state.refPhotoUrl=null; state.refEmb=null; state.clipOn=false;
-}
-/* 사진을 질의(query)로 만든다. 성공하면 true → 추천이 실제로 사진 기반으로 바뀐다. */
-async function applyRefPhoto(file, statusId){
-  releaseRefPhoto();                             // 이전 사진은 먼저 놓아준다
-  state.photo=true;
-  state.refPhotoUrl=URL.createObjectURL(file);
-
-  if(!window.CLIP){                              // file:// 더블클릭 또는 오프라인
-    state.clipOn=false; state.refEmb=null;
-    setStatus(statusId,'⚠️ <b>오프라인 데모 모드</b> — AI 분위기 매칭이 꺼져 있어요.<br>웹에 올린 주소로 열면 켜집니다. 지금은 취향 퀴즈 기반으로 골라요.');
-    return false;
-  }
-  try{
-    setStatus(statusId,'🧠 AI가 사진 분위기를 읽는 중…<br><b>첫 실행은 모델을 내려받느라 20~40초</b> 걸려요.');
-    state.refEmb = await window.CLIP.embed(state.refPhotoUrl);
-
-    if(!state.libEmb){                           // 라이브러리 39장은 최초 1회만 임베딩(이후 재사용)
-      state.libEmb={};
-      for(let i=0;i<LOOKS.length;i++){
-        state.libEmb[LOOKS[i].id] = await window.CLIP.embed(LOOKS[i].img);
-        setStatus(statusId, `🧠 코디 사진을 분위기 좌표로 바꾸는 중… <b>${i+1}/${LOOKS.length}</b>`);
-      }
-    }
-    state.clipOn=true;
-    setStatus(statusId,'✅ 준비 끝 — 이 사진과 <b>분위기가 비슷한 코디</b>를 골라줄게요.');
-    track('참고사진', {결과:'성공'});                 // ③ 사진이 실제로 질의가 됐나
-    return true;
-  }catch(e){
-    console.warn('[CLIP]',e);
-    state.clipOn=false; state.refEmb=null;
-    setStatus(statusId,'⚠️ AI 모델을 못 불러왔어요 — 취향 퀴즈 기반으로 골라요.');
-    track('참고사진', {결과:'실패'});
-    return false;
-  }
 }
 
 /* 내 옷 다음 = 동네. 하지만 위치가 잡히면 동네 화면을 아예 안 보여준다 (2026-08-16).
@@ -1479,10 +1455,10 @@ function liveWeather(s, dateStr){
     n: short+' · 기온 '+s.temp+'°', m: short,
     temp: s.band, rain: s.rain,
     badge: (s.rain?'☂ ':s.sky>=3?'🌤 ':'☀ ')+short+' · 기온 '+s.temp+'°',
-    title: s.rain            ? '비 오는 오늘,\n입을 만한 3가지'
-         : s.band==='hot'    ? '무더운 오늘,\n시원하게 입을 3가지'
-         : s.band==='warm'   ? '화창한 오늘,\n입을 만한 3가지'
-                             : '선선한 오늘,\n걸치기 좋은 3가지',
+    title: s.rain            ? '비 오는 오늘 입을 만한 3가지'
+         : s.band==='hot'    ? '무더운 오늘 시원하게 입을 3가지'
+         : s.band==='warm'   ? '화창한 오늘 입을 만한 3가지'
+                             : '선선한 오늘 걸치기 좋은 3가지',
     line: '기온 '+s.temp+'도, '+(
         s.rain    ? '비 소식이에요. 젖어도 티 안 나는 옷과 우산을 챙기세요.'
       : umbrella  ? sky+'이지만 비 올 확률이 '+s.maxPop+'%예요. 접이우산 하나 챙기면 좋아요.'
@@ -1514,8 +1490,8 @@ function renderWeatherPick(){
 }
 /* 유저가 데모로 직접 고른 날씨. 이걸 누른 뒤엔 기상청 값이 덮어쓰지 않는다(applyLive 참고) */
 function chooseWeather(i){ state.weather=WEATHER[i]; state.weatherManual=true; showToday(); }
-function showToday(){ state.usedReroll=false; state.batch=0; renderResult(); go('s-result');
-  ['tab-weather','tab-calendar'].forEach(id=>document.getElementById(id).classList.remove('active'));
+function showToday(){ state.batch=0; renderResult(); go('s-result');
+  document.getElementById('tab-calendar').classList.remove('active');
   document.getElementById('tab-today').classList.add('active'); persist(); }
 
 /* ---------- 추천 엔진: 하드필터 → 무드 유사도 → MMR → 안전빵 ---------- */
@@ -1525,15 +1501,6 @@ const MOODSIM={ '고프코어':{'Y2K':2,'모리룩':1,'발레코어':0}, 'Y2K':{
   '발레코어':{'모리룩':2,'Y2K':1,'고프코어':0}, '모리룩':{'발레코어':2,'고프코어':1,'Y2K':0} };
 
 const keyToDate=k=>{ const [y,m,d]=k.split('-').map(Number); return new Date(y,m-1,d); };
-/* 아직 "입었는지" 안 물어본 가장 최근 기록. 주말을 건너뛰어도, 밤에 열어도 잡힌다.
-   (어제만 보면 금요일 저장 → 월요일 열기에서 신호가 통째로 샌다) */
-function pendingWornKey(){
-  const t=targetKey();
-  const ks=Object.keys(state.diary).filter(k=> k!==t && state.diary[k].worn===undefined);
-  if(!ks.length) return null;
-  ks.sort((a,b)=> keyToDate(b)-keyToDate(a));
-  return ks[0];
-}
 /* ---------- 반복 방지 (§7.3) ----------
    예전엔 "입었어요"라고 답한 룩만 뺐다. 그래서 답을 안 하면 아무것도 안 빠졌고,
    같은 날씨·같은 취향이면 매일 똑같은 3장이 나왔다(북극성이 D1인데 D1에 어제 화면을 보여줌).
@@ -1592,16 +1559,9 @@ function tagScore(l){
         l.mood===m ? 3 : ((MOODSIM[m]&&MOODSIM[m][l.mood])||0)), 0);
   return s;
 }
-/* 참고사진이 있으면: CLIP 코사인 유사도를 후보풀 안에서 0~1로 정규화해 l._cos 에 심는다 */
-function computeCos(pool){
-  if(!(state.clipOn && state.refEmb && state.libEmb)){ pool.forEach(l=> l._cos=null); return; }
-  const raw = pool.map(l=> state.libEmb[l.id] ? window.CLIP.cos(state.refEmb, state.libEmb[l.id]) : 0);
-  const mn=Math.min(...raw), mx=Math.max(...raw), rng=(mx-mn)||1;
-  pool.forEach((l,i)=> l._cos=(raw[i]-mn)/rng);
-}
 function score(l){
   // 사진이 있으면 사진 유사도가 주(主), 취향 퀴즈는 보조. 없으면 취향만.
-  let s = (l._cos!=null) ? 4*l._cos + 0.5*tagScore(l) : tagScore(l);
+  let s = tagScore(l);
   // 내 옷: 이 코디에서 내가 가진 아이템 비율만큼 올려준다(최대 +3.5).
   // 안 골랐으면 null 이라 아무 영향이 없다.
   // ※ 3.5는 에이전트가 재보고 정한 값이다(근거 문서 없음). 실제로 측정한 결과:
@@ -1614,7 +1574,6 @@ function score(l){
   return s;
 }
 function mmrPick(pool, n, offset){
-  computeCos(pool);                       // 이 후보풀 기준으로 사진 유사도 갱신
   const ranked=[...pool].sort((a,b)=>score(b)-score(a));
   const remaining=ranked.slice(offset);   // 유사도 상위에서 offset부터
   const picked=[];
@@ -1699,8 +1658,10 @@ function reasonFor(l,w,shift=0){ return `${moodPhrase(l,shift)} · ${weatherPhra
 function rainTip(l){
   if(!state.weather.rain) return '';
   const it=String(l.items||'');
-  if(/레인부츠/.test(it))            return '레인부츠까지 들어간 코디예요';
-  if(/부츠/.test(it))                return '부츠라 발은 안 젖어요';
+  /* 이미 레인부츠·부츠가 들어간 코디엔 아무 말도 안 붙인다 (2026-08-17) —
+     바로 위 '옷장에서 꺼낼 것'에 레인부츠라고 적혀 있는데 또 말하면 같은 말 두 번이다.
+     이 줄은 **없는 걸 더하라고 알려줄 때만** 값이 있다 */
+  if(/부츠/.test(it))                return '';
   if(/샌들|슬리퍼|뮬|플립플롭/.test(it)) return '샌들이라 젖어도 금방 말라요';
   return '여기에 <b>레인부츠</b>만 신으면 돼요';
 }
@@ -1724,10 +1685,10 @@ let currentPicks=[];
 function renderResult(){
   const w=state.weather;
   const night=isNight();
-  document.getElementById('nightBar').style.display = night?'flex':'none';
   document.getElementById('r-date').textContent = resultDateLabel();
-  document.getElementById('r-title').textContent = night ? '내일 아침,\n입을 만한 3가지' : w.title;
-  document.getElementById('r-weather').textContent = (night?'내일 아침 · ':'')+w.badge;
+  document.getElementById('r-title').textContent = night ? '내일 아침 입을 만한 3가지' : w.title;
+  document.getElementById('r-weather').textContent = night ? '내일 아침' : '오늘';
+  renderWeatherCard();          // 날씨 카드도 같은 화면에 있다 (2026-08-17 탭 통합)
   renderWake();
   /* 취향 퀴즈가 매일 실제로 쓰인다는 걸 보여준다 — 사진이 없으면 score()=tagScore()라
      mood·color가 그대로 순위를 정한다(참인 문장, AGENTS §9-1).
@@ -1751,46 +1712,6 @@ function renderResult(){
     drawSkeleton(3); document.getElementById('thinBar').style.display='none';
     setTimeout(()=>{ drawLooks(picks); drawStateBars(picks.length); state.booted=true; }, 650);
   }
-  // 리롤 초기화
-  const rb=document.getElementById('rerollBtn'); rb.disabled=false; rb.style.opacity=1; rb.textContent='🔄 다른 거 보여줘';
-  renderRefchip();
-  renderYdayAsk();
-  if(state.photo && state.refPhotoUrl){
-    document.getElementById('r-taste').innerHTML = state.clipOn
-      ? '📷 <b>올린 사진</b>과 분위기가 비슷한 코디를 골랐어요 <span class="aichip">AI 매칭 ON</span>'
-      : '📷 사진은 받았지만 <b>오프라인 데모 모드</b>라 취향 퀴즈 기반으로 골랐어요';
-  }
-}
-/* 어제 코디에 아직 답 안 했으면 묻는다. 답했거나 없으면 안 나온다(비차단·1탭) */
-function whenWord(key){
-  if(key===todayKey()) return '오늘';
-  if(key===ydayKey())  return '어제';
-  return fmtKey(key)+'에';
-}
-function renderYdayAsk(){
-  const el=document.getElementById('ydayAsk'); if(!el) return;
-  const key=pendingWornKey();
-  if(!key){ el.style.display='none'; return; }
-  const e=state.diary[key], l=LOOKS.find(x=>x.id===e.look);
-  if(!l){ el.style.display='none'; return; }
-  el.dataset.key=key;
-  document.getElementById('yd-img').src=l.img;
-  el.querySelector('.yt b').textContent=whenWord(key)+' 이거 입었어요?';
-  /* 예전 문구는 "입었다고 하면 오늘은 안 보여드릴게요"였다. 이제 고른 코디는 답과 무관하게
-     7일간 안 나오므로 그 말은 거짓이 된다 → 실제로 하는 일(기록에 ✓)만 말한다(§9-1). */
-  el.querySelector('.yt span').textContent='알려주면 기록에 ✓로 남겨둘게요';
-  el.style.display='flex';
-}
-function answerWorn(v){
-  const key=document.getElementById('ydayAsk').dataset.key;
-  const e=state.diary[key];
-  /* ⑦ 품질을 재는 유일한 눈금 — "입을래"는 눌렀는데 "입었어요"가 안 오는 코디
-     = 예쁘지만 실제론 못 입은 옷. 이걸 안 재면 제품의 상한을 모른다. */
-  if(e && v!==null){ e.worn=v; persist(); track('착용_답변', {룩:e.look, 입었다:v}); }
-  else if(v===null) track('착용_무시', {});
-  document.getElementById('ydayAsk').style.display='none';
-  if(v===true){ renderResult(); toast('기록에 ✓ 남겼어요 👍'); }
-  else if(v===false){ toast('알려줘서 고마워요 🙂'); }
 }
 /* 기록 탭에서 놓친 날을 나중에 채우는 자리 (보조) */
 function toggleWorn(key){
@@ -1858,7 +1779,7 @@ function drawLooks(picks){
         <div class="reason"><span class="i">${reasonIcon(l)}</span><span>${reasons[i]}</span></div>
         <div class="items">${l.items}</div>
         ${rainTip(l) ? `<div class="raintip">☂ ${rainTip(l)}</div>` : ''}
-        <button class="heart ${i===0?'primary':''}" onclick="toggleSave(${l.id},this)">${saveLabel(false)}</button>
+        <button class="heart" onclick="toggleSave(${l.id},this)">${saveLabel(false)}</button>
       </div></div>`).join('');
 }
 /* 로딩 = 스켈레톤. 스피너는 "도는데 언제 끝날지 모름"이라 아침에 최악이다. */
@@ -1880,24 +1801,18 @@ function drawStateBars(n){
   document.getElementById('offBar').style.display = navigator.onLine ? 'none' : 'flex';
   /* 지금 쓰는 날씨가 진짜인지 예시인지 밝힌다 — 숨기지 않는다(원칙 5 · §9-1).
      기상청에서 받아온 날엔 아무 말도 안 붙는다(그게 기본이라서). */
+  /* 노란 배너를 없애고 날씨 카드 안 작은 글씨로 옮겼다 (2026-08-17) — 자리는 덜 먹되 말은 그대로 한다 */
   const cb=document.getElementById('cacheBar');
-  const cbt = SIM.kma==='cache'      ? '🕒 날씨를 못 받아와서 어제 오후 3시 기준으로 골랐어요'
-            : state.weatherManual    ? '🧪 직접 고른 예시 날씨로 보고 있어요 (데모)'
-            : !state.weather.live    ? '🌤 기상청 날씨를 못 받아와서 예시 날씨로 골랐어요'
+  const cbt = SIM.kma==='cache'      ? '어제 오후 3시 기준'
+            : state.weatherManual    ? '직접 고른 예시 날씨'
+            : !state.weather.live    ? '예시 날씨 · 기상청 못 받아옴'
             : '';
-  cb.style.display = cbt ? 'flex' : 'none'; cb.textContent = cbt;
+  cb.style.display = cbt ? 'inline-block' : 'none'; cb.textContent = cbt;
 }
-function reroll(){
-  if(state.usedReroll){ toast('오늘은 여기까지예요 🙂'); return; }
-  state.usedReroll=true;
-  track('리롤', {날씨:state.weather.key});                            // ⑥ 첫 3장이 실패한 비율
-  const cur=new Set(currentPicks.map(p=>p.id));
-  const pool=hardFilter(state.weather).filter(l=>!cur.has(l.id));   // 방금 본 3장 제외
-  const picks = pool.length>=3 ? ensureSafe(mmrPick(pool,3,0),pool) : (recommend(3)||recommend(0));
-  currentPicks=picks; markShown(picks); drawLooks(picks);
-  const rb=document.getElementById('rerollBtn'); rb.disabled=true; rb.style.opacity=.45; rb.textContent='오늘은 여기까지예요';
-  toast('다른 걸로 3개 골라봤어요');
-}
+/* 🚫 '다른 거 보여줘'(리롤)는 폐기했다 (2026-08-17 유저 결정) —
+   **3장 안에서 유저가 결정한다.** 탈출구를 주면 "더 나은 게 있나" 하고 계속 돌리게 되고,
+   그건 이 앱이 없애려던 바로 그 고민(결정 피로)을 되돌려주는 것이다.
+   되살릴 일이 생기면 git 이력에서 reroll() 을 꺼내면 된다. */
 /* 폴백 완화 순서(원칙 2): 취향 → 체감온도(±1→±2) → 강수는 절대 완화 불가.
    온도가 한 칸 어긋나는 건 '불쾌'지만, 비에 젖고 미끄러지는 건 '사고'다. 등급이 다르다. */
 function relaxAndShow(){
@@ -1915,38 +1830,8 @@ function relaxAndShow(){
 function renderMeta(){
   const w=state.weather;
   document.getElementById('r-title').textContent=w.title;
-  document.getElementById('r-weather').textContent=w.badge;
-}
-/* ---------- 오늘 화면에서 참고사진 추가(온보딩 밖) ---------- */
-/* 참고사진이 들어오는 유일한 입구(온보딩 화면이 빠진 뒤로).
-   그래서 사진 화면에 있던 AI 예외 두 가지도 여기서 받는다 — 막다른 길을 만들지 않는다(FR-5·AP-2). */
-async function onResultPhoto(inp){
-  if(!inp.files||!inp.files[0]) return;
-  if(SIM.ai==='block'){                            // 모더레이션 차단(FR-5)
-    releaseRefPhoto(); track('참고사진', {결과:'차단'}); renderResult();
-    toast('이 사진은 쓸 수 없어요 · 취향으로 골라드릴게요');
-    return;
-  }
-  if(SIM.ai==='fail'){                             // AI 장애 → 취향으로 폴백. 폴백하되 말해준다(AP-2)
-    releaseRefPhoto(); renderResult();
-    toast('⚠️ 사진을 못 읽었어요 · 취향으로 골랐어요');
-    return;
-  }
-  toast('🧠 사진 분위기를 읽는 중… (첫 실행은 20~40초)');
-  const ok = await applyRefPhoto(inp.files[0], null);
-  renderResult();                                  // 사진 유사도로 3장을 다시 고른다
-  toast(ok ? '올린 사진과 비슷한 분위기로 골랐어요 📷' : '오프라인이라 취향 기반으로 골랐어요');
-}
-function renderRefchip(){
-  const el=document.getElementById('refchip'); if(!el) return;
-  if(state.photo && state.refPhotoUrl){
-    el.innerHTML=`<span class="refchip"><img src="${state.refPhotoUrl}" alt="참고사진">이 사진 분위기 참고 중<button onclick="removeRefPhoto()">✕</button></span>`;
-  } else el.innerHTML='';
-}
-function removeRefPhoto(){
-  releaseRefPhoto();                  // 진짜로 놓아준다 + 질의를 취향으로 되돌림
-  renderResult();
-  toast('참고사진을 뺐어요 · 취향으로 다시 골랐어요');
+  document.getElementById('r-weather').textContent = isNight() ? '내일 아침' : '오늘';
+  renderWeatherCard();
 }
 
 /* ---------- 아침 알람 · 설치 (D1으로 돌아오게 만드는 유일한 장치) ---------- */
@@ -1958,19 +1843,31 @@ function renderWake(){
   if(state.wakeOn){ g.innerHTML='✓ 알림<br>켜짐'; g.classList.add('on'); }
   else { g.innerHTML='알림<br>받을래요'; g.classList.remove('on'); }
 }
-async function enableWake(){
-  state.wakeTime=document.getElementById('wakeTime').value||'07:00';
+/* 홈 화면에 추가된 상태로 열렸나 (= 앱처럼 뜬 상태). 아이폰은 이때만 알림이 온다 */
+function isStandalone(){
+  return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone===true;
+}
+/* '알림 받을래요' = 권한을 바로 묻지 않는다 (2026-08-17에 뒤집음).
+   먼저 홈 화면 추가를 안내하고, 권한은 그 다음 화면에서 묻는다 — AGENTS.md §5 */
+function enableWake(){
+  // 시각 입력칸은 wakeCard 와 함께 화면에서 빠졌다. 없으면 저장된 값을 쓴다
+  state.wakeTime=document.getElementById('wakeTime')?.value || state.wakeTime || '07:00';
+  fillInstall(); go('s-install');
+}
+/* 2단계: 여기서 비로소 알림 권한을 묻는다 */
+async function askNotify(){
   let perm='denied';
   try{ perm = (typeof Notification==='undefined') ? 'unsupported' : await Notification.requestPermission(); }
   catch(e){ perm='unsupported'; }
   if(perm==='granted'){
-    state.wakeOn=true; persist(); renderWake(); scheduleWake();
-    fillInstall(); go('s-install');
+    state.wakeOn=true; persist(); renderWake(); scheduleWake(); fillInstall();
+    toast(isStandalone() ? '내일 아침 '+state.wakeTime+' 에 알려드릴게요'
+                         : '켰어요 · 홈 화면에 추가해야 실제로 도착해요');
   } else if(perm==='denied'){
     toast('알림이 차단돼 있어요 · 브라우저 설정에서 허용해 주세요');
   } else {
-    // file:// 로 열면 알림 API가 막힌다 — 데모는 계속 진행
-    state.wakeOn=true; persist(); renderWake(); fillInstall(); go('s-install');
+    // file:// 로 열면 알림 API 자체가 막힌다 — 데모는 화면만 보여준다
+    state.wakeOn=true; persist(); renderWake(); fillInstall();
     toast('이 환경에선 알림이 막혀 있어요 · 화면만 보여드릴게요');
   }
 }
@@ -2006,7 +1903,21 @@ function fillInstall(){
   const tm=new Date(TODAY); tm.setDate(tm.getDate()+1);       // 잠금화면은 '내일 아침' 미리보기
   document.getElementById('ls-date').textContent=fmtDateLong(tm);
   document.getElementById('ls-time').textContent=state.wakeTime.replace(/^0/,'');
-  document.getElementById('st-time').textContent=state.wakeTime;
+  // 1단계는 이미 홈 화면에서 열었으면 접는다. 2단계 문구도 상태에 맞춰 바꾼다
+  const s1=document.getElementById('istep1'), note=document.getElementById('wakeNote'), btn=document.getElementById('notifyBtn');
+  // 켜졌나의 정본은 state.wakeOn 하나다. Notification.permission 을 같이 보면 두 값이 갈라진다
+  // (renderWake 도 state.wakeOn 만 본다 — 결과 화면 칩과 이 버튼이 서로 다른 말을 하면 안 된다)
+  const home=isStandalone(), on=state.wakeOn;
+  s1.classList.toggle('done', home);
+  s1.querySelector('.istep-h').innerHTML = home ? '<i>✓</i> 홈 화면에 추가됨' : '<i>1</i> 홈 화면에 추가하기';
+  /* 🚫 홈 화면에 추가 안 한 사람에게 "내일 아침 알려드릴게요"라고 하면 거짓말이 된다(§9-1) —
+     아이폰은 추가하지 않으면 알림이 아예 안 온다. 네 경우를 각각 다르게 말한다 */
+  note.textContent = on && home  ? '내일 아침 '+state.wakeTime+' 에 알려드릴게요.'
+                   : on          ? '켰어요. 다만 위 1단계를 해야 아침에 실제로 도착해요.'
+                   : home        ? '이제 켜면 아침에 도착해요.'
+                                 : '홈 화면에 추가한 다음에 눌러주세요. 아이폰은 추가하지 않으면 알림이 오지 않아요.';
+  btn.innerHTML = on ? '✓ 알림 켜짐' : '🔔 아침 <b id="st-time">'+state.wakeTime+'</b> 알림 켜기';
+  btn.disabled = on;
   document.getElementById('ls-line').textContent=w.badge+' — 오늘 이거 어때요?';
   if(l){ document.getElementById('ls-img').src=l.img; document.getElementById('ls-name').textContent=l.name; }
 }
@@ -2038,8 +1949,7 @@ function toggleSave(id,btn){
     /* ⑤ 코어 루프 종료점 — 저장률의 분자다. '갈아타기'는 새 결정으로 세지 않는다
        (한 번 보여준 3장에서 결정은 한 번뿐이어야 저장률이 100%를 넘지 않는다) */
     track(cur!=null ? '결정_변경' : '결정',
-          {룩:id, 순위:currentPicks.findIndex(p=>p.id===id)+1, 날씨:state.weather.key,
-           질의: state.clipOn ? '참고사진' : '취향'});
+          {룩:id, 순위:currentPicks.findIndex(p=>p.id===id)+1, 날씨:state.weather.key});
     /* 다른 카드를 누르면 '추가'가 아니라 '갈아탄다'.
        여러 벌을 담게 두면 달력 한 칸에 뭘 넣을지 정할 수 없고, 사실상 찜 목록이 생겨
        "찜한 것"과 "입은 것"이 갈라진다 — 만들지 않기로 한 것이다. */
@@ -2184,13 +2094,12 @@ function onDayPhoto(inp){
 /* ---------- 탭 ---------- */
 function switchTab(t){
   document.getElementById('tab-today').classList.toggle('active',t==='today');
-  document.getElementById('tab-weather').classList.toggle('active',t==='weather');
   document.getElementById('tab-calendar').classList.toggle('active',t==='calendar');
   if(t==='today') go('s-result');
-  else if(t==='weather'){ renderWeatherTab(); go('s-weathertab'); }
   else { renderSaved(); go('s-saved'); }
 }
-function renderWeatherTab(){
+/* 날씨 카드 — 옛 '날씨' 탭 내용. 이제 '오늘' 화면 안에서 renderResult()가 부른다 */
+function renderWeatherCard(){
   const w=state.weather;
   paintLoc();                                    // 머리 = 고른 동네 · 날짜
   document.getElementById('wt-ico').textContent=w.e;
@@ -2237,7 +2146,7 @@ const SPLASH_MS=2400;           // 로고를 보여주는 최소 시간. 실제 
     state.wakeTime=saved.wakeTime||'07:00'; state.wakeOn=!!saved.wakeOn;
     renderResult(); go('s-result');
     if(state.wakeOn) scheduleWake();              // 재방문에도 알림은 살아 있다
-    ['tab-weather','tab-calendar'].forEach(id=>document.getElementById(id).classList.remove('active'));
+    document.getElementById('tab-calendar').classList.remove('active');
     document.getElementById('tab-today').classList.add('active');
     return;                             // 재방문은 기다리지 않는다 — 목록 받는 시간만 스플래시가 덮는다
   }
