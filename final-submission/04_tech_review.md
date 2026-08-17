@@ -40,7 +40,7 @@
   라이선스 사진 → 비전 LLM(메타 태깅) → 임베딩 → library_looks 적재
                                                       │
 [온보딩 · 1회]                                         │
-  사진 고르기(최대 3장) → taste_vector 산출 → profiles 저장 │
+  사진 고르기(원하는 만큼) → taste_vector 산출 → profiles 저장 │
   온보딩에서 고른 사진 → 임베딩 → taste_vector          │
                                                       ▼
 [매일 아침 · 실시간 · AI 호출 0]                  ┌─────────────┐
