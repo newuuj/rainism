@@ -20,22 +20,25 @@ VIEW = {"width": 402, "height": 874}   # iPhone 17 논리 화면 크기(pt). ×2
 URL = os.environ.get("RAINISM_URL") or ("file://" + str((HERE / "rainism_prototype_v1.html").resolve()))
 
 # 화면 이름 → 거기까지 가는 클릭 순서 (온보딩을 매번 통과해야 도달함)
-QUIZ = ["#s-q1 .moodgrid button:nth-child(4)", "#moodNext",   # 컨셉도 '선택 → 다음' 패턴
-        "#s-q2 .choices .choice:nth-child(2)", "#colorNext"]  # 색이 마지막 질문 → '완료' → 내 옷 화면으로
-# 스플래시엔 버튼이 없다(1.8초 뒤 자동으로 넘어감). 클릭은 화면이 보일 때까지 알아서 기다린다
+QUIZ = ["#s-q1 .moodgrid button:nth-child(4)", "#moodNext"]   # 질문은 사진 고르기 하나뿐 → 내 옷 화면으로
+# 스플래시엔 버튼이 없다(2.4초 뒤 자동으로 넘어감). 클릭은 화면이 보일 때까지 알아서 기다린다
 CLOSET = ["#closetGrid .cgroup:nth-child(1) .citem:nth-child(1)",   # 퀴즈 다음은 옷장이다 — 몇 개 고르고 넘어간다
           "#closetGrid .cgroup:nth-child(1) .citem:nth-child(2)",
           "#closetGrid .cgroup:nth-child(2) .citem:nth-child(1)",
           "#closetNext"]
-DONG = ["#s-location .btn"]   # 이 동네로 할게요 → 날씨는 자동 → 바로 결과 화면
+# 위치를 허용하면 동네 화면을 건너뛴다. 캡쳐용 브라우저는 위치가 막혀 있어 자동으로 동네 화면에 떨어진다
+DONG = ["#s-location .btn"]   # 이 동네로 할게요 → 날씨 자동 → 결과
 TO_RESULT = QUIZ + CLOSET + DONG
+
+# 스스로 지나가 버려서 그냥은 못 찍는 화면 → 다 지나간 뒤 그 화면만 다시 띄워 찍는다
+REPAINT = {"시작": "s-splash", "위치": "s-locating"}
 
 SCREENS = {
     "시작":   [],                        # 스플래시 — 자동으로 넘어가기 전에 찍힌다
     "컨셉":   ["#s-q1 h2"],               # 제목 클릭 = 아무 일도 안 하지만 스플래시가 넘어갈 때까지 기다려준다
-    "색":    QUIZ[:3],                    # 색 화면 + 한 개 고른(선택 표시) 상태
-    "옷장":   QUIZ + CLOSET[:3],           # 퀴즈 다음 = 내 옷 고르기 (고른 상태)
-    "동네":   QUIZ + CLOSET,
+    "옷장":   QUIZ + CLOSET[:3],           # 컨셉 다음 = 내 옷 고르기 (고른 상태)
+    "위치":   QUIZ + CLOSET,               # 위치 물어보는 화면 (스스로 지나가므로 REPAINT 로 다시 띄운다)
+    "동네":   QUIZ + CLOSET,               # 위치가 막히면 자동으로 여기로 떨어진다
     "오늘":   TO_RESULT,
     "결정":   TO_RESULT + [".look:nth-child(1) .heart"],
     "날씨":   TO_RESULT + ["#tab-weather"],
@@ -68,9 +71,9 @@ def main():
             for sel in steps:
                 page.click(sel); page.wait_for_timeout(350)
             page.wait_for_timeout(700)                       # 스켈레톤이 걷힐 때까지
-            if name == "시작":                                # 스플래시는 1.2초면 넘어가 버린다.
-                page.wait_for_selector("#s-q1.on")           # 넘어가는 걸 끝까지 보고 나서
-                page.evaluate("paint('s-splash')")           # 다시 띄워 찍는다(안 그러면 다음 화면이 찍힌다)
+            if name in REPAINT:                              # 스스로 지나가 버리는 화면
+                page.wait_for_timeout(500)                   # 다 지나갈 때까지 기다렸다가
+                page.evaluate(f"paint('{REPAINT[name]}')")   # 다시 띄워 찍는다
             suffix = ("_" + "_".join(f"{k}-{v}" for k, v in sims.items())) if sims else ""
             order = list(SCREENS).index(name) + 1          # 파일명 앞 번호 = 유저 플로우 순서(포트폴리오용 정렬)
             # 긴 화면은 한 장으로 안 찍는다 — 폰 한 대 높이씩 잘라서 여러 컷.
