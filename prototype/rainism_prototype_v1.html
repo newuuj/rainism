@@ -43,7 +43,7 @@
   }
   .screen{ display:none; flex-direction:column; flex:1; padding:26px 22px 32px; animation:fade .35s ease; }
   /* 하단 여백은 32px 기본 — 온보딩 '다음' 버튼이 바닥 가까이 오게. 탭바 덮이는 화면만 96px로 되돌림 */
-  #s-result, #s-saved{ padding-bottom:96px; }
+  #s-result, #s-saved, #s-closet.astab{ padding-bottom:96px; }   /* 탭바에 안 가리게 */
   .screen.on{ display:flex; }
   @keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
   @media (prefers-reduced-motion:reduce){ .screen{animation:none;}
@@ -91,6 +91,18 @@
     font-size:12px; font-weight:800; color:var(--accent); white-space:nowrap; opacity:0;
     background:#fff; border-radius:999px; padding:3px 10px; box-shadow:0 2px 6px rgba(58,24,42,.3); }
   .citem.on .clabel{ opacity:1; }
+  /* 「내 옷」 탭에서는 **가진 옷만** 나온다 (2026-08-18 유저 결정).
+     전부 가진 것이니 어둡게·✓ 로 구분할 게 없다 — 이름표만 남긴다(뭔지는 알려줘야 하니까). */
+  #s-closet.astab .citem .citem-img{ filter:drop-shadow(0 4px 9px rgba(74,35,56,.17)); }
+  #s-closet.astab .cmark{ display:none; }
+  #s-closet.astab .clabel{ opacity:1; }
+  /* 뺀 옷은 **사라지지 않고 연해진다** (2026-08-18 유저 결정) — 바로 사라지면 잘못 눌렀을 때
+     되돌릴 방법이 없다. 연해진 채로 있으면 다시 눌러 되돌린다. 정리는 탭에 다시 들어올 때. */
+  #s-closet.astab .citem.off{ opacity:.26; }
+  #s-closet.astab .citem.off .clabel{ opacity:.5; }
+  /* 🔴 column-span 이 있어야 한다 — #closetGrid 가 2열 신문단이라, 없으면 안내 문장이
+     두 열로 쪼개져 "여기에 쌓여요"가 옆 칸 맨 위로 올라간다(실제로 그랬다) */
+  .closetempty{ column-span:all; text-align:center; padding:26px 20px; color:var(--sub); font-size:13.5px; line-height:1.7; }
   .choice{ text-align:left; background:#fff; border:1.6px solid var(--line); border-radius:16px;
     padding:16px 18px; font-size:16px; font-weight:600; cursor:pointer; font-family:inherit; color:var(--ink);
     display:flex; align-items:center; gap:13px; transition:.12s; }
@@ -256,9 +268,6 @@
   /* 정한 것 — 채운 분홍의 반대로 옅게 간다. 글자도 '입기로 했어요'로 바뀐다(색만으로 구분하지 않는다) */
   .heart.saved{ background:#fff; border-color:var(--accent); color:var(--accent); }
 
-  .wornchip{ font-size:10.5px; font-weight:800; color:#c5648c; background:#fbe6ef;
-    padding:3px 8px; border-radius:20px; margin-left:6px; }
-
   /* 밤 모드 · 알람 · 설치 */
 
   .wake{ background:#fff; border:1.5px solid var(--line); border-radius:16px; padding:15px 16px; margin:4px 0 14px; }
@@ -359,7 +368,9 @@
   .skcard .skb i{ display:block; height:13px; margin-bottom:9px; }
 
   /* tab bar */
-  .tabbar{ position:absolute; bottom:0; left:0; right:0; max-width:430px; margin:0 auto;
+  /* 🔴 absolute 가 아니라 fixed 다 (2026-08-18 수정) — absolute 면 기준이 폰 프레임 전체 높이라
+     '내 옷'처럼 긴 화면에선 **스크롤을 끝까지 내려야** 탭이 보였다. 탭은 늘 보여야 한다. */
+  .tabbar{ position:fixed; bottom:0; left:0; right:0; max-width:430px; margin:0 auto; z-index:55;
     background:#fff; border-top:1px solid var(--line); display:none;
     padding:8px 0 calc(8px + env(safe-area-inset-bottom)); }
   .tabbar.on{ display:flex; }
@@ -399,12 +410,33 @@
     padding:10px 11px; font-size:12px; line-height:1.55; margin-top:4px; }
 
   /* 로그인 시트 — 저장하려는 순간에만 뜬다(원칙 3: 보상이 먼저) */
-  .sheet{ position:absolute; inset:0; background:rgba(30,36,48,.5); display:none; z-index:60;
-    align-items:flex-end; }
+  /* 🔴 absolute 가 아니라 fixed 다 (2026-08-17 수정). absolute 면 기준이 **폰 프레임 전체 높이**라,
+     '내 옷'처럼 2,222px짜리 긴 화면에선 카드가 문서 맨 아래에 붙어 **화면에 안 보였다**(어두워지기만 함).
+     fixed 면 지금 보이는 화면 기준이라 어느 화면에서 열어도 아래에 붙는다. 시트 3개 모두 해당된다. */
+  /* z-index 는 데모 버튼(🧪 상황 · 📊 지표, 80)보다 위여야 한다 — 60이면 그 두 개가 시트를 덮어
+     오른쪽 아래 버튼이 안 눌린다(예전에 탭바에서 똑같이 당했다). 그날 상세(100)보다는 아래. */
+  .sheet{ position:fixed; inset:0; background:rgba(30,36,48,.5); display:none; z-index:90;
+    align-items:flex-end; justify-content:center; }
   .sheet.on{ display:flex; }
-  .sheetcard{ width:100%; background:#fff; border-radius:22px 22px 0 0; padding:22px 22px 28px; }
+  .sheetcard{ width:100%; max-width:430px; background:#fff; border-radius:22px 22px 0 0; padding:22px 22px 28px; }
   .sheetcard h3{ font-size:18px; font-weight:800; }
   .sheetcard p{ font-size:13.5px; color:var(--sub); margin:6px 0 16px; line-height:1.6; }
+
+  /* 내 옷 사진 올리기 (2026-08-17) */
+  .upbtn{ display:flex; align-items:center; justify-content:center; gap:7px; width:100%;
+    min-height:48px; margin:2px 0 20px; background:#fff; border:1.5px dashed var(--accent);
+    border-radius:14px; color:var(--accent); font-family:inherit; font-size:14px; font-weight:800; cursor:pointer; }
+  .upbtn:disabled{ opacity:.55; cursor:default; }
+  /* 종류 고르기 — 21종이라 격자로. 사진만으론 가디건/재킷을 못 가리니 글자로 묻는다 */
+  .catgrid{ display:flex; flex-wrap:wrap; gap:7px; max-height:46vh; overflow-y:auto; margin-bottom:4px; }
+  .catgrid button{ min-height:44px; padding:0 13px; border-radius:22px; border:1.5px solid var(--line);
+    background:#fff; font-family:inherit; font-size:13.5px; font-weight:700; color:var(--ink); cursor:pointer; }
+  .catgrid button.has{ border-color:var(--accent); color:var(--accent); }   /* 이미 내 사진이 있는 종류 */
+  /* 여러 개 고를 수 있다 (2026-08-18) — 사진 한 장에 상의·하의가 같이 있으면 둘 다 담는다 */
+  .catgrid button.sel{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .upprev{ width:88px; height:88px; object-fit:contain; display:block; margin:0 auto 12px;
+    background:repeating-conic-gradient(#f4e8ef 0 25%,#fff 0 50%) 0 0/12px 12px; border-radius:12px; }
+  .upstat{ font-size:13px; font-weight:700; color:var(--sub); text-align:center; margin:10px 0 0; }
 
   /* toast */
   #toast{ position:absolute; bottom:100px; left:50%; transform:translateX(-50%) translateY(20px);
@@ -450,34 +482,16 @@
   .cal-cell.has .dn{ color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.6); }
   .cal-cell .wc{ position:absolute; top:2px; right:3px; font-size:11px; line-height:1;
     filter:drop-shadow(0 1px 2px rgba(0,0,0,.55)); }
-  /* 「입기로 함」과 「입었음」을 눈으로 가른다 — 그 간극이 매칭 품질의 온도계다(08) */
-  .cal-cell.has:not(.worn)::after{ content:''; position:absolute; inset:0; border-radius:12px;
-    background:rgba(246,248,251,.22); border:1.5px dashed rgba(255,255,255,.9); }
-  .cal-cell.worn .wr{ position:absolute; bottom:2px; right:3px; width:14px; height:14px; border-radius:50%;
-    background:var(--heart); color:#fff; font-size:9px; font-weight:800; line-height:14px; text-align:center;
-    box-shadow:0 1px 4px rgba(0,0,0,.35); }
+  /* 「입기로 함」과 「입었음」을 가르던 점선 덮개는 없앴다 — 고른 게 곧 입은 것이다 */
   .cal-cell.today{ outline:2px solid var(--accent); outline-offset:-2px; }
   .cal-cell.sel{ outline:2px solid var(--accent); outline-offset:-2px; background-color:var(--accent2); }
-  .day-detail{ display:flex; gap:13px; align-items:center; margin-top:18px; background:#fff;
-    border:1px solid var(--line); border-radius:16px; padding:12px; min-height:80px; }
-  .day-detail img{ width:58px; height:76px; object-fit:cover; border-radius:11px; flex:none; }
-  .day-detail .ddt{ font-size:12px; color:var(--sub); font-weight:700; }
-  .day-detail .ddn{ font-size:15.5px; font-weight:800; margin-top:2px; letter-spacing:-.3px; }
-  .day-detail .dds{ font-size:12px; color:var(--sub); margin-top:2px; }
-  .day-detail .ddempty{ color:var(--sub); font-size:13.5px; text-align:center; width:100%; }
-  .wornchip.pending{ color:var(--sub); background:#f8edf2; }
-
-  /* 밀린 확인 — 낮은 마찰(1탭·선택·비차단, FR-20) */
-  .pending{ display:flex; align-items:center; gap:8px; width:100%; text-align:left;
-    background:#fdf3e7; color:#8a6535; border:none; border-radius:13px; padding:11px 13px;
-    font-family:inherit; font-size:13px; font-weight:700; cursor:pointer; margin-bottom:4px; min-height:46px; }
 
   /* 빈 상태 — 나무라지 않는다. 약속하고, 코어로 돌려보낸다(감정지도 ⑦ 방어) */
-  .calempty{ text-align:center; padding:34px 20px 26px; }
-  .calempty .ce{ font-size:40px; }
-  .calempty h3{ font-size:16.5px; font-weight:800; margin:12px 0 6px; }
-  .calempty p{ font-size:13.5px; color:var(--sub); line-height:1.6; }
-  .calempty .btn{ margin-top:18px; }
+  /* 빈 달 안내 — 달력 아래 작게. 달력을 덮지 않는 게 핵심이라 이모지·큰 제목을 뺐다 */
+  .calnote{ text-align:center; padding:18px 20px 4px; }
+  .calnote > b{ display:block; font-size:15px; font-weight:800; }   /* 직계만 — 안쪽 <b>까지 걸면 문장이 토막난다 */
+  .calnote span{ display:block; font-size:12.5px; color:var(--sub); line-height:1.6; margin-top:5px; }
+  .calnote .btn{ margin-top:14px; }
 
   .demoNote{ font-size:11.5px; color:#b398a3; text-align:center; margin-top:14px; }
   .licenseNote{ margin-top:8px; font-size:10.5px; line-height:1.5; opacity:.72; }
@@ -539,8 +553,6 @@
   .dd-photo .dz-img{ max-height:420px; width:100%; object-fit:cover; }
   .dd-name-row{ display:flex; align-items:center; gap:9px; margin-top:20px; }
   .dd-name{ font-size:20px; font-weight:800; letter-spacing:-.4px; }
-  .wornchip.done{ color:#2e7d4f; background:#e8f5ec; }
-  .wornchip.undone{ color:var(--sub); background:#f8edf2; }   /* pending 클래스는 캘린더 버튼(.pending)과 충돌 → 안 씀 */
 
   .resetlink{ align-self:flex-start; background:none; border:none; color:var(--sub); font-size:12px;
     font-weight:700; cursor:pointer; padding:4px 2px; white-space:nowrap; }
@@ -607,14 +619,17 @@
        건너뛰기가 항상 보인다 — 안 고르면 지금까지와 똑같이 취향만으로 고른다.
        -->
   <section class="screen" id="s-closet">
-    <button class="backb" onclick="back()" aria-label="뒤로">← 뒤로</button>
-    <div class="progress"><i class="done"></i><i class="done"></i></div>
-    <h2>가지고 있는 옷을 골라주세요</h2>
-    <p class="sub">가진 옷으로 입을 수 있는 코디를 <b>더 챙겨서</b> 골라드려요. 안 골라도 괜찮아요.</p>
+    <button class="backb" id="closetBack" onclick="back()" aria-label="뒤로">← 뒤로</button>
+    <div class="progress" id="closetProg"><i class="done"></i><i class="done"></i></div>
+    <h2 id="closetTitle">가지고 있는 옷을 골라주세요</h2>
+    <p class="sub" id="closetSub">가진 옷으로 입을 수 있는 코디를 <b>더 챙겨서</b> 골라드려요. 안 골라도 괜찮아요.</p>
+    <!-- 내 옷을 사진으로 올린다 (2026-08-17 유저 결정 · §5 하드 제약을 뒤집은 것) -->
+    <button class="upbtn" id="upbtn" onclick="openUpload()">📷 내 옷 사진 올리기</button>
+    <input type="file" accept="image/*" id="upfile" style="display:none" onchange="onPickItemPhoto(this)">
     <div id="closetGrid"></div>
     <div class="spacer"></div>
     <button class="btn" id="closetNext" onclick="closetDone()">다 골랐어요</button>
-    <button class="btn ghost" onclick="closetSkip()">건너뛸래요</button>
+    <button class="btn ghost" id="closetSkip" onclick="closetSkip()">건너뛸래요</button>
   </section>
 
   <!-- LOCATION — 동네 고르기 (날씨 읽을 동네 · 위치 거부 시 대체 경로도 겸함 FR-8) -->
@@ -666,8 +681,8 @@
   <!-- 9. RESULT (core tab) -->
   <section class="screen" id="s-result">
     <!-- '어제 이거 입었어요?' 배너는 뺐다 (2026-08-17 유저 요청) — 오늘 화면 맨 위를 카드 두 장이 덮었다.
-         🔴 착용 확인(FR-20b·착용률 지표)이 사라진 건 아니다. 기록 탭의
-         "아직 안 알려준 날이 N일 있어요" 로 계속 답할 수 있다 -->
+         🔴 착용 확인은 그 뒤 통째로 폐기됐다 (2026-08-17) — 고른 것을 입은 것으로 본다.
+         묻지 않는 대신, 고른 컨셉을 다음 추천에 얹는다(아래 learnedMood) -->
     <!-- 날씨 + 코디를 한 화면에서 본다 (2026-08-17에 날씨 탭을 여기로 합쳤다).
          날씨를 보러 탭을 옮기면 "오늘 뭐 입지"의 흐름이 끊긴다 — 날씨는 코디를 고르는 근거라서
          같이 보여야 한다. 대신 **작게** 넣는다 — 코디 3장이 화면 밖으로 밀리면 원칙(결정 대행)이 깨진다 -->
@@ -763,6 +778,7 @@
   <!-- SAVED SHEET (코디 캘린더) -->
   <section class="screen" id="s-saved">
     <div id="calbody"></div>
+    <!-- 「내 옷 더하기」 링크는 뺐다 (2026-08-18) — 이제 아래 탭바에 「내 옷」 탭이 있다 -->
   </section>
 
   <!-- FALLBACK (edge case demo) -->
@@ -776,9 +792,12 @@
   </section>
 
   <!-- TAB BAR -->
+  <!-- 3탭 (2026-08-18 유저 결정) — '내 옷'을 온보딩에서 꺼내 탭으로 뺐다.
+       온보딩 안에만 있으면 한 번 지나간 뒤로는 볼 방법이 없어서, 있는 줄도 모른다 -->
   <nav class="tabbar" id="tabbar">
     <button id="tab-today" class="active" onclick="switchTab('today')"><span class="ic">👗</span>오늘</button>
     <button id="tab-calendar" onclick="switchTab('calendar')"><span class="ic">📅</span>기록</button>
+    <button id="tab-closet" onclick="switchTab('closet')"><span class="ic">🧺</span>내 옷</button>
   </nav>
 
   <!-- 달력 날짜 클릭 → 그날 상세페이지 -->
@@ -800,11 +819,25 @@
       </label>
       <div class="dd-name-row">
         <span class="dd-name" id="dm-name"></span>
-        <span id="dm-worn-badge"></span>
       </div>
       <div class="chips" id="dm-chips"></div>
       <div class="spacer"></div>
-      <button class="btn soft" id="dm-worn" style="margin-top:14px"></button>
+    </div>
+  </div>
+
+  <!-- 올린 사진이 무슨 옷인지 묻는다. 배경 지우기는 이 화면 뒤에서 돌아간다 —
+       16초쯤 걸려서, 멍하니 기다리게 두지 않고 그동안 종류를 고르게 한다 -->
+  <div class="sheet" id="catSheet">
+    <div class="sheetcard">
+      <img class="upprev" id="up-prev" alt="올린 사진">
+      <h3>무슨 옷이에요?</h3>
+      <p>사진에 있는 옷을 <b>여러 개 골라도 돼요.</b> 고른 자리마다 이 사진이 들어가요.</p>
+      <div class="catgrid" id="up-cats"></div>
+      <p class="upstat" id="up-stat"></p>
+      <!-- 못 알아냈을 때만 뜬다. 안내 문장 대신 **누를 것**을 준다 (2026-08-18 유저 결정) -->
+      <button class="btn" id="up-pick" onclick="openCatPicker()" style="display:none;margin-top:12px">직접 선택하기</button>
+      <button class="btn" id="up-ok" onclick="confirmCats()" style="display:none;margin-top:12px" disabled>담을래요</button>
+      <button class="btn ghost" id="up-cancel" onclick="closeUpload()" style="margin-top:12px">그만둘래요</button>
     </div>
   </div>
 
@@ -966,24 +999,285 @@ function closetTiles(){
   // [카테고리, 파일이름] 을 펼친 뒤 섞는다 — 같은 종류가 나란히 붙지 않게
   const flat = [];
   Object.entries(ITEM_ART).forEach(([cat, files]) => files.forEach(f => flat.push([cat, f])));
-  return flat.map((v, i) => [v, jitter(i * 3.7)])       // 번호로 만든 값이라 순서가 늘 같다
-             .sort((a, b) => a[1] - b[1]).map(v => v[0]);
+  /* 「내 옷」 탭에서는 **가진 옷만** 보여준다 (2026-08-18 유저 결정).
+     온보딩은 "뭘 가졌는지 고르는" 화면이라 21종을 다 깔지만, 탭은 "내가 가진 옷"이라 남의 옷을 깔면 안 된다.
+     ※ 지금 own 이 아니라 **탭에 들어온 순간의 목록**(closetShown)으로 그린다 — 그래야 뺀 옷이
+        그 자리에 연해진 채로 남아 되돌릴 수 있다. */
+  const src = state.closetTab ? flat.filter(([cat]) => (state.closetShown||[]).includes(cat)) : flat;
+  return src.map((v, i) => [v, jitter(i * 3.7)])        // 번호로 만든 값이라 순서가 늘 같다
+            .sort((a, b) => a[1] - b[1]).map(v => v[0]);
 }
 
 function renderCloset(){
-  document.getElementById('closetGrid').innerHTML = closetTiles().map(([cat, file], i) => {
+  const tiles = closetTiles();
+  if(state.closetTab && !tiles.length){                 // 탭인데 가진 옷이 하나도 없을 때
+    // 뺄 옷이 없으니 부제의 "눌러서 뺄 수 있어요"도 말이 안 된다
+    document.getElementById('closetSub').innerHTML = '여기 담아둔 옷으로 입을 수 있는 코디를 <b>더 챙겨서</b> 골라드려요.';
+    document.getElementById('closetGrid').innerHTML =
+      `<div class="closetempty">아직 담아둔 옷이 없어요.<br>위에서 <b>사진을 올리면</b> 여기에 쌓여요.</div>`;
+    return;
+  }
+  document.getElementById('closetGrid').innerHTML = tiles.map(([cat, file], i) => {
     const w  = 76 + Math.round(jitter(i + 11) * 24);          // 칸 폭의 76~100%
     const ml = Math.round(jitter(i + 31) * (100 - w));        // 남는 폭만큼 좌우로 밀기
     const mb = 22 + Math.round(jitter(i + 71) * 26);          // 아래 여백 22~48px
-    return `<button class="citem${state.own[cat] ? ' on' : ''}" data-cat="${cat}"
-      style="width:${w}%;max-width:${Math.round((ITEM_W[file]||400)*1.25)}px;margin-left:${ml}%;margin-bottom:${mb}px"
+    /* 내가 올린 사진이 있으면 그 자리에 내 사진을 쓴다 — 그래야 "내 옷"이 된다.
+       크기 상한(ITEM_W)은 잘라낸 조각이 640px 원본이라 뭉개지는 걸 막는 값이라, 내 사진엔 안 쓴다. */
+    const mine = MY_ITEMS[cat];
+    const cap  = mine ? 190 : Math.round((ITEM_W[file]||400)*1.25);
+    const off  = state.closetTab && !state.own[cat] ? ' off' : '';   // 탭에서 뺀 옷 = 연해진 채로 남는다
+    return `<button class="citem${state.own[cat] ? ' on' : ''}${off}" data-cat="${cat}"
+      style="width:${w}%;max-width:${cap}px;margin-left:${ml}%;margin-bottom:${mb}px"
       onclick="toggleOwn('${cat}')" aria-pressed="${!!state.own[cat]}" aria-label="${cat}">
-      <img class="citem-img" src="./proto_img/item/${file}.png" alt="${cat}">
+      <img class="citem-img" src="${mine || './proto_img/item/'+file+'.png'}" alt="${cat}">
       <span class="cmark">✓</span><span class="clabel">${cat}</span></button>`;
   }).join('');
 }
+/* ================= 내 옷 사진 (2026-08-17) =================
+   유저가 갤러리에서 옷 사진을 골라 올리면, 배경을 지워서 그 종류 자리에 넣는다.
+   ⚠️ 이건 AGENTS §5의 하드 제약 두 개(🚫 옷 촬영시키기 · 🚫 배경제거)를 **유저 결정으로 뒤집은 것**이다.
+
+   저장은 IndexedDB에 한다 — localStorage는 한 도메인에 5MB뿐이고 사진 한 장이 130KB라
+   기록 사진과 겹치면 **조용히 저장이 안 된다**(화면엔 떠 있어서 된 줄 안다). IndexedDB는
+   브라우저에 원래 있는 것이라 설치할 게 없다. */
+const IDB='rainism_my_items';
+function idbOpen(){ return new Promise((res,rej)=>{ const r=indexedDB.open(IDB,1);
+  r.onupgradeneeded=()=>r.result.createObjectStore('items');
+  r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+async function idbPut(k,v){ const d=await idbOpen(); return new Promise((res,rej)=>{
+  const t=d.transaction('items','readwrite'); t.objectStore('items').put(v,k);
+  t.oncomplete=()=>res(); t.onerror=()=>rej(t.error); }); }
+async function idbAll(){ const d=await idbOpen(); return new Promise((res,rej)=>{
+  const t=d.transaction('items'), out={}, c=t.objectStore('items').openCursor();
+  c.onsuccess=e=>{ const cur=e.target.result; if(cur){ out[cur.key]=cur.value; cur.continue(); } else res(out); };
+  c.onerror=()=>rej(c.error); }); }
+
+let MY_ITEMS={};                          // 카테고리 → 화면에 바로 쓸 수 있는 주소(objectURL)
+async function loadMyItems(){
+  try{
+    const all=await idbAll();
+    Object.keys(all).forEach(cat=>{ MY_ITEMS[cat]=URL.createObjectURL(all[cat]); });
+  }catch(e){ MY_ITEMS={}; }               // 사생활 보호 모드 등에서 막히면 기본 그림으로 간다
+}
+
+/* 배경 지우개는 **누를 때** 받는다. 91MB짜리라 미리 받아두면 안 쓰는 사람까지 기다린다. */
+let bgRemove=null;
+async function loadBgRemover(){
+  if(bgRemove) return bgRemove;
+  const m=await import('https://esm.sh/@imgly/background-removal@1.7.0');
+  bgRemove = m.removeBackground || m.default;
+  return bgRemove;
+}
+
+let upJob=null;                           // {file, promise} — 종류를 고르는 동안 뒤에서 도는 배경 지우기
+function openUpload(){ document.getElementById('upfile').click(); }
+function closeUpload(){
+  document.getElementById('catSheet').classList.remove('on');
+  upJob=null; selCats.clear();
+  document.getElementById('up-stat').textContent='';
+  document.getElementById('up-pick').style.display='none';
+  document.getElementById('up-ok').style.display='none';
+}
+/* 사진을 서버에 보낼 크기로 줄인다 — 폰 사진은 4~10MB라 그대로 보내면 느리고 상한(4MB)에 걸린다.
+   종류만 알아내면 되니 긴 변 768px이면 충분하다. */
+function shrinkToDataUrl(blob, max=768){
+  return new Promise(res=>{
+    const img=new Image();
+    img.onload=()=>{
+      const s=Math.min(1, max/Math.max(img.width,img.height));
+      const c=document.createElement('canvas');
+      c.width=Math.round(img.width*s); c.height=Math.round(img.height*s);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      URL.revokeObjectURL(img.src);
+      res(c.toDataURL('image/jpeg',0.85));
+    };
+    img.onerror=()=>res(null);
+    img.src=URL.createObjectURL(blob);
+  });
+}
+/* 사진에 **무슨 옷들이 있는지** 서버에 물어본다 (api/tag.js → LLM).
+   한 장에 상의·하의·신발이 다 보이면 전부 돌려준다(2026-08-18) — 사람이 한 벌만 고르게 하지 않는다.
+   🚫 브라우저에서 CLIP으로 해봤다가 접었다 — 21종은 33%, 큰 묶음도 57%밖에 못 맞혔다(AGENTS §10).
+   못 알아내면 빈 배열을 돌려주고, 그때만 유저에게 고르라고 한다. */
+async function askCategories(blob){
+  try{
+    const dataUrl = await shrinkToDataUrl(blob);
+    if(!dataUrl) return [];
+    const r = await fetch('/api/tag', { method:'POST', headers:{'content-type':'application/json'},
+                                        body: JSON.stringify({ image:dataUrl }) });
+    if(!r.ok) return [];                         // 키가 없거나(로컬 서버·file://) 서버가 죽었으면 조용히 내려간다
+    const j = await r.json();
+    return Array.isArray(j.cats) ? j.cats : (j.cat ? [j.cat] : []);
+  }catch(e){ return []; }
+}
+
+function onPickItemPhoto(inp){
+  const f=inp.files&&inp.files[0]; inp.value='';                 // 같은 파일을 또 골라도 열리게
+  if(!f) return;
+  document.getElementById('up-prev').src=URL.createObjectURL(f);
+  document.getElementById('up-cats').innerHTML='';               // 종류는 알아서 정한다 — 못 정했을 때만 뜬다
+  document.getElementById('up-stat').textContent='배경 지우고 뭔지 알아보는 중이에요…';
+  document.getElementById('up-pick').style.display='none';
+  document.getElementById('up-ok').style.display='none';
+  selCats.clear();
+  document.getElementById('catSheet').classList.add('on');
+
+  /* 배경 지우기(12~17초)와 종류 알아내기(1~2초)를 **같이** 돌린다. 순서대로 하면 그만큼 더 기다린다. */
+  const cutP = loadBgRemover().then(fn=>fn(f)).catch(()=>null);
+  const catP = askCategories(f);
+  upJob={ file:f, promise:cutP };
+
+  Promise.all([cutP, catP]).then(([cut, cats])=>{
+    if(!upJob || upJob.file!==f) return;                         // 그 사이 그만뒀으면 아무것도 안 한다
+    if(cats.length) return saveItemPhotos(cats, cut, true);      // 알아냈으면 그대로 담는다 — 안 묻는다
+    /* 못 알아냈을 때 — 안내 문장 대신 **누를 것**을 준다 (2026-08-18 유저 결정) */
+    document.getElementById('up-stat').textContent='';
+    document.getElementById('up-pick').style.display='';
+  });
+}
+/* 「직접 선택하기」 — 못 알아냈을 때만 눌린다 */
+function openCatPicker(){
+  document.getElementById('up-pick').style.display='none';
+  document.getElementById('up-ok').style.display='';
+  renderCatPicker();
+}
+/* 여러 개 고를 수 있다 (2026-08-18 유저 결정) — 사진 한 장에 반팔티와 반바지가 같이 있으면 둘 다. */
+const selCats = new Set();
+function renderCatPicker(){
+  // 이름만 쓴다 — 이미 사진이 있는 종류에 ' 바꾸기'를 붙였더니 「반바지 바꾸기」로 읽혀 이상했다
+  document.getElementById('up-cats').innerHTML = Object.keys(ITEM_ART).map(cat=>
+    `<button class="${MY_ITEMS[cat]?'has':''}${selCats.has(cat)?' sel':''}" onclick="toggleCat('${cat}')">${cat}</button>`
+  ).join('');
+  const ok=document.getElementById('up-ok');
+  ok.disabled = !selCats.size;
+  ok.textContent = selCats.size>1 ? selCats.size+'개 담을래요' : '담을래요';
+}
+function toggleCat(cat){
+  if(selCats.has(cat)) selCats.delete(cat); else selCats.add(cat);
+  renderCatPicker();
+}
+async function confirmCats(){
+  if(!upJob || !selCats.size) return;
+  const job=upJob, cats=[...selCats];
+  document.getElementById('up-cats').style.pointerEvents='none';
+  document.getElementById('up-stat').textContent='담는 중이에요…';
+  const cut = await job.promise;                 // 배경 지우기가 아직이면 여기서 기다린다
+  document.getElementById('up-cats').style.pointerEvents='';
+  saveItemPhotos(cats, cut, false);
+}
+/* ---------- 한 사진에서 여러 벌 → 잘라서 각 자리에 (2026-08-18 유저 요청) ----------
+   같은 사진을 통째로 두 자리에 넣으면 「반팔티」 칸에도 전신이 뜬다.
+   **`proto_img/item/*.png` 21장을 만들 때 쓴 그 방법을 그대로 쓴다**(AGENTS §5):
+   누끼 딴 사진에서 사람이 차지한 세로 범위를 재고, 그 **키의 비율**로 잘라낸다.
+   🚫 모델을 더 받지 않는다 — FashionCLIP 같은 건 '무슨 옷인지 맞히는' 모델이라 자르지 못하고,
+      자르는 모델(세그멘테이션)은 또 150MB다. 비율 자르기는 0초·0MB에 된다. */
+/* 🔴 고정 비율(상의 14~53%…)은 **전신 사진**을 전제한다. 무릎까지만 나온 사진에 쓰면
+   신발 자리가 바지 무릎을 잘랐다(실측). → **잡힌 옷들로 세로를 나눈다.**
+   위→아래 세 칸. 상의와 겉옷은 같은 높이라 같은 칸을 쓴다. */
+const SLOT={};
+[[0,['반팔티','긴팔티','민소매·나시','블라우스','셔츠','니트','가디건','후드·맨투맨','재킷','레인재킷','원피스']],
+ [1,['반바지','스커트','청바지','와이드팬츠','레깅스']],
+ [2,['레인부츠','스니커즈','부츠','샌들·슬리퍼','플랫·로퍼']],
+].forEach(([i,cs])=>cs.forEach(c=>SLOT[c]=i));
+/* 🚫 원피스는 **자르지 않는다** — 상하의가 하나로 붙은 옷이라 자르면 옷이 반토막 난다.
+   다만 칸은 차지한다. 빼놨더니 「원피스 + 부츠」에서 나눌 칸이 하나뿐이 되어 **부츠도 안 잘렸다.** */
+const NOCROP=new Set(['원피스']);
+const SLOTW=[1.0, 1.15, 0.5];   // 세로로 차지하는 몫 — 신발은 짧고 하의가 제일 길다
+const HEAD=0.13;                // 머리는 사람 키의 약 13%. 옷이 아니니 뗀다(상의가 잡혔을 때만)
+const LAP=0.03;                 // 칸 사이를 살짝 겹치게 — 딱 잘라내면 옷단이 잘린다
+
+/* 이 사진에서 그 옷이 차지하는 세로 범위(0~1). 못 정하면 null = 안 자른다 */
+function bandOf(cat, cats){
+  if(NOCROP.has(cat)) return null;                                        // 원피스는 통짜로 담는다
+  const mine=SLOT[cat]; if(mine==null) return null;                       // 모르는 종류
+  const used=[...new Set(cats.map(c=>SLOT[c]).filter(v=>v!=null))].sort();
+  if(used.length<2) return null;                                          // 한 칸뿐이면 나눌 게 없다
+  const head = used.includes(0) ? HEAD : 0;                               // 상의가 안 보이면 머리도 없다
+  const tot = used.reduce((s,i)=>s+SLOTW[i], 0);
+  let acc=0;
+  for(const i of used){
+    const h=SLOTW[i]/tot;
+    if(i===mine) return [Math.max(0, head+(1-head)*acc - LAP),
+                         Math.min(1, head+(1-head)*(acc+h) + LAP)];
+    acc+=h;
+  }
+  return null;
+}
+
+/* 사진에서 **내용이 있는 세로 범위**를 찾는다. 누끼를 땄으면 그게 곧 사람이 서 있는 높이다. */
+function contentRange(cv){
+  const {width:w, height:h}=cv, d=cv.getContext('2d').getImageData(0,0,w,h).data;
+  let top=-1, bot=-1;
+  for(let y=0; y<h; y++){
+    let has=false;
+    for(let x=0; x<w; x+=3){ if(d[(y*w+x)*4+3] > 24){ has=true; break; } }   // 알파 24 넘으면 내용
+    if(has){ if(top<0) top=y; bot=y; }
+  }
+  return top<0 ? [0,h-1] : [top,bot];      // 투명한 데가 없으면(누끼 실패) 사진 전체를 키로 본다
+}
+/* 그 옷이 있는 높이만 잘라 새 사진을 만든다. 못 자를 상황이면 원본을 그대로 돌려준다 */
+function cropByGroup(blob, cat, cats){
+  const band=bandOf(cat, cats);
+  if(!band) return Promise.resolve(blob);                       // 원피스거나 나눌 칸이 하나뿐
+  return new Promise(res=>{
+    const img=new Image();
+    img.onload=()=>{
+      const cv=document.createElement('canvas');
+      cv.width=img.width; cv.height=img.height;
+      cv.getContext('2d').drawImage(img,0,0);
+      const [top,bot]=contentRange(cv), tall=bot-top+1;
+      const y0=Math.round(top+tall*band[0]), y1=Math.round(top+tall*band[1]);
+      const hh=y1-y0;
+      URL.revokeObjectURL(img.src);
+      if(hh<40) return res(blob);                               // 너무 얇게 잘리면 자르지 않는다
+      const out=document.createElement('canvas');
+      out.width=img.width; out.height=hh;
+      out.getContext('2d').drawImage(cv, 0, y0, img.width, hh, 0, 0, img.width, hh);
+      out.toBlob(b=>res(b||blob), 'image/png');
+    };
+    img.onerror=()=>res(blob);
+    img.src=URL.createObjectURL(blob);
+  });
+}
+
+/* 담기 — 자동으로 알아냈든 유저가 골랐든 여기로 모인다.
+   여러 벌이면 **각 옷이 있는 높이만 잘라서** 그 자리에 넣는다. 한 벌이면 자르지 않는다
+   (한 벌 = 옷만 찍은 사진일 가능성이 높다. 그걸 자르면 멀쩡한 사진을 망친다). */
+async function saveItemPhotos(cats, cut, auto){
+  const blob = cut || (upJob && upJob.file);     // 못 지웠으면 원본 그대로 — 없는 척하지 않는다(§9-1)
+  if(!blob || !cats.length) return;
+  const done=[], multi=cats.length>1;
+  for(const cat of cats){
+    const one = multi ? await cropByGroup(blob, cat, cats) : blob;   // 여러 벌일 때만 잘라 나눈다
+    try{ await idbPut(cat, one); }
+    catch(e){ document.getElementById('up-stat').textContent='저장에 실패했어요 · 저장 공간을 확인해 주세요'; return; }
+    if(MY_ITEMS[cat]) URL.revokeObjectURL(MY_ITEMS[cat]);
+    MY_ITEMS[cat]=URL.createObjectURL(one);
+    state.own[cat]=1;                            // 사진을 올렸다 = 가지고 있다
+    done.push(cat);
+  }
+  persist();
+  /* 탭에 이미 들어와 있으면 새로 담은 것도 바로 보여야 한다 */
+  if(state.closetTab) state.closetShown=[...new Set([...(state.closetShown||[]), ...done])];
+  closeUpload(); renderCloset();
+  /* 무엇으로 담았는지 **반드시 말해준다** — 안 물어봤으니 알려주기라도 해야 한다.
+     받침이 있으면 '으로', 없으면 '로' (반바지'로' / 후드·맨투맨'으로') */
+  const 이름 = done.join(' · ');
+  const 로 = ((done[done.length-1].charCodeAt(done[done.length-1].length-1)-0xAC00)%28 ? '으로':'로');
+  toast((auto ? '「'+이름+'」'+로+' 담았어요' : 이름+' 담았어요') + (cut ? '' : ' · 배경은 못 지웠어요'));
+}
+
 function toggleOwn(cat){
   if(state.own[cat]) delete state.own[cat]; else state.own[cat]=1;
+  /* 「내 옷」 탭에서 누르는 건 **빼는 것**이다. 다만 바로 없애지 않고 **연해지게만** 한다
+     (2026-08-18 유저 결정) — 바로 사라지면 잘못 눌렀을 때 되돌릴 방법이 없다.
+     자리에 남아 있으니 다시 눌러 되돌린다. 목록 정리는 탭에 다시 들어올 때. */
+  if(state.closetTab){
+    persist();
+    document.querySelectorAll(`.citem[data-cat="${cat}"]`).forEach(el=>el.classList.toggle('off', !state.own[cat]));
+    toast(state.own[cat] ? cat+' 다시 넣었어요' : cat+' 뺐어요 · 다시 누르면 돌아와요');
+    return;
+  }
   // 같은 카테고리 사진이 여러 장이라 전부 같이 켜고 꺼야 한다
   document.querySelectorAll(`.citem[data-cat="${cat}"]`).forEach(el=>{
     el.classList.toggle('on', !!state.own[cat]);
@@ -1002,8 +1296,42 @@ function ownRatio(l){
   if(!cats.length) return null;
   return cats.filter(c=>state.own[c]).length / cats.length;
 }
-function closetDone(){ persist(); afterCloset(); }
+function closetDone(){ persist(); afterCloset(); }   // 온보딩에서만 눌린다(탭에선 이 버튼을 숨긴다)
 function closetSkip(){ state.own={}; persist(); afterCloset(); }
+
+/* ---------- 「내 옷」을 탭으로 (2026-08-18 유저 결정) ----------
+   같은 화면(s-closet)을 두 가지로 쓴다:
+     · 온보딩 = 뒤로 · 진행점 · 「다 골랐어요/건너뛸래요」가 있고 탭바는 없다
+     · 탭     = 그것들이 다 없어지고 탭바가 뜬다. 나가는 건 다른 탭을 누르는 것뿐이다
+   ⚠️ 온보딩 안에만 두면 **한 번 지나간 뒤로는 볼 방법이 없어서 있는 줄도 모른다.** 그래서 뺐다. */
+function closetAsTab(on){
+  state.closetTab=on;
+  /* 탭에 들어오는 순간의 목록을 잡아둔다 — 그 뒤에 뺀 옷은 사라지지 않고 연해진 채로 이 자리에 남는다.
+     다음에 다시 들어오면 그때 정리된다. */
+  if(on) state.closetShown = Object.keys(state.own);
+  const set=(id,v)=>{ const e=document.getElementById(id); if(e) e.style.display=v; };
+  set('closetBack', on?'none':'');
+  set('closetProg', on?'none':'');
+  set('closetNext', on?'none':'');
+  /* '건너뛸래요'는 탭에선 숨긴다 — 그 버튼은 고른 옷을 **전부 지운다**(closetSkip).
+     온보딩에선 "아직 안 고를래요"지만, 탭에선 "다 버릴래요"가 된다. */
+  set('closetSkip', on?'none':'');
+  document.getElementById('s-closet').classList.toggle('astab', on);
+  document.getElementById('closetTitle').textContent = on ? '내 옷' : '가지고 있는 옷을 골라주세요';
+  /* 탭에선 "안 골라도 괜찮아요"가 말이 안 된다 — 이미 가진 옷만 놓인 화면이다 */
+  document.getElementById('closetSub').innerHTML = on
+    ? '여기 있는 옷으로 입을 수 있는 코디를 <b>더 챙겨서</b> 골라드려요. 눌러서 뺄 수 있어요.'
+    : '가진 옷으로 입을 수 있는 코디를 <b>더 챙겨서</b> 골라드려요. 안 골라도 괜찮아요.';
+}
+/* 「내 옷」 탭을 떠날 때 — 고친 것을 저장하고 추천에 반영한다 */
+function leaveClosetTab(){
+  if(!state.closetTab) return;
+  persist();
+  /* 오늘 아직 안 골랐으면 3장을 다시 뽑아 바로 반영한다.
+     🚫 이미 고른 날이면 다시 뽑지 않는다 — 다시 뽑으면 유저가 오늘 입기로 한 코디가
+        3장에서 빠져 화면에서 사라질 수 있다(하루 한 벌의 정본은 달력이다). */
+  if(pickedId()==null) renderResult();
+}
 
 const imgOf = l => './proto_img/'+String(l.id).padStart(2,'0')+'.jpg';
 LOOKS.forEach(l=> l.img=imgOf(l));
@@ -1058,7 +1386,7 @@ const WEATHER=[
 /* saved 배열은 없앴다 — '오늘 뭘 골랐나'를 배열과 달력(diary)이 따로 들고 있어서 어긋났다.
    (2장 고르면 카드는 둘 다 '입기로 했어요'인데 달력엔 1장만 남았다)
    이제 정본은 달력 한 곳뿐이다. 하루 = 코디 한 벌. */
-const state={ name:'', gender:null, age:null, moods:[], color:null, tpo:null, own:{}, weather:WEATHER[0], weatherManual:false, diary:{}, shown:{}, selectedDay:null, calOff:0, batch:0, booted:false, consent:false, loc:'마포구 서교동', authed:true,   /* loc=데모 기본 동네(실서비스는 GPS가 잡는다) */ wakeTime:'07:00', wakeOn:false,
+const state={ name:'', gender:null, age:null, moods:[], color:null, tpo:null, own:{}, weather:WEATHER[0], weatherManual:false, diary:{}, shown:{}, closetTab:false, selectedDay:null, calOff:0, batch:0, booted:false, consent:false, loc:'마포구 서교동', authed:true,   /* loc=데모 기본 동네(실서비스는 GPS가 잡는다) */ wakeTime:'07:00', wakeOn:false,
   };   /* shown={룩id:마지막으로 보여준 날} */
 const TODAY=new Date();
 const dkeyOf=d=> d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
@@ -1102,14 +1430,9 @@ function doReset(){
   try{ localStorage.removeItem(LS); }catch(e){}
   location.reload();
 }
-/* 데모용: 지난 며칠을 미리 채워 캘린더가 살아있어 보이게 (진짜 앱은 유저가 매일 쌓음) */
-/* [며칠 전, 룩id, 그날 날씨key] — 룩의 비/맑음이 날씨와 맞게 페어링 */
-function seedDiary(){
-  [[1,16,'warmsun'],[3,3,'hot'],[5,8,'warmsun'],[7,27,'jangma'],[10,26,'coolrain'],[13,5,'jangma']].forEach(([ago,id,wk])=>{
-    const d=new Date(TODAY); d.setDate(TODAY.getDate()-ago);
-    if(d.getMonth()===TODAY.getMonth()) state.diary[dkeyOf(d)]={look:id, w:wk};
-  });
-}
+/* 🚫 데모용 가짜 기록(seedDiary)은 없앴다 (2026-08-17 유저 결정) —
+   내가 고르지도 않은 코디가 달력에 6일치 깔려 있어서, 그게 진짜 기록인 줄 알게 된다.
+   달력은 첫날 비어 있는 게 맞다(빈 상태 화면은 renderSaved 안에 이미 있다). */
 
 /* ================= 계측 (PRD §4 성공지표) =================
    문서는 "퍼널 이벤트와 프록시 지표를 측정할 수 있어야 한다"고 요구하는데
@@ -1302,8 +1625,6 @@ function renderMetrics(){
   const 열기=evCount('앱_열기'), 퀴즈=evCount('퀴즈_완료'), 표시=evCount('3장_표시'),
          결정=evCount('결정'), 변경=evCount('결정_변경'), 취소=evCount('결정_취소'),
          리롤=evCount('리롤');
-  const 입었=events.filter(e=>e.ev==='착용_답변' && e.입었다===true).length;
-  const 답변=evCount('착용_답변');
 
   /* 북극성 = D1. "어제 왔다가 오늘 또 왔나" — 이거 하나로 성공/실패를 판단한다. */
   const north = firstVisit
@@ -1324,7 +1645,6 @@ function renderMetrics(){
 
      <div class="mk">품질 — 추천이 쓸 만한가</div>
      ${mrow('저장률', pct(결정,표시), `3장 보여준 ${표시}번 중 ${결정}번 결정`)}
-     ${mrow('“입었어요” 회수율', pct(입었,답변), `답변 ${답변}건 중 ${입었}건이 실제 착용`)}
      ${mrow('리롤률', pct(리롤,표시), '첫 3장이 마음에 안 든 비율')}
      ${mrow('결정 번복', 변경+'회', `취소 ${취소}회`)}
 
@@ -1348,8 +1668,12 @@ function back(){
 function paint(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   document.getElementById(id).classList.add('on');
-  const coreTabs=['s-result','s-saved'];
-  document.getElementById('tabbar').classList.toggle('on', coreTabs.includes(id));
+  /* '내 옷'은 같은 화면을 온보딩과 탭 두 가지로 쓴다 — 온보딩 중엔 탭바를 띄우지 않는다 */
+  const coreTabs=['s-result','s-saved','s-closet'];
+  /* !! 로 참·거짓을 확실히 만든다 — undefined 를 넘기면 toggle 이 '켜기/끄기'가 아니라
+     **그냥 뒤집기**로 동작해서, 온보딩 중에 탭바가 떠버렸다 */
+  const asTab = !!(coreTabs.includes(id) && (id!=='s-closet' || state.closetTab));
+  document.getElementById('tabbar').classList.toggle('on', asTab);
   document.getElementById('phone').scrollTop=0; window.scrollTo(0,0);
 }
 function go(id){
@@ -1357,8 +1681,12 @@ function go(id){
   if(cur && ONB.includes(cur.id) && ONB.includes(id)) hist.push(cur.id);   // 온보딩 안에서 이동할 때만 기록
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   document.getElementById(id).classList.add('on');
-  const coreTabs=['s-result','s-saved'];
-  document.getElementById('tabbar').classList.toggle('on', coreTabs.includes(id));
+  /* '내 옷'은 같은 화면을 온보딩과 탭 두 가지로 쓴다 — 온보딩 중엔 탭바를 띄우지 않는다 */
+  const coreTabs=['s-result','s-saved','s-closet'];
+  /* !! 로 참·거짓을 확실히 만든다 — undefined 를 넘기면 toggle 이 '켜기/끄기'가 아니라
+     **그냥 뒤집기**로 동작해서, 온보딩 중에 탭바가 떠버렸다 */
+  const asTab = !!(coreTabs.includes(id) && (id!=='s-closet' || state.closetTab));
+  document.getElementById('tabbar').classList.toggle('on', asTab);
   document.getElementById('phone').scrollTop=0; window.scrollTo(0,0);
 }
 function toast(t){ const el=document.getElementById('toast'); el.textContent=t; el.classList.add('on'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('on'),1900); }
@@ -1596,9 +1924,32 @@ function tagScore(l){
         l.mood===m ? 3 : ((MOODSIM[m]&&MOODSIM[m][l.mood])||0)), 0);
   return s;
 }
+/* ---------- 학습: 고른 컨셉을 다음 추천에 더 얹는다 (2026-08-17 유저 요청) ----------
+   「입었어요」를 없앤 대신, 유저가 실제로 고른 것을 취향 신호로 쓴다.
+   최근 30일 안에 고른 코디 중 그 컨셉의 비율만큼 가점(최대 +2.0).
+   · 온보딩에서 고른 취향(최대 3점)을 뒤집지 않는 크기다 — 순위를 흔들되 갈아엎지 않는다.
+   · 같은 사진이 또 나오는 게 아니다. 같은 사진은 7일간 빠지니(COOL_PICK),
+     학습은 「같은 컨셉의 다른 사진」으로 나타난다.
+   ※ 30일·2.0은 에이전트가 정한 값이다(근거 문서 없음). 컨셉이 4종뿐이라
+     2.0이면 한 컨셉만 계속 골라도 나머지 3종이 후보에서 사라지지는 않는다.
+   ※ 이웃 컨셉(MOODSIM)에는 나눠주지 않는다 — 고른 건 정확히 그 컨셉이다. */
+const LEARN_DAYS=30, LEARN_W=2.0;
+let learned={};                      // {컨셉: 0~1 비율} — recommend()가 부를 때마다 새로 센다
+function refreshLearned(){
+  const cnt={}; let total=0;
+  for(const k in state.diary){
+    if(daysBefore(k) > LEARN_DAYS) continue;          // 오래된 건 안 센다(0일=오늘 것도 센다)
+    const l=LOOKS.find(x=>x.id===state.diary[k].look);
+    if(!l) continue;
+    cnt[l.mood]=(cnt[l.mood]||0)+1; total++;
+  }
+  learned={};
+  if(total) for(const m in cnt) learned[m]=cnt[m]/total;
+}
 function score(l){
   // 사진이 있으면 사진 유사도가 주(主), 취향 퀴즈는 보조. 없으면 취향만.
   let s = tagScore(l);
+  s += LEARN_W * (learned[l.mood]||0);   // 최근 고른 컨셉이면 그 비율만큼 위로
   // 내 옷: 이 코디에서 내가 가진 아이템 비율만큼 올려준다(최대 +3.5).
   // 안 골랐으면 null 이라 아무 영향이 없다.
   // ※ 3.5는 에이전트가 재보고 정한 값이다(근거 문서 없음). 실제로 측정한 결과:
@@ -1618,18 +1969,29 @@ function mmrPick(pool, n, offset){
   while(picked.length<n && remaining.length){
     remaining.forEach(c=>{ let sim=0; picked.forEach(p=>{ if(p.mood===c.mood) sim=Math.max(sim,1); if(p.color===c.color) sim=Math.max(sim,0.5); }); c._adj=score(c)-0.6*sim; });
     remaining.sort((a,b)=>b._adj-a._adj);
-    picked.push(remaining.shift());
+    /* 한 컨셉이 3장을 다 먹지 않게 — 최대 2장 (2026-08-17).
+       점수 차감(0.6)만으로는 못 막는다: 학습 가점(+2.0)이 그보다 커서 3장이 통째로
+       한 컨셉으로 잠겼다. 그러면 "3장 안에서 고른다"가 사실상 1장 고르기가 된다.
+       컨셉이 남아 있지 않으면(후보가 마르면) 상한을 푼다 — 3장을 채우는 게 먼저다. */
+    const cnt={}; picked.forEach(p=>cnt[p.mood]=(cnt[p.mood]||0)+1);
+    const i = remaining.findIndex(c=>(cnt[c.mood]||0)<2);
+    picked.push(remaining.splice(i>=0?i:0, 1)[0]);
   }
   return picked;
 }
 function ensureSafe(picks, pool){
   if(picks.some(p=>p.safe)) return picks;
-  const safeCand=[...pool].filter(l=>l.safe && !picks.includes(l)).sort((a,b)=>score(b)-score(a))[0];
+  /* 안전빵을 끼울 때도 '한 컨셉 2장' 상한을 지킨다 — 안 그러면 MMR이 애써 섞어둔 마지막 한 칸을
+     안전빵이 도로 같은 컨셉으로 덮는다(실제로 그랬다). 지킬 수 없으면 점수 1등으로 간다. */
+  const cnt={}; picks.slice(0,-1).forEach(p=>cnt[p.mood]=(cnt[p.mood]||0)+1);
+  const cands=[...pool].filter(l=>l.safe && !picks.includes(l)).sort((a,b)=>score(b)-score(a));
+  const safeCand = cands.find(l=>(cnt[l.mood]||0)<2) || cands[0];
   if(safeCand){ picks[picks.length-1]=safeCand; }  // 안전빵 1개 보장
   return picks;
 }
 function recommend(offset){
   const w=state.weather;
+  refreshLearned();                               // 점수를 매기기 전에 '최근 뭘 골랐나'를 센다
   const pool=hardFilter(w);
   if(pool.length<3) return null;                  // 빈손 → 폴백
   let picks=mmrPick(pool,3,offset);
@@ -1750,25 +2112,10 @@ function renderResult(){
     setTimeout(()=>{ drawLooks(picks); drawStateBars(picks.length); state.booted=true; }, 650);
   }
 }
-/* 기록 탭에서 놓친 날을 나중에 채우는 자리 (보조) */
-function toggleWorn(key){
-  const e=state.diary[key]; if(!e) return;
-  e.worn = (e.worn===true) ? false : true;
-  persist(); paintWornBtn(key); renderSaved();
-  toast(e.worn ? '입었어요로 기록했어요 ✓' : '안 입은 걸로 바꿨어요');
-}
-function paintWornBtn(key){
-  const e=state.diary[key], b=document.getElementById('dm-worn'),
-        badge=document.getElementById('dm-worn-badge'); if(!e||!b) return;
-  const on = e.worn===true;
-  if(badge){
-    badge.className = 'wornchip '+(on?'done':'undone');
-    badge.textContent = on ? '✓ 입었어요' : (e.worn===false ? '안 입었어요' : '아직 몰라요');
-  }
-  b.className = 'btn soft';
-  b.textContent = on ? '안 입었어요로 바꿀래요' : '입었어요로 바꿀래요';
-  b.onclick = ()=>toggleWorn(key);
-}
+/* 🚫 「입었어요」를 따로 묻지 않는다 (2026-08-17 유저 결정) —
+   고른 것을 그날 입은 것으로 본다. 버튼 하나를 더 누르게 하는 게 귀찮고(원칙 3),
+   안 누르면 달력이 반쯤 비어 보였다.
+   🔻 대가: '고른 것'과 '실제로 입은 것'을 가르는 눈금이 없어졌다(착용률 지표). */
 function drawLooks(picks){
   trackImpression(picks);                             // ④ 코어 루프: 3장을 실제로 보여준 순간
   const chosen  = pickedId();                         // 오늘 고른 한 벌 (없으면 undefined)
@@ -2011,31 +2358,13 @@ function renderSaved(){
   const first=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
   const wd=['일','월','화','수','목','금','토'];
 
-  // 이 달에 기록이 하나도 없으면 → 빈 상태(나무라지 않고 약속한다)
+  // 이 달에 기록이 하나도 없어도 **달력은 그린다** (2026-08-17 유저 요청).
+  // 예전엔 빈 상태 화면이 달력을 통째로 대체해서, 기록 탭에 들어와도 달력을 못 봤다.
   const monthHas = Object.keys(state.diary).some(k=>{
     const d=keyToDate(k); return d.getFullYear()===y && d.getMonth()===m; });
-  if(!monthHas){
-    document.getElementById('calbody').innerHTML =
-      calHead(y,m) +
-      `<div class="calempty">
-         <div class="ce">🗓️</div>
-         <h3>${state.calOff?  (m+1)+'월엔 기록이 없어요' : '아직 기록이 없어요'}</h3>
-         <p>‘오늘 이거 입을래’를 누르면<br>그날 코디와 <b>그날 날씨</b>가 여기 쌓여요.<br>
-            나중에 “어제 뭐 입었지?” 할 때 보면 돼요.</p>
-         ${state.calOff? '' : '<button class="btn" onclick="switchTab(\'today\')">오늘 코디 보러 가기</button>'}
-       </div>`;
-    return;
-  }
 
-  // 아직 "입었는지" 안 알려준 날들 — 밀린 것을 한 번에 정리하는 자리
-  const pend=Object.keys(state.diary)
-    .filter(k=> k!==targetKey() && state.diary[k].worn===undefined)
-    .sort((a,b)=> keyToDate(b)-keyToDate(a));
-
-  let h = (pend.length
-    ? `<button class="pending" onclick="openDayModal('${pend[0]}')">
-         <span>👕</span><span>아직 안 알려준 날이 ${pend.length}일 있어요 · 톡 눌러서 알려주기</span></button>`
-    : '') + calHead(y,m);
+  // '아직 안 알려준 날' 배너는 없앴다 — 고른 게 곧 입은 것이라 물을 게 없다
+  let h = calHead(y,m);
 
   h+='<div class="cal-wd">'+wd.map((w,i)=>`<span class="${i===0?'sun':i===6?'sat':''}">${w}</span>`).join('')+'</div>';
   h+='<div class="cal-grid">';
@@ -2046,15 +2375,21 @@ function renderSaved(){
     const w=entWeather(ent);
     const cellImg=ent?(ent.photo||(look?look.img:null)):null;   // 유저가 올린 그날 사진 우선
     const isToday=(y===TODAY.getFullYear() && m===TODAY.getMonth() && d===TODAY.getDate());
-    const worn=ent&&ent.worn===true;
-    h+=`<div class="cal-cell ${look?'has':''} ${worn?'worn':''} ${isToday?'today':''}" data-key="${key}" `+
+    h+=`<div class="cal-cell ${look?'has':''} ${isToday?'today':''}" data-key="${key}" `+
        (cellImg?`style="background-image:url('${cellImg}')"`:'')+
        ` onclick="clickDay('${key}')"><span class="dn">${d}</span>`+
-       (w?`<span class="wc">${w.e}</span>`:'')+
-       (worn?`<span class="wr">✓</span>`:'')+`</div>`;
+       (w?`<span class="wc">${w.e}</span>`:'')+`</div>`;
   }
   h+='</div>';
-  h+=`<div class="thin" style="text-align:center">한 칸 = 하루 한 벌 &nbsp;·&nbsp; 날씨와 함께 기록돼요</div>`;
+  /* 빈 달이면 달력 아래에 짧게 안내한다 — 나무라지 않고 약속한다(감정지도 ⑦).
+     예전 빈 상태 화면(이모지+3줄+버튼)은 달력을 덮을 만큼 컸다 → 달력을 살리고 안내를 줄였다. */
+  h += monthHas
+    ? `<div class="thin" style="text-align:center">한 칸 = 하루 한 벌 &nbsp;·&nbsp; 날씨와 함께 기록돼요</div>`
+    : `<div class="calnote">
+         <b>${state.calOff ? (m+1)+'월엔 기록이 없어요' : '아직 기록이 없어요'}</b>
+         <span>‘오늘 이거 입을래’를 누르면 그날 코디와 <b>그날 날씨</b>가 여기 쌓여요.</span>
+         ${state.calOff ? '' : '<button class="btn" onclick="switchTab(\'today\')">오늘 코디 보러 가기</button>'}
+       </div>`;
   document.getElementById('calbody').innerHTML=h;
   selectDay(state.selectedDay && state.diary[state.selectedDay]!==undefined ? state.selectedDay : todayKey());
 }
@@ -2071,22 +2406,13 @@ function moveMonth(d){
   if(state.calOff>0) state.calOff=0;      // 미래는 볼 게 없다
   state.selectedDay=null; renderSaved();
 }
+/* 달력에서 고른 칸에 테두리를 준다. 상세는 칸을 누르면 뜨는 openDayModal이 맡는다
+   (달력 아래 '#daydetail' 요약칸을 그리던 코드가 있었는데, 그 요소가 HTML에 없어서
+    한 번도 화면에 뜬 적이 없다 → 2026-08-17에 지웠다) */
 function selectDay(key){
   state.selectedDay=key;
   document.querySelectorAll('.cal-cell').forEach(c=>c.classList.remove('sel'));
   const cell=document.querySelector('.cal-cell[data-key="'+key+'"]'); if(cell) cell.classList.add('sel');
-  const ent=state.diary[key], det=document.getElementById('daydetail');
-  if(!det) return;
-  if(ent){ const l=LOOKS.find(x=>x.id===ent.look), w=entWeather(ent);
-    const worn=ent.worn===true;
-    det.innerHTML=`<img src="${l.img}" alt="${l.name}"><div>
-      <div class="ddt">${fmtKey(key)}${w?' · '+w.badge:''}</div>
-      <div class="ddn">${l.name}${worn?'<span class="wornchip">입었어요</span>'
-        :(ent.worn===false?'<span class="wornchip pending">안 입었어요</span>':'<span class="wornchip pending">아직 몰라요</span>')}</div>
-      <div class="dds">${worn?'이 날 실제로 입은 코디예요':'이 날 입기로 한 코디예요 · 톡 눌러 알려주기'}</div></div>`;
-  } else {
-    det.innerHTML=`<div class="ddempty">${fmtKey(key)} · 이 날은 담은 코디가 없어요 🙂</div>`;
-  }
 }
 function clickDay(key){
   selectDay(key);
@@ -2104,7 +2430,6 @@ function openDayModal(key){
   document.getElementById('dm-chips').innerHTML=`<span class="chip">${l.mood}</span><span class="chip">${l.color}</span>`
     ;
   paintDayPhoto(key);        // 유저가 올린 그날 사진(있으면) / 없으면 빈 드롭존
-  paintWornBtn(key);
   document.getElementById('dayModal').classList.add('on');
 }
 function closeDayModal(){ document.getElementById('dayModal').classList.remove('on'); }
@@ -2130,10 +2455,13 @@ function onDayPhoto(inp){
 
 /* ---------- 탭 ---------- */
 function switchTab(t){
+  if(t!=='closet') leaveClosetTab();            // 내 옷 탭을 떠나며 저장·반영
   document.getElementById('tab-today').classList.toggle('active',t==='today');
   document.getElementById('tab-calendar').classList.toggle('active',t==='calendar');
-  if(t==='today') go('s-result');
-  else { renderSaved(); go('s-saved'); }
+  document.getElementById('tab-closet').classList.toggle('active',t==='closet');
+  if(t==='today'){ closetAsTab(false); go('s-result'); }
+  else if(t==='closet'){ closetAsTab(true); renderCloset(); go('s-closet'); }
+  else { closetAsTab(false); renderSaved(); go('s-saved'); }
 }
 /* 날씨 카드 — 옛 '날씨' 탭 내용. 이제 '오늘' 화면 안에서 renderResult()가 부른다 */
 function renderWeatherCard(){
@@ -2183,7 +2511,6 @@ addEventListener('offline', ()=>drawStateBars(currentPicks.length));
 renderSim();
 renderWeatherPick();
 renderDong();
-seedDiary();
 trackVisit();          // ① 퍼널 시작 + 북극성(D1) 계산
 const SPLASH_MS=2400;           // 로고를 보여주는 최소 시간. 실제 로딩은 0.3초라 나머지는 로고를 보여주는 몫
                                 // (2.4초 = 등장 0.9초 + 반짝임 스윕이 끝나는 시점. 짧게 하면 애니메이션이 잘린다)
@@ -2192,19 +2519,26 @@ const SPLASH_MS=2400;           // 로고를 보여주는 최소 시간. 실제 
   const saved=loadPersisted();
   if(saved && saved.loc) state.loc=saved.loc;   // 격자를 알아야 그 동네 날씨를 부를 수 있다
   // 🔴 그리기 전에 받는다. 안 기다리면 재방문 때 옛 목록·옛 날씨로 그려진다
-  await Promise.all([loadLibrary(), loadWeather()]);
+  // 내 옷 사진도 같이 — 안 기다리면 '내 옷' 화면이 기본 그림으로 먼저 그려졌다가 바뀐다
+  await Promise.all([loadLibrary(), loadWeather(), loadMyItems()]);
   /* 로고는 열 때마다 보여준다 (2026-08-17 유저 결정) — 예전엔 재방문이면 건너뛰고 바로 '오늘'로 갔다.
      목록·날씨 받는 시간이 이 안에 이미 들어가 있어서, 실제로 더 기다리는 건 그 나머지뿐이다. */
   await new Promise(r=>setTimeout(r, Math.max(0, SPLASH_MS-(Date.now()-t0))));
   if(saved && saved.onboarded){           // 재방문: 온보딩 스킵 → 바로 '오늘'
     state.moods=saved.moods||(saved.mood?[saved.mood]:[]);   // 옛 저장본은 mood 하나였다
     state.own=saved.own||{};              // 내 옷 — 없으면 빈 칸(=점수에 영향 없음)
-    Object.assign(state.diary, saved.diary||{});   // 유저 저장을 데모 시드 위에 덮기
+    /* 🧹 옛 데모 시드 청소 (2026-08-17) — `seedDiary()`는 코드에서 지웠지만,
+       그 전에 이미 브라우저에 저장된 가짜 기록은 그대로 남는다(7월치가 실제로 남아 있었다).
+       구분법: 진짜 결정은 날씨 이모지(`we`)까지 남기는데, 옛 시드는 {look, w} 뿐이라 `we`가 없다. */
+    const sd = saved.diary || {};
+    Object.keys(sd).forEach(k=>{ if(sd[k].we===undefined) delete sd[k]; });
+    Object.assign(state.diary, sd);                // 지난 기록을 되살린다
     state.shown=saved.shown||{};                   // 노출 이력도 살려야 어제 본 3장이 오늘 또 안 뜬다
     state.loc=saved.loc||state.loc;
     state.weather=WBY[saved.weatherKey]||WEATHER[0];
     applyLive();                                   // 기상청에서 받아왔으면 진짜 날씨로 덮는다
     state.wakeTime=saved.wakeTime||'07:00'; state.wakeOn=!!saved.wakeOn;
+    persist();                                    // 위에서 청소한 결과를 바로 저장한다(안 하면 다음에 또 살아난다)
     renderResult(); go('s-result');
     if(state.wakeOn) scheduleWake();              // 재방문에도 알림은 살아 있다
     document.getElementById('tab-calendar').classList.remove('active');
