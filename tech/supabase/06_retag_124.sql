@@ -1,0 +1,557 @@
+-- rainism · 사진 124장 기온·비 다시 매기기 (2026-08-17)
+--
+-- 왜 다시 하나:
+--   앞서 넣은 값은 사진마다 기준이 달랐다. 이번엔 **눈으로 볼 수 있는 규칙 하나**로 124장을 전부 다시 봤다.
+--
+--   기온 — 팔과 다리 두 군데만 본다.
+--     맨팔이면 28°↑ · 반팔+다리가림 23~27° · 긴팔+다리짧음 23~27° · 긴팔+다리가림 20~22°
+--     두꺼운 옷(니트·맨투맨·후드·퍼)이 한 겹이라도 있으면 한 칸 내린다.
+--     7부 소매는 반팔로 친다. 방수 아노락·우비는 세지 않는다(비 때문이지 추위 때문이 아니라서).
+--     🔴 애매하면 **더 더운 쪽**으로 올린다 — 얇은 옷이 추운 날 뜨는 게, 안 뜨는 것보다 나쁘다.
+--
+--   비 — 신발부터 본다.
+--     천 신발(캔버스·스웨이드·어그) · 샌들에 양말 · 시스루/레이스/튤/크로셰 ·
+--     바닥에 끌리는 밑단 → 하나라도 걸리면 즉시 false.
+--     거기 안 걸리고 레인부츠·고무장화거나, 사진에 비가 오고 있거나,
+--     방수 아우터 + 안 끌리는 하의면 true.
+--     🔴 애매하면 **무조건 false** — 기온과 반대 방향이다. false 를 true 로 잘못 넣으면
+--        비 오는 날 캔버스화 코디가 추천돼서 유저 신발이 젖는다(원칙 2).
+--
+-- 🔴 에이전트가 사진을 보고 정한 값이다. 기온·비는 하드필터라 틀리면 유저가 젖거나 춥다.
+--    prototype/check_temp.html · check_rain.html 에서 사진과 나란히 확인할 수 있다.
+--
+-- 이름·컨셉(mood)·색(color_primary)·출처는 **안 건드린다.**
+-- 색은 온보딩에서 질문을 빼기로 했지만(2026-08-17), 표의 값은 그냥 안 읽히면 되므로 그대로 둔다.
+--
+-- Supabase 대시보드 → SQL Editor 에 통째로 붙여넣고 Run.
+-- 먼저 01~05 파일이 다 돌아가 있어야 한다. 안 그러면 고칠 줄이 없어서 조용히 0줄만 바뀐다.
+
+update library_looks set
+  temp_min = case image_path
+  when './proto_img/01.jpg' then 23
+  when './proto_img/02.jpg' then 23
+  when './proto_img/03.jpg' then 28
+  when './proto_img/04.jpg' then 20
+  when './proto_img/05.jpg' then 23
+  when './proto_img/06.jpg' then 23
+  when './proto_img/07.jpg' then 20
+  when './proto_img/08.jpg' then 20
+  when './proto_img/09.jpg' then 28
+  when './proto_img/10.jpg' then 23
+  when './proto_img/11.jpg' then 17
+  when './proto_img/12.jpg' then 23
+  when './proto_img/13.jpg' then 23
+  when './proto_img/14.jpg' then 20
+  when './proto_img/15.jpg' then 20
+  when './proto_img/16.jpg' then 20
+  when './proto_img/17.jpg' then 28
+  when './proto_img/18.jpg' then 23
+  when './proto_img/19.jpg' then 17
+  when './proto_img/20.jpg' then 20
+  when './proto_img/21.jpg' then 23
+  when './proto_img/22.jpg' then 20
+  when './proto_img/23.jpg' then 23
+  when './proto_img/24.jpg' then 23
+  when './proto_img/25.jpg' then 20
+  when './proto_img/26.jpg' then 28
+  when './proto_img/27.jpg' then 28
+  when './proto_img/28.jpg' then 23
+  when './proto_img/30.jpg' then 23
+  when './proto_img/31.jpg' then 28
+  when './proto_img/32.jpg' then 23
+  when './proto_img/33.jpg' then 20
+  when './proto_img/34.jpg' then 20
+  when './proto_img/35.jpg' then 20
+  when './proto_img/36.jpg' then 28
+  when './proto_img/37.jpg' then 28
+  when './proto_img/38.jpg' then 28
+  when './proto_img/39.jpg' then 20
+  when './proto_img/40.jpg' then 23
+  when './proto_img/41.jpg' then 28
+  when './proto_img/42.jpg' then 20
+  when './proto_img/43.jpg' then 28
+  when './proto_img/44.jpg' then 20
+  when './proto_img/45.jpg' then 28
+  when './proto_img/46.jpg' then 28
+  when './proto_img/47.jpg' then 23
+  when './proto_img/48.jpg' then 28
+  when './proto_img/49.jpg' then 23
+  when './proto_img/50.jpg' then 23
+  when './proto_img/51.jpg' then 20
+  when './proto_img/52.jpg' then 23
+  when './proto_img/53.jpg' then 23
+  when './proto_img/54.jpg' then 20
+  when './proto_img/55.jpg' then 28
+  when './proto_img/56.jpg' then 17
+  when './proto_img/57.jpg' then 20
+  when './proto_img/58.jpg' then 23
+  when './proto_img/59.jpg' then 28
+  when './proto_img/60.jpg' then 23
+  when './proto_img/61.jpg' then 23
+  when './proto_img/62.jpg' then 23
+  when './proto_img/63.jpg' then 28
+  when './proto_img/64.jpg' then 23
+  when './proto_img/65.jpg' then 23
+  when './proto_img/66.jpg' then 23
+  when './proto_img/67.jpg' then 23
+  when './proto_img/68.jpg' then 23
+  when './proto_img/69.jpg' then 28
+  when './proto_img/70.jpg' then 23
+  when './proto_img/71.jpg' then 23
+  when './proto_img/72.jpg' then 28
+  when './proto_img/73.jpg' then 23
+  when './proto_img/74.jpg' then 23
+  when './proto_img/75.jpg' then 28
+  when './proto_img/76.jpg' then 23
+  when './proto_img/77.jpg' then 23
+  when './proto_img/78.jpg' then 28
+  when './proto_img/79.jpg' then 23
+  when './proto_img/80.jpg' then 23
+  when './proto_img/81.jpg' then 28
+  when './proto_img/82.jpg' then 20
+  when './proto_img/83.jpg' then 28
+  when './proto_img/84.jpg' then 28
+  when './proto_img/85.jpg' then 28
+  when './proto_img/86.jpg' then 23
+  when './proto_img/87.jpg' then 20
+  when './proto_img/88.jpg' then 28
+  when './proto_img/89.jpg' then 28
+  when './proto_img/90.jpg' then 28
+  when './proto_img/91.jpg' then 28
+  when './proto_img/92.jpg' then 23
+  when './proto_img/93.jpg' then 23
+  when './proto_img/94.jpg' then 28
+  when './proto_img/95.jpg' then 20
+  when './proto_img/96.jpg' then 28
+  when './proto_img/97.jpg' then 28
+  when './proto_img/98.jpg' then 28
+  when './proto_img/99.jpg' then 23
+  when './proto_img/100.jpg' then 28
+  when './proto_img/101.jpg' then 28
+  when './proto_img/102.jpg' then 28
+  when './proto_img/103.jpg' then 23
+  when './proto_img/104.jpg' then 20
+  when './proto_img/105.jpg' then 17
+  when './proto_img/106.jpg' then 28
+  when './proto_img/107.jpg' then 20
+  when './proto_img/108.jpg' then 20
+  when './proto_img/109.jpg' then 20
+  when './proto_img/110.jpg' then 28
+  when './proto_img/111.jpg' then 20
+  when './proto_img/112.jpg' then 28
+  when './proto_img/113.jpg' then 28
+  when './proto_img/114.jpg' then 20
+  when './proto_img/115.jpg' then 20
+  when './proto_img/116.jpg' then 20
+  when './proto_img/117.jpg' then 23
+  when './proto_img/118.jpg' then 17
+  when './proto_img/119.jpg' then 23
+  when './proto_img/120.jpg' then 17
+  when './proto_img/121.jpg' then 28
+  when './proto_img/122.jpg' then 23
+  when './proto_img/123.jpg' then 28
+  when './proto_img/124.jpg' then 28
+  when './proto_img/125.jpg' then 23
+    else temp_min end,
+
+  temp_max = case image_path
+  when './proto_img/01.jpg' then 27
+  when './proto_img/02.jpg' then 27
+  when './proto_img/03.jpg' then 45
+  when './proto_img/04.jpg' then 22
+  when './proto_img/05.jpg' then 27
+  when './proto_img/06.jpg' then 27
+  when './proto_img/07.jpg' then 22
+  when './proto_img/08.jpg' then 22
+  when './proto_img/09.jpg' then 45
+  when './proto_img/10.jpg' then 27
+  when './proto_img/11.jpg' then 19
+  when './proto_img/12.jpg' then 27
+  when './proto_img/13.jpg' then 27
+  when './proto_img/14.jpg' then 22
+  when './proto_img/15.jpg' then 22
+  when './proto_img/16.jpg' then 22
+  when './proto_img/17.jpg' then 45
+  when './proto_img/18.jpg' then 27
+  when './proto_img/19.jpg' then 19
+  when './proto_img/20.jpg' then 22
+  when './proto_img/21.jpg' then 27
+  when './proto_img/22.jpg' then 22
+  when './proto_img/23.jpg' then 27
+  when './proto_img/24.jpg' then 27
+  when './proto_img/25.jpg' then 22
+  when './proto_img/26.jpg' then 45
+  when './proto_img/27.jpg' then 45
+  when './proto_img/28.jpg' then 27
+  when './proto_img/30.jpg' then 27
+  when './proto_img/31.jpg' then 45
+  when './proto_img/32.jpg' then 27
+  when './proto_img/33.jpg' then 22
+  when './proto_img/34.jpg' then 22
+  when './proto_img/35.jpg' then 22
+  when './proto_img/36.jpg' then 45
+  when './proto_img/37.jpg' then 45
+  when './proto_img/38.jpg' then 45
+  when './proto_img/39.jpg' then 22
+  when './proto_img/40.jpg' then 27
+  when './proto_img/41.jpg' then 45
+  when './proto_img/42.jpg' then 22
+  when './proto_img/43.jpg' then 45
+  when './proto_img/44.jpg' then 22
+  when './proto_img/45.jpg' then 45
+  when './proto_img/46.jpg' then 45
+  when './proto_img/47.jpg' then 27
+  when './proto_img/48.jpg' then 45
+  when './proto_img/49.jpg' then 27
+  when './proto_img/50.jpg' then 27
+  when './proto_img/51.jpg' then 22
+  when './proto_img/52.jpg' then 27
+  when './proto_img/53.jpg' then 27
+  when './proto_img/54.jpg' then 22
+  when './proto_img/55.jpg' then 45
+  when './proto_img/56.jpg' then 19
+  when './proto_img/57.jpg' then 22
+  when './proto_img/58.jpg' then 27
+  when './proto_img/59.jpg' then 45
+  when './proto_img/60.jpg' then 27
+  when './proto_img/61.jpg' then 27
+  when './proto_img/62.jpg' then 27
+  when './proto_img/63.jpg' then 45
+  when './proto_img/64.jpg' then 27
+  when './proto_img/65.jpg' then 27
+  when './proto_img/66.jpg' then 27
+  when './proto_img/67.jpg' then 27
+  when './proto_img/68.jpg' then 27
+  when './proto_img/69.jpg' then 45
+  when './proto_img/70.jpg' then 27
+  when './proto_img/71.jpg' then 27
+  when './proto_img/72.jpg' then 45
+  when './proto_img/73.jpg' then 27
+  when './proto_img/74.jpg' then 27
+  when './proto_img/75.jpg' then 45
+  when './proto_img/76.jpg' then 27
+  when './proto_img/77.jpg' then 27
+  when './proto_img/78.jpg' then 45
+  when './proto_img/79.jpg' then 27
+  when './proto_img/80.jpg' then 27
+  when './proto_img/81.jpg' then 45
+  when './proto_img/82.jpg' then 22
+  when './proto_img/83.jpg' then 45
+  when './proto_img/84.jpg' then 45
+  when './proto_img/85.jpg' then 45
+  when './proto_img/86.jpg' then 27
+  when './proto_img/87.jpg' then 22
+  when './proto_img/88.jpg' then 45
+  when './proto_img/89.jpg' then 45
+  when './proto_img/90.jpg' then 45
+  when './proto_img/91.jpg' then 45
+  when './proto_img/92.jpg' then 27
+  when './proto_img/93.jpg' then 27
+  when './proto_img/94.jpg' then 45
+  when './proto_img/95.jpg' then 22
+  when './proto_img/96.jpg' then 45
+  when './proto_img/97.jpg' then 45
+  when './proto_img/98.jpg' then 45
+  when './proto_img/99.jpg' then 27
+  when './proto_img/100.jpg' then 45
+  when './proto_img/101.jpg' then 45
+  when './proto_img/102.jpg' then 45
+  when './proto_img/103.jpg' then 27
+  when './proto_img/104.jpg' then 22
+  when './proto_img/105.jpg' then 19
+  when './proto_img/106.jpg' then 45
+  when './proto_img/107.jpg' then 22
+  when './proto_img/108.jpg' then 22
+  when './proto_img/109.jpg' then 22
+  when './proto_img/110.jpg' then 45
+  when './proto_img/111.jpg' then 22
+  when './proto_img/112.jpg' then 45
+  when './proto_img/113.jpg' then 45
+  when './proto_img/114.jpg' then 22
+  when './proto_img/115.jpg' then 22
+  when './proto_img/116.jpg' then 22
+  when './proto_img/117.jpg' then 27
+  when './proto_img/118.jpg' then 19
+  when './proto_img/119.jpg' then 27
+  when './proto_img/120.jpg' then 19
+  when './proto_img/121.jpg' then 45
+  when './proto_img/122.jpg' then 27
+  when './proto_img/123.jpg' then 45
+  when './proto_img/124.jpg' then 45
+  when './proto_img/125.jpg' then 27
+    else temp_max end,
+
+  rain_ok = case image_path
+  when './proto_img/01.jpg' then true
+  when './proto_img/02.jpg' then false
+  when './proto_img/03.jpg' then false
+  when './proto_img/04.jpg' then true
+  when './proto_img/05.jpg' then true
+  when './proto_img/06.jpg' then false
+  when './proto_img/07.jpg' then false
+  when './proto_img/08.jpg' then false
+  when './proto_img/09.jpg' then false
+  when './proto_img/10.jpg' then false
+  when './proto_img/11.jpg' then false
+  when './proto_img/12.jpg' then false
+  when './proto_img/13.jpg' then false
+  when './proto_img/14.jpg' then false
+  when './proto_img/15.jpg' then false
+  when './proto_img/16.jpg' then false
+  when './proto_img/17.jpg' then false
+  when './proto_img/18.jpg' then false
+  when './proto_img/19.jpg' then false
+  when './proto_img/20.jpg' then false
+  when './proto_img/21.jpg' then false
+  when './proto_img/22.jpg' then true
+  when './proto_img/23.jpg' then true
+  when './proto_img/24.jpg' then false
+  when './proto_img/25.jpg' then false
+  when './proto_img/26.jpg' then true
+  when './proto_img/27.jpg' then true
+  when './proto_img/28.jpg' then false
+  when './proto_img/30.jpg' then false
+  when './proto_img/31.jpg' then true
+  when './proto_img/32.jpg' then false
+  when './proto_img/33.jpg' then true
+  when './proto_img/34.jpg' then true
+  when './proto_img/35.jpg' then true
+  when './proto_img/36.jpg' then true
+  when './proto_img/37.jpg' then false
+  when './proto_img/38.jpg' then false
+  when './proto_img/39.jpg' then false
+  when './proto_img/40.jpg' then true
+  when './proto_img/41.jpg' then true
+  when './proto_img/42.jpg' then false
+  when './proto_img/43.jpg' then false
+  when './proto_img/44.jpg' then false
+  when './proto_img/45.jpg' then true
+  when './proto_img/46.jpg' then true
+  when './proto_img/47.jpg' then false
+  when './proto_img/48.jpg' then true
+  when './proto_img/49.jpg' then true
+  when './proto_img/50.jpg' then false
+  when './proto_img/51.jpg' then false
+  when './proto_img/52.jpg' then true
+  when './proto_img/53.jpg' then false
+  when './proto_img/54.jpg' then false
+  when './proto_img/55.jpg' then false
+  when './proto_img/56.jpg' then false
+  when './proto_img/57.jpg' then false
+  when './proto_img/58.jpg' then false
+  when './proto_img/59.jpg' then false
+  when './proto_img/60.jpg' then false
+  when './proto_img/61.jpg' then false
+  when './proto_img/62.jpg' then false
+  when './proto_img/63.jpg' then false
+  when './proto_img/64.jpg' then false
+  when './proto_img/65.jpg' then false
+  when './proto_img/66.jpg' then false
+  when './proto_img/67.jpg' then false
+  when './proto_img/68.jpg' then false
+  when './proto_img/69.jpg' then false
+  when './proto_img/70.jpg' then false
+  when './proto_img/71.jpg' then false
+  when './proto_img/72.jpg' then false
+  when './proto_img/73.jpg' then false
+  when './proto_img/74.jpg' then false
+  when './proto_img/75.jpg' then false
+  when './proto_img/76.jpg' then false
+  when './proto_img/77.jpg' then false
+  when './proto_img/78.jpg' then false
+  when './proto_img/79.jpg' then false
+  when './proto_img/80.jpg' then false
+  when './proto_img/81.jpg' then false
+  when './proto_img/82.jpg' then false
+  when './proto_img/83.jpg' then false
+  when './proto_img/84.jpg' then false
+  when './proto_img/85.jpg' then false
+  when './proto_img/86.jpg' then false
+  when './proto_img/87.jpg' then false
+  when './proto_img/88.jpg' then false
+  when './proto_img/89.jpg' then false
+  when './proto_img/90.jpg' then false
+  when './proto_img/91.jpg' then false
+  when './proto_img/92.jpg' then false
+  when './proto_img/93.jpg' then false
+  when './proto_img/94.jpg' then false
+  when './proto_img/95.jpg' then false
+  when './proto_img/96.jpg' then false
+  when './proto_img/97.jpg' then false
+  when './proto_img/98.jpg' then false
+  when './proto_img/99.jpg' then false
+  when './proto_img/100.jpg' then false
+  when './proto_img/101.jpg' then false
+  when './proto_img/102.jpg' then false
+  when './proto_img/103.jpg' then false
+  when './proto_img/104.jpg' then false
+  when './proto_img/105.jpg' then false
+  when './proto_img/106.jpg' then false
+  when './proto_img/107.jpg' then false
+  when './proto_img/108.jpg' then false
+  when './proto_img/109.jpg' then false
+  when './proto_img/110.jpg' then false
+  when './proto_img/111.jpg' then false
+  when './proto_img/112.jpg' then false
+  when './proto_img/113.jpg' then false
+  when './proto_img/114.jpg' then false
+  when './proto_img/115.jpg' then false
+  when './proto_img/116.jpg' then false
+  when './proto_img/117.jpg' then false
+  when './proto_img/118.jpg' then false
+  when './proto_img/119.jpg' then false
+  when './proto_img/120.jpg' then false
+  when './proto_img/121.jpg' then false
+  when './proto_img/122.jpg' then false
+  when './proto_img/123.jpg' then false
+  when './proto_img/124.jpg' then false
+  when './proto_img/125.jpg' then false
+    else rain_ok end,
+
+  -- 레인부츠가 사진에 실제로 보이는 것만. 이유 문장("레인부츠라 발도 안 젖어요")에 쓰인다.
+  boots = case image_path
+  when './proto_img/01.jpg' then true
+  when './proto_img/02.jpg' then false
+  when './proto_img/03.jpg' then false
+  when './proto_img/04.jpg' then true
+  when './proto_img/05.jpg' then false
+  when './proto_img/06.jpg' then false
+  when './proto_img/07.jpg' then false
+  when './proto_img/08.jpg' then false
+  when './proto_img/09.jpg' then false
+  when './proto_img/10.jpg' then false
+  when './proto_img/11.jpg' then false
+  when './proto_img/12.jpg' then false
+  when './proto_img/13.jpg' then false
+  when './proto_img/14.jpg' then false
+  when './proto_img/15.jpg' then false
+  when './proto_img/16.jpg' then false
+  when './proto_img/17.jpg' then false
+  when './proto_img/18.jpg' then false
+  when './proto_img/19.jpg' then false
+  when './proto_img/20.jpg' then false
+  when './proto_img/21.jpg' then false
+  when './proto_img/22.jpg' then true
+  when './proto_img/23.jpg' then true
+  when './proto_img/24.jpg' then false
+  when './proto_img/25.jpg' then false
+  when './proto_img/26.jpg' then true
+  when './proto_img/27.jpg' then true
+  when './proto_img/28.jpg' then false
+  when './proto_img/30.jpg' then false
+  when './proto_img/31.jpg' then true
+  when './proto_img/32.jpg' then false
+  when './proto_img/33.jpg' then true
+  when './proto_img/34.jpg' then true
+  when './proto_img/35.jpg' then true
+  when './proto_img/36.jpg' then true
+  when './proto_img/37.jpg' then false
+  when './proto_img/38.jpg' then false
+  when './proto_img/39.jpg' then false
+  when './proto_img/40.jpg' then true
+  when './proto_img/41.jpg' then true
+  when './proto_img/42.jpg' then false
+  when './proto_img/43.jpg' then false
+  when './proto_img/44.jpg' then false
+  when './proto_img/45.jpg' then true
+  when './proto_img/46.jpg' then true
+  when './proto_img/47.jpg' then false
+  when './proto_img/48.jpg' then false
+  when './proto_img/49.jpg' then true
+  when './proto_img/50.jpg' then false
+  when './proto_img/51.jpg' then false
+  when './proto_img/52.jpg' then true
+  when './proto_img/53.jpg' then false
+  when './proto_img/54.jpg' then false
+  when './proto_img/55.jpg' then false
+  when './proto_img/56.jpg' then false
+  when './proto_img/57.jpg' then false
+  when './proto_img/58.jpg' then false
+  when './proto_img/59.jpg' then false
+  when './proto_img/60.jpg' then false
+  when './proto_img/61.jpg' then false
+  when './proto_img/62.jpg' then false
+  when './proto_img/63.jpg' then false
+  when './proto_img/64.jpg' then false
+  when './proto_img/65.jpg' then false
+  when './proto_img/66.jpg' then false
+  when './proto_img/67.jpg' then false
+  when './proto_img/68.jpg' then false
+  when './proto_img/69.jpg' then false
+  when './proto_img/70.jpg' then false
+  when './proto_img/71.jpg' then false
+  when './proto_img/72.jpg' then false
+  when './proto_img/73.jpg' then false
+  when './proto_img/74.jpg' then false
+  when './proto_img/75.jpg' then false
+  when './proto_img/76.jpg' then false
+  when './proto_img/77.jpg' then false
+  when './proto_img/78.jpg' then false
+  when './proto_img/79.jpg' then false
+  when './proto_img/80.jpg' then false
+  when './proto_img/81.jpg' then false
+  when './proto_img/82.jpg' then false
+  when './proto_img/83.jpg' then false
+  when './proto_img/84.jpg' then false
+  when './proto_img/85.jpg' then false
+  when './proto_img/86.jpg' then false
+  when './proto_img/87.jpg' then false
+  when './proto_img/88.jpg' then false
+  when './proto_img/89.jpg' then false
+  when './proto_img/90.jpg' then false
+  when './proto_img/91.jpg' then false
+  when './proto_img/92.jpg' then false
+  when './proto_img/93.jpg' then false
+  when './proto_img/94.jpg' then false
+  when './proto_img/95.jpg' then false
+  when './proto_img/96.jpg' then false
+  when './proto_img/97.jpg' then false
+  when './proto_img/98.jpg' then false
+  when './proto_img/99.jpg' then false
+  when './proto_img/100.jpg' then false
+  when './proto_img/101.jpg' then false
+  when './proto_img/102.jpg' then false
+  when './proto_img/103.jpg' then false
+  when './proto_img/104.jpg' then false
+  when './proto_img/105.jpg' then false
+  when './proto_img/106.jpg' then false
+  when './proto_img/107.jpg' then false
+  when './proto_img/108.jpg' then false
+  when './proto_img/109.jpg' then false
+  when './proto_img/110.jpg' then false
+  when './proto_img/111.jpg' then false
+  when './proto_img/112.jpg' then false
+  when './proto_img/113.jpg' then false
+  when './proto_img/114.jpg' then false
+  when './proto_img/115.jpg' then false
+  when './proto_img/116.jpg' then false
+  when './proto_img/117.jpg' then false
+  when './proto_img/118.jpg' then false
+  when './proto_img/119.jpg' then false
+  when './proto_img/120.jpg' then false
+  when './proto_img/121.jpg' then false
+  when './proto_img/122.jpg' then false
+  when './proto_img/123.jpg' then false
+  when './proto_img/124.jpg' then false
+  when './proto_img/125.jpg' then false
+    else boots end
+
+where image_path like './proto_img/%';
+
+
+-- ── 확인 ────────────────────────────────────────────────────────
+-- 1) 124줄이 다 있나. 124 가 아니면 위 파일 중 안 돌린 게 있다.
+select count(*) as 고친_사진수 from library_looks where image_path like './proto_img/%';
+
+-- 2) 기온 밴드별 장수 — 43 / 46 / 29 / 6 이 나와야 한다
+select temp_min || '~' || temp_max || '°' as 기온, count(*) as 장수
+  from library_looks where image_path like './proto_img/%'
+  group by temp_min, temp_max order by temp_min desc;
+
+-- 3) 🔴 비 오는 날 후보 — 밴드마다 3장은 있어야 한 화면이 찬다
+--    17~19° 가 0장이다. 서늘한 비 오는 날엔 보여줄 코디가 없다는 뜻이다.
+select temp_min || '~' || temp_max || '°' as 기온,
+       count(*) filter (where rain_ok) as 비_와도_됨,
+       count(*) filter (where not rain_ok) as 비엔_안_됨
+  from library_looks where image_path like './proto_img/%'
+  group by temp_min, temp_max order by temp_min desc;

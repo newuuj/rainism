@@ -13,7 +13,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 SRC  = ROOT / "prototype/rainism_prototype_v1.html"
 OUT  = ROOT / "tech/supabase/02_seed_39.sql"
 
-# 체감온도 눈금 — tech/rainism_outfit_rules_v1_summer_women.csv [1] 그대로.
+# 체감온도 눈금 — tech/rainism_outfit_rules_v2_allseason_women.csv [1] 그대로.
 # 임의로 정한 값이 아니다. CSV가 바뀌면 여기도 바꾼다.
 BAND = {"hot": (28, 45), "warm": (23, 27), "cool": (20, 22), "chilly": (17, 19)}
 

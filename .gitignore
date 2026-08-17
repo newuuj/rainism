@@ -26,3 +26,5 @@ node_modules/
 # 사진 원본과 마찬가지로 저장소에 올리지 않는다
 tech/supabase/imported_pins.txt
 tech/supabase/import_*.sql
+prototype/tag_*.html
+prototype/check_*.html

@@ -92,7 +92,7 @@
 - **반복 방지** — 최근 노출한 코디는 배제 → "어제와 같은 사진" 방지. **고른 것 7일 · 본 것 2일 제외**(2026-07-14 텀 확정, 03 §7.3). 후보가 마르면 본 것 → 고른 것 순으로 풀되 **강수·온도는 안 푼다.**
 - **빈손 방지** — 매칭이 부실해도 "결과 없음"을 띄우지 않는다. 라이선스 자산 내에서 폴백.
 
-📎 상세: [`tech/data_model_v2_mood_matching.md`](../tech/data_model_v2_mood_matching.md) 흐름3 · [`tech/rainism_outfit_rules_v1_summer_women.csv`](../tech/rainism_outfit_rules_v1_summer_women.csv)
+📎 상세: [`tech/data_model_v2_mood_matching.md`](../tech/data_model_v2_mood_matching.md) 흐름3 · [`tech/rainism_outfit_rules_v2_allseason_women.csv`](../tech/rainism_outfit_rules_v2_allseason_women.csv)
 
 ---
 
@@ -290,5 +290,5 @@
 | [`tech/dependency_risk_mitigation_v1.md`](../tech/dependency_risk_mitigation_v1.md) | 과잉 의존 완화·포트&어댑터 |
 | [`tech/library_sourcing_plan_v1.md`](../tech/library_sourcing_plan_v1.md) | **소싱 정본** — 커버리지 매트릭스·옵션 비교·비용 |
 | [`tech/rainism_mvp_implementation_plan_v2.md`](../tech/rainism_mvp_implementation_plan_v2.md) | Phase 0~4 게이트·임계경로 |
-| [`tech/rainism_outfit_rules_v1_summer_women.csv`](../tech/rainism_outfit_rules_v1_summer_women.csv) | 날씨 하드필터 규칙 원본(기상청 필드 매핑) |
+| [`tech/rainism_outfit_rules_v2_allseason_women.csv`](../tech/rainism_outfit_rules_v2_allseason_women.csv) | 날씨 하드필터 규칙 원본(기상청 필드 매핑) |
 | [`tech/diagrams/`](../tech/diagrams/) | 데이터모델·외부의존성 다이어그램(HTML) |
