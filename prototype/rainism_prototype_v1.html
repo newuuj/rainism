@@ -2151,7 +2151,8 @@ function renderWeatherCard(){
   /* 시간별 기온 — 숫자를 아래 여백으로 띄운다. 제일 추운 시각이 바닥, 제일 더운 시각이 꼭대기.
      🚫 시각 수와 안 맞으면 아예 안 그린다 — 줄이 어긋나면 6시 기온을 9시 것으로 읽는다(§9-1) */
   const tbox=document.getElementById('wt-temps');
-  const tps=(w.temps||[]).map(Number);
+  // 빈 값을 Number()에 넣으면 0이 된다 — 기상청이 한 시각을 빼먹으면 '0°'라고 우기게 된다. 먼저 걸러낸다
+  const tps=(w.temps||[]).map(v=> (v===null||v===undefined||v==='') ? NaN : Number(v));
   if(tps.length!==w.pop.length || tps.some(t=>!isFinite(t))){ tbox.style.display='none'; }
   else{
     const lo=Math.min(...tps), span=(Math.max(...tps)-lo)||1;   // 하루 종일 같은 기온이면 전부 바닥
