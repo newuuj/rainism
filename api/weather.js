@@ -83,6 +83,8 @@ function summarize(items) {
   return {
     temp: peak.v, at: peak.t, band: bandOf(peak.v, humid), humid,
     rain, maxPop, pop: slots.map(t => +at(t, 'POP')), hrs: slots.map(t => +t.slice(0, 2) + '시'),
+    /* 시간별 기온 — 막대(강수확률)와 같은 시각에 맞춰 낸다. 줄이 어긋나면 화면이 거짓말을 한다 */
+    temps: slots.map(t => +at(t, 'TMP')),
     mm, sky: +at(peak.t, 'SKY') || 1,
     tmn, tmx, gap: (tmn != null && tmx != null) ? tmx - tmn : null,
   };
@@ -150,6 +152,7 @@ if (require.main === module) {
   eq(s.rain, true, '비 여부');
   eq(s.pop, [60, 60, 60, 60, 0, 0], '시간별 강수확률');
   eq(s.hrs, [6, 9, 12, 15, 18, 21].map(h => h + '시'), '막대 이름표');
+  eq(s.temps, [24, 25, 28, 29, 28, 26], '시간별 기온(강수확률과 같은 시각)');
   eq(s.mm, 11.5, '하루 강수량 합(7+2+0.5+2)');
   eq(s.gap, 6, '일교차(30-24)');
   /* 확률만 30%이고 예보상 비는 없는 날 = 비 오는 날이 아니다 (2026-08-17 실제 사례) */
